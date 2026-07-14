@@ -62,10 +62,15 @@ jobs:
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
 
+      - name: Rename APK
+        run: |
+          TAG="${{ env.TAG }}"
+          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/FPS-Meter-${TAG}.apk
+
       - name: Upload debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: FPS-Meter-${{ env.TAG }}
           path: app/build/outputs/apk/debug/*.apk
 
       - name: Publish debug APK to GitHub Release
@@ -78,6 +83,10 @@ jobs:
             gh release edit "$TAG" --notes-file RELEASE.md
             gh release upload "$TAG" "$APK_PATH" --clobber
           else
+            # Delete git tag on origin and locally if it exists to avoid validation conflicts
+            git push origin --delete "$TAG" || true
+            git tag -d "$TAG" || true
+            
             gh release create "$TAG" "$APK_PATH" \
               --title "Release $TAG" \
               --notes-file RELEASE.md
