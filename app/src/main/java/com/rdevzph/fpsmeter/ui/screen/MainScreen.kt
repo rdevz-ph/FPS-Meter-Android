@@ -51,6 +51,14 @@ fun MainScreen(
     onStopOverlay: () -> Unit
 ) {
     val context = LocalContext.current
+    val versionName = remember(context) {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "1.0.0"
+        } catch (e: Exception) {
+            "1.0.0"
+        }
+    }
 
     val shizukuAvailable by viewModel.shizukuAvailable.collectAsState()
     val shizukuGranted by viewModel.shizukuPermissionGranted.collectAsState()
@@ -185,6 +193,73 @@ fun MainScreen(
                 // === Developer Card ===
                 DeveloperCard()
 
+                // === Footer (Check Updates Card) ===
+                Spacer(Modifier.height(8.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rdevz-ph/FPS-Meter-Android"))
+                                context.startActivity(intent)
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Check for Updates",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "v$versionName",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "github.com/rdevz-ph/FPS-Meter-Android",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
                 Spacer(Modifier.height(16.dp))
             }
         }
@@ -536,6 +611,31 @@ fun OverlayControlCard(
 
 @Composable
 fun OverlaySettingsPanel(settings: OverlaySettings, onChange: (OverlaySettings) -> Unit) {
+    var showResetConfirm by remember { mutableStateOf(false) }
+
+    if (showResetConfirm) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirm = false },
+            title = { Text("Reset Settings?") },
+            text = { Text("Are you sure you want to reset all FPS overlay settings to their defaults? This cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onChange(OverlaySettings())
+                        showResetConfirm = false
+                    }
+                ) {
+                    Text("Reset", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirm = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     // Text size
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -759,6 +859,33 @@ fun OverlaySettingsPanel(settings: OverlaySettings, onChange: (OverlaySettings) 
                     )
                 )
             }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Reset Settings Button
+        OutlinedButton(
+            onClick = { showResetConfirm = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            ),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(
+                Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "Reset Settings",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.labelLarge
+            )
         }
     }
 }

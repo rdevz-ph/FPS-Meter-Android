@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
         viewModel = ViewModelProvider(
             this,
-            FpsViewModel.Factory(packageManager)
+            FpsViewModel.Factory(packageManager, this)
         ).get(FpsViewModel::class.java)
 
         // Request POST_NOTIFICATIONS on Android 13+

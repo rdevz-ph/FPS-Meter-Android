@@ -31,11 +31,51 @@ data class OverlaySettings(
 ) {
     companion object {
         const val AUTO_COLOR = 0 // Sentinel value for automatic coloring
+
+        private const val PREFS_NAME = "overlay_settings_prefs"
+        private const val KEY_COLOR = "color"
+        private const val KEY_TEXT_SIZE = "text_size"
+        private const val KEY_ALPHA = "alpha"
+        private const val KEY_POS_X = "pos_x"
+        private const val KEY_POS_Y = "pos_y"
+        private const val KEY_SHOW_MS = "show_ms"
+        private const val KEY_SHOW_TEMP = "show_temp"
+        private const val KEY_GRAVITY = "gravity"
+
+        fun load(context: Context): OverlaySettings {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val defaultSettings = OverlaySettings()
+            return OverlaySettings(
+                color = prefs.getInt(KEY_COLOR, defaultSettings.color),
+                textSizeSp = prefs.getFloat(KEY_TEXT_SIZE, defaultSettings.textSizeSp),
+                alpha = prefs.getFloat(KEY_ALPHA, defaultSettings.alpha),
+                posX = prefs.getInt(KEY_POS_X, defaultSettings.posX),
+                posY = prefs.getInt(KEY_POS_Y, defaultSettings.posY),
+                showMs = prefs.getBoolean(KEY_SHOW_MS, defaultSettings.showMs),
+                showTemp = prefs.getBoolean(KEY_SHOW_TEMP, defaultSettings.showTemp),
+                gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity)
+            )
+        }
+
+        fun save(context: Context, settings: OverlaySettings) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().apply {
+                putInt(KEY_COLOR, settings.color)
+                putFloat(KEY_TEXT_SIZE, settings.textSizeSp)
+                putFloat(KEY_ALPHA, settings.alpha)
+                putInt(KEY_POS_X, settings.posX)
+                putInt(KEY_POS_Y, settings.posY)
+                putBoolean(KEY_SHOW_MS, settings.showMs)
+                putBoolean(KEY_SHOW_TEMP, settings.showTemp)
+                putInt(KEY_GRAVITY, settings.gravity)
+                apply()
+            }
+        }
     }
 }
 
 class FpsViewModel(
-    private val packageManager: PackageManager
+    private val packageManager: PackageManager,
+    private val context: Context
 ) : ViewModel() {
 
     private val shizukuHelper = ShizukuHelper()
@@ -49,7 +89,7 @@ class FpsViewModel(
     private val _isOverlayRunning = MutableStateFlow(FpsOverlayService.isRunning)
     val isOverlayRunning: StateFlow<Boolean> = _isOverlayRunning.asStateFlow()
 
-    private val _settings = MutableStateFlow(OverlaySettings())
+    private val _settings = MutableStateFlow(OverlaySettings.load(context))
     val settings: StateFlow<OverlaySettings> = _settings.asStateFlow()
 
     private val _statusMessage = MutableStateFlow("")
@@ -62,6 +102,7 @@ class FpsViewModel(
     fun refreshStatus() {
         _isOverlayRunning.value = FpsOverlayService.isRunning
         shizukuHelper.updateAvailability(packageManager)
+        _settings.value = OverlaySettings.load(context)
     }
 
     fun checkOverlayPermission(context: Context): Boolean {
@@ -104,6 +145,7 @@ class FpsViewModel(
 
     fun updateSettings(new: OverlaySettings) {
         _settings.value = new
+        OverlaySettings.save(context, new)
     }
 
     fun setOverlayRunning(running: Boolean) {
@@ -117,9 +159,12 @@ class FpsViewModel(
         shizukuHelper.onDestroy()
     }
 
-    class Factory(private val pm: PackageManager) : ViewModelProvider.Factory {
+    class Factory(
+        private val pm: PackageManager,
+        private val context: Context
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            FpsViewModel(pm) as T
+            FpsViewModel(pm, context.applicationContext) as T
     }
 }

@@ -110,6 +110,17 @@ class FpsOverlayService : Service() {
         isRunning = true
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+
+        // Load initial settings from SharedPreferences
+        val saved = OverlaySettings.load(this)
+        textColor = saved.color
+        textSizeSp = saved.textSizeSp
+        overlayAlpha = saved.alpha
+        posX = saved.posX
+        posY = saved.posY
+        showMs = saved.showMs
+        showTemp = saved.showTemp
+        overlayGravity = saved.gravity
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -132,14 +143,30 @@ class FpsOverlayService : Service() {
     }
 
     private fun applySettings(intent: Intent) {
-        textColor = intent.getIntExtra(EXTRA_COLOR, OverlaySettings.AUTO_COLOR)
-        textSizeSp = intent.getFloatExtra(EXTRA_SIZE, 14f)
-        overlayAlpha = intent.getFloatExtra(EXTRA_ALPHA, 0.9f)
-        posX = intent.getIntExtra(EXTRA_POSITION_X, 0)
-        posY = intent.getIntExtra(EXTRA_POSITION_Y, 100)
-        showMs = intent.getBooleanExtra(EXTRA_SHOW_MS, false)
-        showTemp = intent.getBooleanExtra(EXTRA_SHOW_TEMP, false)
-        overlayGravity = intent.getIntExtra(EXTRA_GRAVITY, Gravity.TOP or Gravity.START)
+        if (intent.hasExtra(EXTRA_COLOR)) {
+            textColor = intent.getIntExtra(EXTRA_COLOR, textColor)
+        }
+        if (intent.hasExtra(EXTRA_SIZE)) {
+            textSizeSp = intent.getFloatExtra(EXTRA_SIZE, textSizeSp)
+        }
+        if (intent.hasExtra(EXTRA_ALPHA)) {
+            overlayAlpha = intent.getFloatExtra(EXTRA_ALPHA, overlayAlpha)
+        }
+        if (intent.hasExtra(EXTRA_POSITION_X)) {
+            posX = intent.getIntExtra(EXTRA_POSITION_X, posX)
+        }
+        if (intent.hasExtra(EXTRA_POSITION_Y)) {
+            posY = intent.getIntExtra(EXTRA_POSITION_Y, posY)
+        }
+        if (intent.hasExtra(EXTRA_SHOW_MS)) {
+            showMs = intent.getBooleanExtra(EXTRA_SHOW_MS, showMs)
+        }
+        if (intent.hasExtra(EXTRA_SHOW_TEMP)) {
+            showTemp = intent.getBooleanExtra(EXTRA_SHOW_TEMP, showTemp)
+        }
+        if (intent.hasExtra(EXTRA_GRAVITY)) {
+            overlayGravity = intent.getIntExtra(EXTRA_GRAVITY, overlayGravity)
+        }
     }
 
     private fun updateOverlayAppearance() {
@@ -286,6 +313,13 @@ class FpsOverlayService : Service() {
                     posX = layoutParams.x
                     posY = layoutParams.y
                     windowManager.updateViewLayout(overlayView, layoutParams)
+                    return true
+                }
+                MotionEvent.ACTION_UP -> {
+                    // Save the updated position to SharedPreferences
+                    val saved = OverlaySettings.load(this@FpsOverlayService)
+                    val updated = saved.copy(posX = posX, posY = posY)
+                    OverlaySettings.save(this@FpsOverlayService, updated)
                     return true
                 }
             }

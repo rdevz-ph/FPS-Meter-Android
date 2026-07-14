@@ -1,5 +1,8 @@
 ### What's New
-- Added auto-detection for overlay permission settings when resuming the app (no restart required after granting permission).
+- Added SharedPreferences persistent storage to remember overlay settings (color, size, opacity, visibility choices, positioning, and manual drag coordinates) across app/service restarts.
+- Added a "Reset Settings" button under overlay controls with a confirmation dialog.
+- Added an interactive updates card footer displaying the current application version.
+- Refined visual alignments and centered layouts inside settings cards.
 
 ### Features
 - Samsung-style pill-shaped overlay with cyan labels and white values
