@@ -31,7 +31,8 @@ import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
 import kotlin.math.roundToInt
 
 /**
- * Lightweight foreground service that draws an FPS counter overlay mimicking Samsung Perf Z style.
+ * Lightweight foreground service that draws an FPS counter overlay mimicking Samsung Perf Z style,
+ * with Quick Settings Tile integration, floating assistive button, and rich notification controls.
  */
 class FpsOverlayService : Service() {
 
@@ -39,6 +40,9 @@ class FpsOverlayService : Service() {
         const val CHANNEL_ID = "fps_overlay_channel"
         private const val NOTIF_ID = 1
         const val EXTRA_SETTINGS = "overlay_settings"
+
+        const val ACTION_STOP = "STOP"
+        const val ACTION_TOGGLE_VISIBILITY = "TOGGLE_VISIBILITY"
 
         // Intent extras for settings
         const val EXTRA_COLOR = "color"
@@ -49,19 +53,23 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_MS = "show_ms"
         const val EXTRA_SHOW_TEMP = "show_temp"
         const val EXTRA_GRAVITY = "gravity"
+        const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
 
         var isRunning = false
+        var isAutoStarted = false
     }
 
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: TextView
     private lateinit var layoutParams: WindowManager.LayoutParams
+    private var floatingToggleButton: FloatingToggleButton? = null
 
     // Choreographer for frame timing
     private val choreographer = Choreographer.getInstance()
     private var frameCount = 0
     private var lastSampleTime = 0L
     private var currentFps = 0
+    private var isOverlayVisible = true
 
     // Settings (with defaults)
     private var textColor = OverlaySettings.AUTO_COLOR
@@ -72,6 +80,7 @@ class FpsOverlayService : Service() {
     private var showMs = false
     private var showTemp = false
     private var overlayGravity = Gravity.TOP or Gravity.START
+    private var floatingToggleEnabled = false
 
     private var batteryTemp: Float = 0f
 
@@ -98,7 +107,9 @@ class FpsOverlayService : Service() {
                 currentFps = (frameCount * 1000f / elapsed).roundToInt()
                 frameCount = 0
                 lastSampleTime = now
-                updateOverlayText()
+                if (isOverlayVisible) {
+                    updateOverlayText()
+                }
             }
 
             choreographer.postFrameCallback(this)
@@ -121,12 +132,21 @@ class FpsOverlayService : Service() {
         showMs = saved.showMs
         showTemp = saved.showTemp
         overlayGravity = saved.gravity
+        floatingToggleEnabled = saved.floatingToggleEnabled
+
+        FpsTileService.updateTile(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == "STOP") {
-            stopSelf()
-            return START_NOT_STICKY
+        when (intent?.action) {
+            ACTION_STOP -> {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            ACTION_TOGGLE_VISIBILITY -> {
+                toggleOverlayVisibility()
+                return START_STICKY
+            }
         }
 
         intent?.let { applySettings(it) }
@@ -139,7 +159,36 @@ class FpsOverlayService : Service() {
             updateOverlayAppearance()
         }
 
+        syncFloatingToggleButton()
+        FpsTileService.updateTile(this)
+
         return START_STICKY
+    }
+
+    private fun syncFloatingToggleButton() {
+        if (floatingToggleEnabled) {
+            if (floatingToggleButton == null) {
+                floatingToggleButton = FloatingToggleButton(this) {
+                    toggleOverlayVisibility()
+                }
+            }
+            floatingToggleButton?.setOverlayActive(isOverlayVisible)
+            floatingToggleButton?.show()
+        } else {
+            floatingToggleButton?.hide()
+            floatingToggleButton = null
+        }
+    }
+
+    private fun toggleOverlayVisibility() {
+        isOverlayVisible = !isOverlayVisible
+        if (::overlayView.isInitialized) {
+            overlayView.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
+        }
+        floatingToggleButton?.setOverlayActive(isOverlayVisible)
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIF_ID, buildNotification())
     }
 
     private fun applySettings(intent: Intent) {
@@ -166,6 +215,9 @@ class FpsOverlayService : Service() {
         }
         if (intent.hasExtra(EXTRA_GRAVITY)) {
             overlayGravity = intent.getIntExtra(EXTRA_GRAVITY, overlayGravity)
+        }
+        if (intent.hasExtra(EXTRA_FLOATING_TOGGLE)) {
+            floatingToggleEnabled = intent.getBooleanExtra(EXTRA_FLOATING_TOGGLE, floatingToggleEnabled)
         }
     }
 
@@ -279,13 +331,18 @@ class FpsOverlayService : Service() {
 
     private fun buildNotification(): Notification {
         val tapIntent = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-        val stopIntent = PendingIntent.getService(this, 0, Intent(this, FpsOverlayService::class.java).apply { action = "STOP" }, PendingIntent.FLAG_IMMUTABLE)
+        val stopIntent = PendingIntent.getService(this, 1, Intent(this, FpsOverlayService::class.java).apply { action = ACTION_STOP }, PendingIntent.FLAG_IMMUTABLE)
+        val toggleIntent = PendingIntent.getService(this, 2, Intent(this, FpsOverlayService::class.java).apply { action = ACTION_TOGGLE_VISIBILITY }, PendingIntent.FLAG_IMMUTABLE)
+
+        val toggleLabel = if (isOverlayVisible) "Hide" else "Show"
+        val statusText = if (isOverlayVisible) "Overlay visible & measuring" else "Overlay hidden (minimized)"
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("FPS Meter Active")
-            .setContentText("Overlay is running")
+            .setContentTitle("FPS Meter")
+            .setContentText(statusText)
             .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentIntent(tapIntent)
+            .addAction(0, toggleLabel, toggleIntent)
             .addAction(0, "Stop", stopIntent)
             .setOngoing(true)
             .setSilent(true)
@@ -330,9 +387,20 @@ class FpsOverlayService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         isRunning = false
+        isAutoStarted = false
         choreographer.removeFrameCallback(frameCallback)
         unregisterReceiver(batteryReceiver)
-        if (::overlayView.isInitialized) windowManager.removeView(overlayView)
+        if (::overlayView.isInitialized) {
+            try {
+                windowManager.removeView(overlayView)
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
+        floatingToggleButton?.hide()
+        floatingToggleButton = null
+
+        FpsTileService.updateTile(this)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

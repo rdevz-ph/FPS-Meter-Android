@@ -1,7 +1,9 @@
 package com.rdevzph.fpsmeter.viewmodel
 
-import android.app.AppOpsManager
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -9,9 +11,11 @@ import android.os.Build
 import android.os.Process
 import android.provider.Settings
 import android.view.Gravity
+import android.view.accessibility.AccessibilityManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.shizuku.ShizukuHelper
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +31,10 @@ data class OverlaySettings(
     val posY: Int = 100,
     val showMs: Boolean = false,
     val showTemp: Boolean = false,
-    val gravity: Int = Gravity.TOP or Gravity.START
+    val gravity: Int = Gravity.TOP or Gravity.START,
+    val floatingToggleEnabled: Boolean = false,
+    val autoStartEnabled: Boolean = false,
+    val autoStartPackages: Set<String> = emptySet()
 ) {
     companion object {
         const val AUTO_COLOR = 0 // Sentinel value for automatic coloring
@@ -41,6 +48,9 @@ data class OverlaySettings(
         private const val KEY_SHOW_MS = "show_ms"
         private const val KEY_SHOW_TEMP = "show_temp"
         private const val KEY_GRAVITY = "gravity"
+        private const val KEY_FLOATING_TOGGLE = "floating_toggle"
+        private const val KEY_AUTO_START = "auto_start"
+        private const val KEY_AUTO_PACKAGES = "auto_packages"
 
         fun load(context: Context): OverlaySettings {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -53,7 +63,10 @@ data class OverlaySettings(
                 posY = prefs.getInt(KEY_POS_Y, defaultSettings.posY),
                 showMs = prefs.getBoolean(KEY_SHOW_MS, defaultSettings.showMs),
                 showTemp = prefs.getBoolean(KEY_SHOW_TEMP, defaultSettings.showTemp),
-                gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity)
+                gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
+                floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
+                autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
+                autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet()
             )
         }
 
@@ -67,6 +80,9 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_MS, settings.showMs)
                 putBoolean(KEY_SHOW_TEMP, settings.showTemp)
                 putInt(KEY_GRAVITY, settings.gravity)
+                putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                putBoolean(KEY_AUTO_START, settings.autoStartEnabled)
+                putStringSet(KEY_AUTO_PACKAGES, settings.autoStartPackages)
                 apply()
             }
         }
@@ -103,6 +119,8 @@ class FpsViewModel(
         _isOverlayRunning.value = FpsOverlayService.isRunning
         shizukuHelper.updateAvailability(packageManager)
         _settings.value = OverlaySettings.load(context)
+        checkOverlayPermission(context)
+        checkAccessibilityService(context)
     }
 
     fun checkOverlayPermission(context: Context): Boolean {
@@ -138,6 +156,112 @@ class FpsViewModel(
                 _statusMessage.value = "Shizuku error: ${e.message}"
             }
         }
+    }
+
+    data class AppInfo(
+        val packageName: String,
+        val appName: String,
+        val isSystemApp: Boolean = false
+    )
+
+    private val _installedApps = MutableStateFlow<List<AppInfo>>(emptyList())
+    val installedApps: StateFlow<List<AppInfo>> = _installedApps.asStateFlow()
+
+    private val _accessibilityEnabled = MutableStateFlow(false)
+    val accessibilityEnabled: StateFlow<Boolean> = _accessibilityEnabled.asStateFlow()
+
+    fun loadInstalledApps() {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
+                    addCategory(Intent.CATEGORY_LAUNCHER)
+                }
+                val resolveInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    packageManager.queryIntentActivities(
+                        mainIntent,
+                        PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL.toLong())
+                    )
+                } else {
+                    packageManager.queryIntentActivities(mainIntent, PackageManager.MATCH_ALL)
+                }
+
+                val apps = resolveInfos
+                    .filter { it.activityInfo.packageName != context.packageName }
+                    .map {
+                        val isSys = (it.activityInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+                        AppInfo(
+                            packageName = it.activityInfo.packageName,
+                            appName = it.loadLabel(packageManager).toString(),
+                            isSystemApp = isSys
+                        )
+                    }
+                    .distinctBy { it.packageName }
+                    .sortedWith(compareBy({ it.isSystemApp }, { it.appName.lowercase() }))
+                _installedApps.value = apps
+            } catch (e: Exception) {
+                // Fallback using getInstalledApplications
+                try {
+                    val installed = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+                    val apps = installed
+                        .filter { it.packageName != context.packageName }
+                        .map {
+                            val isSys = (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+                            AppInfo(
+                                packageName = it.packageName,
+                                appName = it.loadLabel(packageManager).toString(),
+                                isSystemApp = isSys
+                            )
+                        }
+                        .sortedWith(compareBy({ it.isSystemApp }, { it.appName.lowercase() }))
+                    _installedApps.value = apps
+                } catch (e2: Exception) {
+                    // Ignore
+                }
+            }
+        }
+    }
+
+    fun checkAccessibilityService(context: Context): Boolean {
+        // 1. Direct static runtime check if service is running
+        if (FpsAccessibilityService.isServiceRunning) {
+            _accessibilityEnabled.value = true
+            return true
+        }
+
+        // 2. AccessibilityManager enabled services list
+        val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+        val isEnabledFromManager = am?.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            ?.any { 
+                it.resolveInfo?.serviceInfo?.packageName == context.packageName &&
+                it.resolveInfo?.serviceInfo?.name?.contains("FpsAccessibilityService") == true
+            } == true
+        if (isEnabledFromManager) {
+            _accessibilityEnabled.value = true
+            return true
+        }
+
+        // 3. Settings.Secure fallback
+        val enabledServices = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: ""
+        val isEnabled = enabledServices.split(":").any {
+            val comp = ComponentName.unflattenFromString(it)
+            comp?.packageName == context.packageName && comp.className.contains("FpsAccessibilityService")
+        }
+        _accessibilityEnabled.value = isEnabled
+        return isEnabled
+    }
+
+    fun toggleAutoStartPackage(pkg: String) {
+        val current = _settings.value
+        val updatedSet = current.autoStartPackages.toMutableSet()
+        if (updatedSet.contains(pkg)) {
+            updatedSet.remove(pkg)
+        } else {
+            updatedSet.add(pkg)
+        }
+        updateSettings(current.copy(autoStartPackages = updatedSet))
     }
 
     fun requestShizukuPermission() = shizukuHelper.requestPermission()

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">FPS Meter</string>
+    <string name="quick_settings_tile_label">FPS Meter</string>
+    <string name="accessibility_service_desc">Automatically activates or deactivates the FPS overlay when designated apps and games are launched or closed.</string>
 </resources>

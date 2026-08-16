@@ -96,5 +96,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         viewModel.refreshStatus()
         viewModel.checkOverlayPermission(this)
+        viewModel.checkAccessibilityService(this)
     }
 }
