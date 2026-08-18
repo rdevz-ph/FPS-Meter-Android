@@ -19,9 +19,9 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name for the release (e.g. v1.1)'
-        required: true
-        default: 'v1.1'
+        description: 'Tag name for the release (e.g. v1.3 - leave blank to auto-detect from build.gradle.kts)'
+        required: false
+        default: ''
 
 
 permissions:
@@ -53,12 +53,13 @@ jobs:
       - name: Determine Tag
         id: determine_tag
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag_name }}" ]; then
             TAG="${{ github.event.inputs.tag_name }}"
           elif [ "${{ github.ref_type }}" = "tag" ]; then
             TAG="${{ github.ref_name }}"
           else
-            TAG="v1.1"
+            VERSION=$(grep 'versionName\s*=' app/build.gradle.kts | sed -E 's/.*"([^"]+)".*/\1/' | tr -d ' ')
+            TAG="v${VERSION}"
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
 
