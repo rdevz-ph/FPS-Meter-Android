@@ -14,8 +14,6 @@ on:
       - "gradlew"
       - "gradlew.bat"
       - ".github/workflows/android.yml"
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
       tag_name:
