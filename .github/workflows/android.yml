@@ -34,6 +34,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -80,15 +82,12 @@ jobs:
         run: |
           TAG="${{ env.TAG }}"
           APK_PATH=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --notes-file RELEASE.md
-            gh release upload "$TAG" "$APK_PATH" --clobber
-          else
-            # Delete git tag on origin and locally if it exists to avoid validation conflicts
-            git push origin --delete "$TAG" || true
-            git tag -d "$TAG" || true
-            
-            gh release create "$TAG" "$APK_PATH" \
-              --title "Release $TAG" \
-              --notes-file RELEASE.md
-          fi
+          
+          # Clean up existing release and tag for the same version if present
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$TAG" 2>/dev/null || true
+          
+          # Create fresh release and upload APK
+          gh release create "$TAG" "$APK_PATH" \
+            --title "FPS Meter $TAG" \
+            --notes-file RELEASE.md
