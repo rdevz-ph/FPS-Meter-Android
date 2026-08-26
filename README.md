@@ -22,7 +22,7 @@ A high-performance, lightweight FPS monitoring tool for Android. This applicatio
 
 ## Download latest version
 
-Navigate to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK.
+Navigate to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK. For troubleshooting installation issues (Google Play Protect) or Android 13+ permission restrictions, check out the [Troubleshooting and Setup Guide](./tutorials/README.md).
 
 ## Screenshots
 

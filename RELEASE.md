@@ -25,5 +25,7 @@
 ### Requirements
 - Android 8.0+ (API 26)
 
-### Installation
+### Installation & Setup Guides
 Download the APK from the assets below and enable "Display over other apps" permission when prompted.
+
+If you encounter Play Protect installation blocks or Android 13+ restricted settings warnings when enabling features like Accessibility Service, follow the [Troubleshooting and Setup Guide](./tutorials/README.md).
