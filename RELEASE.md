@@ -2,7 +2,7 @@
 
 ### What's New in v1.5
 - **Updated Shizuku Documentation**: Clarified Shizuku integration in the app settings to highlight privileged real game FPS monitoring alongside permission management.
-- **Official F-Droid Packaging**: Added Fastlane metadata structure and streamlined Gradle build configuration for official F-Droid repository inclusion.
+- **Official F-Droid Packaging**: Added Fastlane metadata structure and streamlined Gradle build configuration for official F-Droid repository inclusion ([Inclusion MR !47608](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/47608)).
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
