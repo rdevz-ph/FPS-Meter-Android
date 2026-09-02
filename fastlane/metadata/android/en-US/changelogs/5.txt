@@ -1,0 +1,5 @@
+- Added FPS Provider setting: Choreographer (default) and SurfaceFlinger (game FPS via Shizuku).
+- Added automatic Graphics API detection (Vulkan and OpenGL ES) for games like Genshin Impact and Wuthering Waves.
+- Added on-screen [VK] / [GL] graphics API indicator badge.
+- Added self-healing recovery and timestamp synchronization for game switching.
+- Graceful fallback to Choreographer if Shizuku is disconnected.

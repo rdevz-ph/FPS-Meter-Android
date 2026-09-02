@@ -1,0 +1,15 @@
+A high-performance, lightweight FPS monitoring overlay for Android. Inspired by the Samsung Perf Z aesthetic, this application provides real-time performance telemetry for mobile gaming and development.
+
+Features:
+- Dual FPS Providers:
+  - Choreographer: Measures display refresh and vsync pace with minimal overhead.
+  - SurfaceFlinger: Privileged buffer queue monitoring using Shizuku to measure true in-game rendering frame rates.
+- Automatic Graphics API Detection: Detects whether games run on Vulkan or OpenGL ES (e.g. Genshin Impact, Wuthering Waves) and selects the appropriate frame metric strategy.
+- On-Screen Graphics API Badge: Displays [VK] or [GL] indicator on the floating counter.
+- Frame Time & Thermals: Real-time milliseconds (MS) frame time and device battery temperature.
+- Dynamic Color Coding: Adaptive FPS value colors based on performance thresholds.
+- Quick Settings Tile: 1-tap overlay toggle directly from the Android notification shade without switching apps.
+- Floating Assistive Bubble: Draggable on-screen bubble for instant show/hide during gameplay.
+- Auto Game Detection: Automatically activates the overlay when designated games launch via Accessibility Service.
+- Six Preset Positions: Quick-snap positioning with full touch-drag support.
+- Fully Open Source and privacy-focused: zero analytics, zero trackers, and zero network calls.
