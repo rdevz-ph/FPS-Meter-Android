@@ -25,9 +25,13 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
+import android.content.pm.PackageManager
 import com.rdevzph.fpsmeter.MainActivity
 import com.rdevzph.fpsmeter.R
+import com.rdevzph.fpsmeter.model.FpsProvider
+import com.rdevzph.fpsmeter.model.GraphicsApi
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
+import rikka.shizuku.Shizuku
 import kotlin.math.roundToInt
 
 /**
@@ -54,6 +58,8 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_TEMP = "show_temp"
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
+        const val EXTRA_FPS_PROVIDER = "fps_provider"
+        const val EXTRA_SHOW_API = "show_api"
 
         var isRunning = false
         var isAutoStarted = false
@@ -70,6 +76,11 @@ class FpsOverlayService : Service() {
     private var lastSampleTime = 0L
     private var currentFps = 0
     private var isOverlayVisible = true
+    private var isChoreographerMeasuring = false
+
+    // SurfaceFlinger privileged monitor via Shizuku
+    private var surfaceFlingerFpsMonitor: SurfaceFlingerFpsMonitor? = null
+    private var detectedGraphicsApi = GraphicsApi.UNKNOWN
 
     // Settings (with defaults)
     private var textColor = OverlaySettings.AUTO_COLOR
@@ -81,6 +92,8 @@ class FpsOverlayService : Service() {
     private var showTemp = false
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
+    private var fpsProvider = FpsProvider.CHOREOGRAPHER
+    private var showGraphicsApi = true
 
     private var batteryTemp: Float = 0f
 
@@ -133,6 +146,8 @@ class FpsOverlayService : Service() {
         showTemp = saved.showTemp
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
+        fpsProvider = saved.fpsProvider
+        showGraphicsApi = saved.showGraphicsApi
 
         FpsTileService.updateTile(this)
     }
@@ -219,6 +234,19 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_FLOATING_TOGGLE)) {
             floatingToggleEnabled = intent.getBooleanExtra(EXTRA_FLOATING_TOGGLE, floatingToggleEnabled)
         }
+        if (intent.hasExtra(EXTRA_FPS_PROVIDER)) {
+            val providerName = intent.getStringExtra(EXTRA_FPS_PROVIDER)
+            val newProvider = FpsProvider.fromString(providerName)
+            if (newProvider != fpsProvider) {
+                fpsProvider = newProvider
+                if (isRunning) {
+                    switchMeasuringProvider()
+                }
+            }
+        }
+        if (intent.hasExtra(EXTRA_SHOW_API)) {
+            showGraphicsApi = intent.getBooleanExtra(EXTRA_SHOW_API, showGraphicsApi)
+        }
     }
 
     private fun updateOverlayAppearance() {
@@ -296,6 +324,17 @@ class FpsOverlayService : Service() {
         ssb.append("FPS ", labelColor, StyleSpan(Typeface.BOLD))
         ssb.append("$fps", fpsValueColor, StyleSpan(Typeface.BOLD))
 
+        // Graphics API tag (when using SurfaceFlinger provider and option enabled)
+        if (fpsProvider == FpsProvider.SURFACE_FLINGER && showGraphicsApi && detectedGraphicsApi != GraphicsApi.UNKNOWN) {
+            val apiColor = if (detectedGraphicsApi == GraphicsApi.VULKAN) {
+                Color.parseColor("#FF5722") // Distinct orange for Vulkan
+            } else {
+                Color.parseColor("#2196F3") // Blue for OpenGL ES
+            }
+            ssb.append("  |  ", Color.GRAY)
+            ssb.append(detectedGraphicsApi.shortLabel, apiColor, StyleSpan(Typeface.BOLD))
+        }
+
         // MS segment
         if (showMs && fps > 0) {
             ssb.append("  |  ", Color.GRAY)
@@ -324,9 +363,71 @@ class FpsOverlayService : Service() {
     }
 
     private fun startMeasuring() {
-        lastSampleTime = 0L
-        frameCount = 0
-        choreographer.postFrameCallback(frameCallback)
+        switchMeasuringProvider()
+    }
+
+    private fun switchMeasuringProvider() {
+        if (fpsProvider == FpsProvider.SURFACE_FLINGER) {
+            val isShizukuReady = try {
+                Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            } catch (e: Exception) {
+                false
+            }
+
+            if (isShizukuReady) {
+                stopChoreographerMeasuring()
+                startSurfaceFlingerMeasuring()
+                return
+            } else {
+                android.util.Log.w("FpsOverlayService", "Shizuku not ready for SurfaceFlinger, falling back to Choreographer")
+            }
+        }
+
+        // Default or fallback: Choreographer
+        stopSurfaceFlingerMeasuring()
+        startChoreographerMeasuring()
+    }
+
+    private fun startChoreographerMeasuring() {
+        if (!isChoreographerMeasuring) {
+            lastSampleTime = 0L
+            frameCount = 0
+            isChoreographerMeasuring = true
+            choreographer.postFrameCallback(frameCallback)
+        }
+    }
+
+    private fun stopChoreographerMeasuring() {
+        if (isChoreographerMeasuring) {
+            choreographer.removeFrameCallback(frameCallback)
+            isChoreographerMeasuring = false
+        }
+    }
+
+    private fun startSurfaceFlingerMeasuring() {
+        if (surfaceFlingerFpsMonitor == null) {
+            surfaceFlingerFpsMonitor = SurfaceFlingerFpsMonitor(
+                onFpsUpdate = { fps, _, api, _ ->
+                    currentFps = fps
+                    detectedGraphicsApi = api
+                    if (isOverlayVisible) {
+                        updateOverlayText()
+                    }
+                },
+                onFallbackNeeded = {
+                    android.util.Log.w("FpsOverlayService", "SurfaceFlinger collector failed, falling back to Choreographer")
+                    stopSurfaceFlingerMeasuring()
+                    startChoreographerMeasuring()
+                }
+            )
+        }
+        surfaceFlingerFpsMonitor?.start()
+    }
+
+    private fun stopSurfaceFlingerMeasuring() {
+        surfaceFlingerFpsMonitor?.stop()
+        surfaceFlingerFpsMonitor = null
+        detectedGraphicsApi = GraphicsApi.UNKNOWN
     }
 
     private fun buildNotification(): Notification {
@@ -388,7 +489,8 @@ class FpsOverlayService : Service() {
         super.onDestroy()
         isRunning = false
         isAutoStarted = false
-        choreographer.removeFrameCallback(frameCallback)
+        stopChoreographerMeasuring()
+        stopSurfaceFlingerMeasuring()
         unregisterReceiver(batteryReceiver)
         if (::overlayView.isInitialized) {
             try {

@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
+import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.shizuku.ShizukuHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +35,9 @@ data class OverlaySettings(
     val gravity: Int = Gravity.TOP or Gravity.START,
     val floatingToggleEnabled: Boolean = false,
     val autoStartEnabled: Boolean = false,
-    val autoStartPackages: Set<String> = emptySet()
+    val autoStartPackages: Set<String> = emptySet(),
+    val fpsProvider: FpsProvider = FpsProvider.CHOREOGRAPHER,
+    val showGraphicsApi: Boolean = true
 ) {
     companion object {
         const val AUTO_COLOR = 0 // Sentinel value for automatic coloring
@@ -51,6 +54,8 @@ data class OverlaySettings(
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
         private const val KEY_AUTO_START = "auto_start"
         private const val KEY_AUTO_PACKAGES = "auto_packages"
+        private const val KEY_FPS_PROVIDER = "fps_provider"
+        private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
 
         fun load(context: Context): OverlaySettings {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -66,7 +71,9 @@ data class OverlaySettings(
                 gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
-                autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet()
+                autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet(),
+                fpsProvider = FpsProvider.fromString(prefs.getString(KEY_FPS_PROVIDER, defaultSettings.fpsProvider.name)),
+                showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi)
             )
         }
 
@@ -83,6 +90,8 @@ data class OverlaySettings(
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)
                 putStringSet(KEY_AUTO_PACKAGES, settings.autoStartPackages)
+                putString(KEY_FPS_PROVIDER, settings.fpsProvider.name)
+                putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
                 apply()
             }
         }

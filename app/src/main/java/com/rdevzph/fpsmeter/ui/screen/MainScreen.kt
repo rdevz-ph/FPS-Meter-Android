@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.viewmodel.FpsViewModel
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
@@ -183,6 +184,7 @@ fun MainScreen(
                 OverlayControlCard(
                     running = overlayRunning,
                     permissionReady = overlayGranted,
+                    shizukuReady = shizukuAvailable && shizukuGranted,
                     settings = settings,
                     onStart = {
                         val intent = Intent(context, FpsOverlayService::class.java).apply {
@@ -195,6 +197,8 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, settings.showTemp)
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                            putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                         }
                         context.startForegroundService(intent)
                         viewModel.setOverlayRunning(true)
@@ -216,6 +220,8 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, newSettings.showTemp)
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
+                                putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_API, newSettings.showGraphicsApi)
                             }
                             context.startForegroundService(intent)
                         }
@@ -551,6 +557,7 @@ fun OverlayPermissionCard(
 fun OverlayControlCard(
     running: Boolean,
     permissionReady: Boolean,
+    shizukuReady: Boolean = false,
     settings: OverlaySettings,
     onStart: () -> Unit,
     onStop: () -> Unit,
@@ -666,14 +673,22 @@ fun OverlayControlCard(
 
             if (expanded) {
                 Spacer(Modifier.height(12.dp))
-                OverlaySettingsPanel(settings = settings, onChange = onSettingsChange)
+                OverlaySettingsPanel(
+                    settings = settings,
+                    shizukuReady = shizukuReady,
+                    onChange = onSettingsChange
+                )
             }
         }
     }
 }
 
 @Composable
-fun OverlaySettingsPanel(settings: OverlaySettings, onChange: (OverlaySettings) -> Unit) {
+fun OverlaySettingsPanel(
+    settings: OverlaySettings,
+    shizukuReady: Boolean = false,
+    onChange: (OverlaySettings) -> Unit
+) {
     var showResetConfirm by remember { mutableStateOf(false) }
 
     if (showResetConfirm) {
@@ -698,6 +713,149 @@ fun OverlaySettingsPanel(settings: OverlaySettings, onChange: (OverlaySettings) 
             }
         )
     }
+
+    // FPS Provider Selection Section
+    Text(
+        "FPS Measurement Provider",
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary
+    )
+    Spacer(Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Choreographer Card
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable {
+                    onChange(settings.copy(fpsProvider = FpsProvider.CHOREOGRAPHER))
+                }
+                .border(
+                    width = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER) 2.dp else 1.dp,
+                    color = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(12.dp)
+                ),
+            color = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            else
+                MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = settings.fpsProvider == FpsProvider.CHOREOGRAPHER,
+                        onClick = { onChange(settings.copy(fpsProvider = FpsProvider.CHOREOGRAPHER)) },
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Choreographer",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Display pace (Default)",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // SurfaceFlinger Card
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(enabled = shizukuReady) {
+                    onChange(settings.copy(fpsProvider = FpsProvider.SURFACE_FLINGER))
+                }
+                .border(
+                    width = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER) 2.dp else 1.dp,
+                    color = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER)
+                        MaterialTheme.colorScheme.primary
+                    else if (shizukuReady)
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    else
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(12.dp)
+                ),
+            color = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            else if (shizukuReady)
+                MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+            else
+                MaterialTheme.colorScheme.surfaceColorAtElevation(0.dp).copy(alpha = 0.4f),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = settings.fpsProvider == FpsProvider.SURFACE_FLINGER,
+                        onClick = {
+                            if (shizukuReady) {
+                                onChange(settings.copy(fpsProvider = FpsProvider.SURFACE_FLINGER))
+                            }
+                        },
+                        enabled = shizukuReady,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "SurfaceFlinger",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (shizukuReady) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    if (shizukuReady) "Real Game FPS" else "Requires Shizuku",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (shizukuReady) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                    fontWeight = if (!shizukuReady) FontWeight.SemiBold else FontWeight.Normal
+                )
+            }
+        }
+    }
+
+    if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER) {
+        Spacer(Modifier.height(10.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Show Graphics API Badge", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    "Auto-detects Vulkan [VK] or OpenGL [GL]",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = settings.showGraphicsApi,
+                onCheckedChange = { onChange(settings.copy(showGraphicsApi = it)) },
+                modifier = Modifier.scale(0.8f)
+            )
+        }
+    }
+
+    Spacer(Modifier.height(12.dp))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+    Spacer(Modifier.height(12.dp))
 
     // Text size
     Column {
@@ -896,6 +1054,13 @@ fun OverlaySettingsPanel(settings: OverlaySettings, onChange: (OverlaySettings) 
                             append("60")
                         }
 
+                        if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER && settings.showGraphicsApi) {
+                            withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                            withStyle(SpanStyle(color = Color(0xFFFF5722), fontWeight = FontWeight.Bold)) {
+                                append("VK")
+                            }
+                        }
+
                         if (settings.showMs) {
                             withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
                             withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
@@ -980,8 +1145,9 @@ fun InfoCard() {
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "FPS is measured using Android's Choreographer vsync signal — the same signal the system uses to drive frame rendering. " +
-                "The overlay uses a lightweight, pill-shaped TextView window (Samsung style) with zero Compose overhead, keeping performance impact minimal.\n\n" +
+                "FPS can be measured using two distinct providers:\n\n" +
+                "• Choreographer (Default): Samples the Android vsync signal driving display refreshes with minimal overhead.\n" +
+                "• SurfaceFlinger (Shizuku): Samples real frame presentation buffers directly from Android's compositor. Automatically detects whether the running game uses Vulkan or OpenGL ES (e.g. Genshin Impact, Wuthering Waves) to measure true game FPS.\n\n" +
                 "• Position: Drag the counter or use quick presets to snap it to any corner.\n" +
                 "• Auto Color: Values change color dynamically based on performance (60/45/30 FPS).\n" +
                 "• Permissions: Grant overlay access manually or via Shizuku for a seamless setup.",
