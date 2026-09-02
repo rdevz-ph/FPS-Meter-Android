@@ -426,7 +426,7 @@ fun ShizukuCard(
             if (expanded) {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "Used to auto-grant overlay permission without manually opening settings.",
+                    "Used to auto-grant overlay permission without opening settings and enable privileged SurfaceFlinger monitoring for real game FPS.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

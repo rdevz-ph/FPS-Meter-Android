@@ -3,7 +3,7 @@
 ![API](https://img.shields.io/badge/API-26%2B-10b981)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?logo=kotlin)
 ![License](https://img.shields.io/badge/license-MIT-4f46e5)
-![Version](https://img.shields.io/badge/version-1.4-f59e0b)
+![Version](https://img.shields.io/badge/version-1.5-f59e0b)
 
 A high-performance, lightweight FPS monitoring tool for Android. This application provides a real-time frame rate overlay inspired by the Samsung Perf Z aesthetic, offering a professional monitoring experience for mobile gaming and performance testing.
 

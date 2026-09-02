@@ -1,0 +1,2 @@
+- Clarified Shizuku integration in settings to highlight privileged real game FPS monitoring.
+- Added Fastlane metadata and removed foojay-resolver plugin for official F-Droid compliance.

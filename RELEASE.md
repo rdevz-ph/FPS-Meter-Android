@@ -1,15 +1,8 @@
-# FPS Meter Android v1.4
+# FPS Meter Android v1.5
 
-### What's New in v1.4
-- **FPS Provider Setting**: Added the ability to choose how FPS is measured:
-  - **Choreographer (Default)**: Measures display vsync timing with low overhead, ideal for standard UI monitoring.
-  - **SurfaceFlinger**: Measures true game rendering frame rates using Shizuku privileged shell access to inspect active compositor layers.
-- **SurfaceFlinger Game FPS Measurement**: Samples real frame presentation buffers directly from active game `SurfaceView` buffer queues, delivering accurate in-game FPS counters for demanding titles.
-- **Automatic Graphics API Detection**: Dynamically inspects the foreground game's rendering pipeline (via system GPU telemetry and dumpsys metrics) to detect whether the game is running on **Vulkan** or **OpenGL ES** (such as *Genshin Impact* and *Wuthering Waves*), applying the appropriate frame measurement strategy for each API.
-- **Graphics API Overlay Badge**: Optional toggle to display an on-screen [VK] or [GL] badge directly on the overlay pill next to the FPS value when SurfaceFlinger mode is active.
-- **Graceful Fallback Mechanism**: If Shizuku is unavailable, permissions are revoked, or the game is minimized, the measurement engine automatically falls back to Choreographer to ensure uninterrupted monitoring.
-- **Dynamic Shizuku Requirement Handling**: The SurfaceFlinger option is automatically enabled when Shizuku is installed and running with permissions granted; otherwise, it is disabled with a clear requirement indicator.
-- **In-Game Testing & Verification**: Added and documented in-game verification showcasing real-time game performance tracking with the overlay.
+### What's New in v1.5
+- **Updated Shizuku Documentation**: Clarified Shizuku integration in the app settings to highlight privileged real game FPS monitoring alongside permission management.
+- **Official F-Droid Packaging**: Added Fastlane metadata structure and streamlined Gradle build configuration for official F-Droid repository inclusion.
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers

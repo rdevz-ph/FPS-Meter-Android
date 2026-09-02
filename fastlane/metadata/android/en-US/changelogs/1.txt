@@ -1,0 +1,5 @@
+Initial release.
+- Lightweight real-time FPS overlay for Android.
+- Choreographer vsync measurement.
+- Real-time frame time (ms) and battery temperature monitoring.
+- Dynamic color coding and preset positioning.

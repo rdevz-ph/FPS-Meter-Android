@@ -1,0 +1,4 @@
+- Added SharedPreferences persistent storage to remember overlay settings (color, size, opacity, visibility choices, positioning, and manual drag coordinates) across app/service restarts.
+- Added a "Reset Settings" button under overlay controls with a confirmation dialog.
+- Added an interactive updates card footer displaying the current application version.
+- Refined visual alignments and centered layouts inside settings cards.

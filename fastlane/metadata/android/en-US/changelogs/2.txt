@@ -1,0 +1,1 @@
+- Added auto-detection for overlay permission settings when resuming the app (no restart required after granting permission).
