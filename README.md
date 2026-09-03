@@ -1,11 +1,19 @@
-# FPS Meter Android
+<div align="center">
 
-![API](https://img.shields.io/badge/API-26%2B-10b981)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?logo=kotlin)
-![License](https://img.shields.io/badge/license-MIT-4f46e5)
-![Version](https://img.shields.io/badge/version-1.5-f59e0b)
+  <img src="./icon/icon.png" width="120" height="120" alt="FPS Meter Icon" />
 
-A high-performance, lightweight FPS monitoring tool for Android. This application provides a real-time frame rate overlay inspired by the Samsung Perf Z aesthetic, offering a professional monitoring experience for mobile gaming and performance testing.
+  # FPS Meter Android
+
+  [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
+  [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+  [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
+  [![Version](https://img.shields.io/badge/version-1.5-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
+
+  <p align="center">
+    A high-performance, lightweight FPS monitoring tool for Android. This application provides a real-time frame rate overlay inspired by the Samsung Perf Z aesthetic, offering a professional monitoring experience for mobile gaming and performance testing.
+  </p>
+
+</div>
 
 ## How It Works
 
