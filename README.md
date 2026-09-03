@@ -38,9 +38,15 @@ Navigate to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/release
 
 ## Screenshots
 
-| Choreographer | SurfaceFlinger | In-Game Test |
-|:-------------:|:--------------:|:------------:|
-| ![Choreographer](./screenshots/Screenshot_1.jpg) | ![SurfaceFlinger](./screenshots/Screenshot_2.jpg) | ![In-Game Test](./screenshots/game_screenshot.jpg) |
+### Application Interface
+| Choreographer Mode | SurfaceFlinger Mode |
+|:------------------:|:-------------------:|
+| ![Choreographer](./screenshots/Screenshot_1.jpg) | ![SurfaceFlinger](./screenshots/Screenshot_2.jpg) |
+
+### In-Game Performance Testing
+| OpenGL ES `[GL]` | Vulkan `[VK]` |
+|:----------------:|:-------------:|
+| ![OpenGL ES Test](./screenshots/game_screenshot_gl.jpg) | ![Vulkan Test](./screenshots/game_screenshot_vk.jpg) |
 
 ## Features
 
