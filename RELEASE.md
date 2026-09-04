@@ -4,6 +4,8 @@
 - **Updated Shizuku Documentation**: Clarified Shizuku integration in the app settings to highlight privileged real game FPS monitoring alongside permission management.
 - **Official F-Droid Packaging**: Added Fastlane metadata structure and streamlined Gradle build configuration for official F-Droid repository inclusion ([Inclusion MR !47608](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/47608)).
 
+For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
+
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
 - Automatic Graphics API detection (Vulkan and OpenGL ES)

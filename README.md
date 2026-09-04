@@ -32,7 +32,15 @@
 > - **Interaction & Dragging**: Tracks touch gestures using an `OnTouchListener` to support real-time dragging. The updated layout coordinates are saved in `SharedPreferences` on gesture completion to persist the custom location.
 > - **Shizuku Integration**: Provides privileged shell operations to grant overlay permissions without manual settings navigation, and to sample SurfaceFlinger compositor buffers for actual game FPS.
 
-## Download latest version
+## Download
+
+<p align="center">
+  <a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest"><img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/master/get-it-on-github.png" alt="Get it on GitHub" height="65" /></a>
+  &nbsp;&nbsp;
+  <a href="https://gitlab.com/fdroid/fdroiddata/-/merge_requests/47608"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid (Coming Soon)" height="65" /></a>
+  <br>
+  <sub><i>(F-Droid coming soon)</i></sub>
+</p>
 
 Navigate to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK. For troubleshooting installation issues (Google Play Protect) or Android 13+ permission restrictions, check out the [Troubleshooting and Setup Guide](./tutorials/README.md).
 
