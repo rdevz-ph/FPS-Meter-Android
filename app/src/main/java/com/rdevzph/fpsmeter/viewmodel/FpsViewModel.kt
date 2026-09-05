@@ -32,6 +32,7 @@ data class OverlaySettings(
     val posY: Int = 100,
     val showMs: Boolean = false,
     val showTemp: Boolean = false,
+    val showSocTemp: Boolean = false,
     val gravity: Int = Gravity.TOP or Gravity.START,
     val floatingToggleEnabled: Boolean = false,
     val autoStartEnabled: Boolean = false,
@@ -50,6 +51,7 @@ data class OverlaySettings(
         private const val KEY_POS_Y = "pos_y"
         private const val KEY_SHOW_MS = "show_ms"
         private const val KEY_SHOW_TEMP = "show_temp"
+        private const val KEY_SHOW_SOC_TEMP = "show_soc_temp"
         private const val KEY_GRAVITY = "gravity"
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
         private const val KEY_AUTO_START = "auto_start"
@@ -68,6 +70,7 @@ data class OverlaySettings(
                 posY = prefs.getInt(KEY_POS_Y, defaultSettings.posY),
                 showMs = prefs.getBoolean(KEY_SHOW_MS, defaultSettings.showMs),
                 showTemp = prefs.getBoolean(KEY_SHOW_TEMP, defaultSettings.showTemp),
+                showSocTemp = prefs.getBoolean(KEY_SHOW_SOC_TEMP, defaultSettings.showSocTemp),
                 gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
@@ -86,6 +89,7 @@ data class OverlaySettings(
                 putInt(KEY_POS_Y, settings.posY)
                 putBoolean(KEY_SHOW_MS, settings.showMs)
                 putBoolean(KEY_SHOW_TEMP, settings.showTemp)
+                putBoolean(KEY_SHOW_SOC_TEMP, settings.showSocTemp)
                 putInt(KEY_GRAVITY, settings.gravity)
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)

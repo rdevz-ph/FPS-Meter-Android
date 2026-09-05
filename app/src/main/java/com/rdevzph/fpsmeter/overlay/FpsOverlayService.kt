@@ -56,6 +56,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_POSITION_Y = "pos_y"
         const val EXTRA_SHOW_MS = "show_ms"
         const val EXTRA_SHOW_TEMP = "show_temp"
+        const val EXTRA_SHOW_SOC_TEMP = "show_soc_temp"
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
         const val EXTRA_FPS_PROVIDER = "fps_provider"
@@ -90,12 +91,15 @@ class FpsOverlayService : Service() {
     private var posY = 100
     private var showMs = false
     private var showTemp = false
+    private var showSocTemp = false
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
     private var showGraphicsApi = true
 
     private var batteryTemp: Float = 0f
+    private var socTemp: Float = 0f
+    private var socThermalMonitor: SocThermalMonitor? = null
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -144,10 +148,13 @@ class FpsOverlayService : Service() {
         posY = saved.posY
         showMs = saved.showMs
         showTemp = saved.showTemp
+        showSocTemp = saved.showSocTemp
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
         fpsProvider = saved.fpsProvider
         showGraphicsApi = saved.showGraphicsApi
+
+        updateSocThermalMonitoring()
 
         FpsTileService.updateTile(this)
     }
@@ -228,6 +235,13 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_SHOW_TEMP)) {
             showTemp = intent.getBooleanExtra(EXTRA_SHOW_TEMP, showTemp)
         }
+        if (intent.hasExtra(EXTRA_SHOW_SOC_TEMP)) {
+            val newShowSoc = intent.getBooleanExtra(EXTRA_SHOW_SOC_TEMP, showSocTemp)
+            if (newShowSoc != showSocTemp) {
+                showSocTemp = newShowSoc
+                updateSocThermalMonitoring()
+            }
+        }
         if (intent.hasExtra(EXTRA_GRAVITY)) {
             overlayGravity = intent.getIntExtra(EXTRA_GRAVITY, overlayGravity)
         }
@@ -293,6 +307,8 @@ class FpsOverlayService : Service() {
             textSize = textSizeSp
             typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
             alpha = overlayAlpha
+            isSingleLine = true
+            maxLines = 1
             setPadding(24, 8, 24, 8)
             setShadowLayer(2f, 0f, 0f, Color.BLACK)
             setOnTouchListener(DragTouchListener())
@@ -315,7 +331,7 @@ class FpsOverlayService : Service() {
             textColor
         }
 
-        val labelColor = Color.parseColor("#00E5FF") // Cyan label color
+        val labelColor = Color.parseColor("#00E5FF") // Cyan accent
         val valueColor = Color.WHITE
 
         val ssb = SpannableStringBuilder()
@@ -342,11 +358,30 @@ class FpsOverlayService : Service() {
             ssb.append("${(1000f / fps).roundToInt()}", valueColor, StyleSpan(Typeface.BOLD))
         }
 
-        // Temp segment
-        if (showTemp) {
+        // Temp segments
+        if (showTemp && showSocTemp) {
+            // When both are enabled, use clean BATT and SOC tags to stay sleek on a single line
             ssb.append("  |  ", Color.GRAY)
-            ssb.append("TEMP ", labelColor, StyleSpan(Typeface.BOLD))
+            ssb.append("BATT ", labelColor, StyleSpan(Typeface.BOLD))
             ssb.append("${batteryTemp}°C", valueColor, StyleSpan(Typeface.BOLD))
+
+            ssb.append("  |  ", Color.GRAY)
+            ssb.append("SOC ", labelColor, StyleSpan(Typeface.BOLD))
+            val socDisplay = if (socTemp > 0f) "${socTemp}°C" else "--°C"
+            ssb.append(socDisplay, valueColor, StyleSpan(Typeface.BOLD))
+        } else {
+            if (showTemp) {
+                ssb.append("  |  ", Color.GRAY)
+                ssb.append("TEMP (BATT) ", labelColor, StyleSpan(Typeface.BOLD))
+                ssb.append("${batteryTemp}°C", valueColor, StyleSpan(Typeface.BOLD))
+            }
+
+            if (showSocTemp) {
+                ssb.append("  |  ", Color.GRAY)
+                ssb.append("TEMP (SOC) ", labelColor, StyleSpan(Typeface.BOLD))
+                val socDisplay = if (socTemp > 0f) "${socTemp}°C" else "--°C"
+                ssb.append(socDisplay, valueColor, StyleSpan(Typeface.BOLD))
+            }
         }
 
         overlayView.post {
@@ -430,6 +465,37 @@ class FpsOverlayService : Service() {
         detectedGraphicsApi = GraphicsApi.UNKNOWN
     }
 
+    private fun updateSocThermalMonitoring() {
+        if (showSocTemp) {
+            if (socThermalMonitor == null) {
+                socThermalMonitor = SocThermalMonitor(
+                    onTempUpdate = { temp ->
+                        socTemp = temp
+                        if (isOverlayVisible) {
+                            updateOverlayText()
+                        }
+                    },
+                    onUnavailable = {
+                        if (socTemp != 0f) {
+                            socTemp = 0f
+                            if (isOverlayVisible) {
+                                updateOverlayText()
+                            }
+                        }
+                    }
+                )
+            }
+            socThermalMonitor?.start()
+        } else {
+            socThermalMonitor?.stop()
+            socThermalMonitor = null
+            socTemp = 0f
+            if (isOverlayVisible) {
+                updateOverlayText()
+            }
+        }
+    }
+
     private fun buildNotification(): Notification {
         val tapIntent = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val stopIntent = PendingIntent.getService(this, 1, Intent(this, FpsOverlayService::class.java).apply { action = ACTION_STOP }, PendingIntent.FLAG_IMMUTABLE)
@@ -491,6 +557,8 @@ class FpsOverlayService : Service() {
         isAutoStarted = false
         stopChoreographerMeasuring()
         stopSurfaceFlingerMeasuring()
+        socThermalMonitor?.stop()
+        socThermalMonitor = null
         unregisterReceiver(batteryReceiver)
         if (::overlayView.isInitialized) {
             try {

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.6] - 2026-09-06
+
+### Added
+- **Real-Time SoC Temperature Monitoring**: Added hardware chip temperature monitoring querying Android Thermal HAL (`dumpsys thermalservice`) and sysfs zones via Shizuku privileged shell access to display live CPU/GPU/SoC thermals during gameplay.
+- **Independent Temperature Settings**: Added distinct toggles for Battery Temp and SoC Temp in the overlay settings panel.
+- **Dual Temperature Overlay Layout**: Streamlined overlay labeling to display `TEMP (BATT)` and `TEMP (SOC)` when single, and compact `BATT` and `SOC` tags when both are enabled.
+- **Single-Line Layout Constraint**: Enforced single-line rendering on the overlay pill to prevent multi-line wrapping in landscape orientation.
+
+---
+
 ## [v1.5] - 2026-09-02
 
 ### Added

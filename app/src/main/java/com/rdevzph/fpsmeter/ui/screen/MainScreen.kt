@@ -195,6 +195,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_POSITION_Y, settings.posY)
                             putExtra(FpsOverlayService.EXTRA_SHOW_MS, settings.showMs)
                             putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, settings.showTemp)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
@@ -218,6 +219,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_POSITION_Y, newSettings.posY)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_MS, newSettings.showMs)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, newSettings.showTemp)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, newSettings.showSocTemp)
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
@@ -966,10 +968,10 @@ fun OverlaySettingsPanel(
             
             Spacer(Modifier.width(16.dp))
 
-            // Show temp toggle
+            // Battery temp toggle
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Show Temp", style = MaterialTheme.typography.labelMedium)
+                    Text("Battery Temp", style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.weight(1f))
                     Switch(
                         checked = settings.showTemp,
@@ -978,6 +980,38 @@ fun OverlaySettingsPanel(
                     )
                 }
             }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        // SoC temp toggle (Requires Shizuku)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text("SoC Temp", style = MaterialTheme.typography.labelMedium)
+                        if (!shizukuReady) {
+                            Text(
+                                "Requires Shizuku",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = settings.showSocTemp,
+                        enabled = shizukuReady,
+                        onCheckedChange = { onChange(settings.copy(showSocTemp = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.weight(1f))
         }
 
         Spacer(Modifier.height(12.dp))
@@ -1071,13 +1105,41 @@ fun OverlaySettingsPanel(
                             }
                         }
 
-                        if (settings.showTemp) {
+                        if (settings.showTemp && settings.showSocTemp) {
                             withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
                             withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                append("TEMP ")
+                                append("BATT ")
                             }
                             withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
                                 append("38.5°C")
+                            }
+
+                            withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                            withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                append("SOC ")
+                            }
+                            withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                append("45.2°C")
+                            }
+                        } else {
+                            if (settings.showTemp) {
+                                withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                    append("TEMP (BATT) ")
+                                }
+                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                    append("38.5°C")
+                                }
+                            }
+
+                            if (settings.showSocTemp) {
+                                withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                    append("TEMP (SOC) ")
+                                }
+                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                    append("45.2°C")
+                                }
                             }
                         }
                     },
@@ -1148,6 +1210,7 @@ fun InfoCard() {
                 "FPS can be measured using two distinct providers:\n\n" +
                 "• Choreographer (Default): Samples the Android vsync signal driving display refreshes with minimal overhead.\n" +
                 "• SurfaceFlinger (Shizuku): Samples real frame presentation buffers directly from Android's compositor. Automatically detects whether the running game uses Vulkan or OpenGL ES (e.g. Genshin Impact, Wuthering Waves) to measure true game FPS.\n\n" +
+                "• Temperature Monitoring: Displays Battery Temp via standard system broadcasts and real-time SoC (CPU/GPU) Temp queried via Shizuku privileged Thermal HAL access.\n" +
                 "• Position: Drag the counter or use quick presets to snap it to any corner.\n" +
                 "• Auto Color: Values change color dynamically based on performance (60/45/30 FPS).\n" +
                 "• Permissions: Grant overlay access manually or via Shizuku for a seamless setup.",

@@ -1,8 +1,9 @@
-# FPS Meter Android v1.5
+# FPS Meter Android v1.6
 
-### What's New in v1.5
-- **Updated Shizuku Documentation**: Clarified Shizuku integration in the app settings to highlight privileged real game FPS monitoring alongside permission management.
-- **Official F-Droid Packaging**: Added Fastlane metadata structure and streamlined Gradle build configuration for official F-Droid repository inclusion ([Inclusion MR !47608](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/47608)).
+### What's New in v1.6
+- **Real-Time SoC Temperature Monitoring**: Added live hardware CPU/GPU/SoC temperature telemetry via Shizuku privileged Thermal HAL access.
+- **Independent Temperature Toggles**: Separate toggles for Battery Temperature and SoC Temperature in app settings.
+- **Enhanced Overlay Layout**: Strict single-line formatting to eliminate text wrapping in landscape mode, with clean `BATT` and `SOC` tags when both are enabled.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 
@@ -10,20 +11,20 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
 - Automatic Graphics API detection (Vulkan and OpenGL ES)
 - Samsung-style pill-shaped overlay with cyan labels and white values
-- Real-time FPS, frame time (MS), and battery temperature (TEMP) monitoring
+- Real-time FPS, frame time (MS), and dual temperature monitoring (Battery and SoC/CPU)
 - Dynamic FPS color coding (green, yellow, orange, red) based on performance thresholds
-- Compact horizontal layout with pipe separators
+- Compact horizontal layout with single-line enforcement and pipe separators
 - Six preset positions (top/bottom left/center/right) with manual drag support
 - Light and dark mode themes
 - Adjustable text size and overlay opacity
-- Optional Shizuku integration for one-tap permission grant and SurfaceFlinger game FPS
+- Optional Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and SoC thermal monitoring
 - Quick Settings status bar tile and Floating Assistive Bubble
 - Automated game detection via Accessibility Service
 
 ### Requirements
 - Android 8.0+ (API 26)
 - Overlay Permission (SYSTEM_ALERT_WINDOW)
-- Shizuku (optional, required for SurfaceFlinger real game FPS mode)
+- Shizuku (optional, required for SurfaceFlinger real game FPS and SoC temperature monitoring)
 
 ### Installation & Setup Guides
 Download the APK from the assets below and enable the "Display over other apps" permission when prompted.

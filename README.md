@@ -23,9 +23,9 @@
 >   - **Choreographer (Default)**: Uses Android's `Choreographer` API to receive frame callbacks, measuring elapsed time to calculate real-time frames per second (FPS). Frame time (MS) is derived directly from this rate.
 >   - **SurfaceFlinger (Game FPS via Shizuku)**: Connects to Android's compositor via privileged Shizuku shell commands to measure real game frame presentation buffers from active `SurfaceView` buffer queues.
 > - **Automatic Graphics API Detection**: Automatically detects whether the foreground game is rendering with **Vulkan** or **OpenGL ES** (tested on games such as Genshin Impact and Wuthering Waves) using system GPU telemetry (`dumpsys gpu` and `dumpsys gfxinfo`), adapting the measurement method accordingly.
-> - **Graceful Fallback**: Automatically falls back to Choreographer if Shizuku is unavailable, permissions are revoked, or the game is minimized.
-> - **Thermal Monitoring**: Registers a dynamic `BroadcastReceiver` for `Intent.ACTION_BATTERY_CHANGED` to read and display the current battery/device temperature in real time.
-> - **Overlay View**: Starts a foreground service (`FpsOverlayService`) that utilizes the Android WindowManager to draw a floating pill-shaped overlay using the `SYSTEM_ALERT_WINDOW` permission.
+> - **Dual Temperature Monitoring**:
+>   - **Battery Temp (`TEMP (BATT)`)**: Uses a dynamic `BroadcastReceiver` for `Intent.ACTION_BATTERY_CHANGED` to read and display real-time battery temperature without needing special permissions.
+>   - **SoC Temp (`TEMP (SOC)`)**: Queries Android's Thermal HAL (`dumpsys thermalservice`) and Linux sysfs thermal zones via Shizuku privileged shell access to monitor live CPU/GPU/SoC chip temperatures during gaming.
 > - **Quick Settings Panel Tile**: Exposes an Android `TileService` (`FpsTileService`) that allows 1-tap toggling of the FPS overlay directly from the notification pull-down shade without opening the main app.
 > - **Floating Assistive Bubble**: Provides an optional draggable floating on-screen bubble (`FloatingToggleButton`) that enables 1-tap show/hide of the overlay counter from inside any active game.
 > - **Auto On/Off Game Detection**: An optional `AccessibilityService` (`FpsAccessibilityService`) monitors foreground window state changes to automatically activate the overlay when designated target games/apps launch and stop when exited.
@@ -76,7 +76,7 @@ Navigate to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/release
 
 ### Samsung-Style Aesthetic
 The overlay utilizes a pill-shaped background with high-contrast, color-coded metrics for optimal visibility.
-- **Labels (FPS, MS, TEMP)**: Displayed in Cyan (#00E5FF).
+- **Labels (FPS, MS, BATT, SOC)**: Displayed in Cyan (#00E5FF).
 - **Values**: Rendered in White for clarity.
 - **Dynamic FPS Color**: The FPS value automatically changes color (Green, Yellow, Orange, Red) based on real-time performance thresholds.
 
