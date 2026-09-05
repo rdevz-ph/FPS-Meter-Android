@@ -315,9 +315,11 @@ class FpsOverlayService : Service() {
         }
 
         windowManager.addView(overlayView, layoutParams)
+        updateOverlayText()
     }
 
     private fun updateOverlayText() {
+        if (!::overlayView.isInitialized) return
         val fps = currentFps
         val fpsValueColor = if (textColor == OverlaySettings.AUTO_COLOR) {
              when {
