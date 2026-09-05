@@ -1,0 +1,101 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the release (e.g. v1.5 - leave blank to auto-detect from build.gradle.kts)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode Keystore
+        if: env.KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p app/keystore
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.jks
+
+      - name: Build release APK
+        env:
+          KEYSTORE_FILE: ${{ github.workspace }}/app/keystore/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: bash ./gradlew assembleRelease
+
+      - name: Determine Tag
+        id: determine_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            VERSION=$(grep 'versionName\s*=' app/build.gradle.kts | sed -E 's/.*"([^"]+)".*/\1/' | tr -d ' ')
+            TAG="v${VERSION}"
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Rename Release APK
+        run: |
+          TAG="${{ env.TAG }}"
+          APK_SRC=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          mv "$APK_SRC" "app/build/outputs/apk/release/FPS-Meter-${TAG}-release.apk"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FPS-Meter-${{ env.TAG }}-release
+          path: app/build/outputs/apk/release/*.apk
+
+      - name: Attach release APK to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ env.TAG }}"
+          APK_PATH=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          
+          # If the release exists (e.g. created by debug workflow), attach the release APK.
+          # Otherwise create a new release.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists. Adding/updating release APK to existing release..."
+            gh release upload "$TAG" "$APK_PATH" --clobber
+          else
+            echo "Release $TAG not found. Creating new release and uploading release APK..."
+            gh release create "$TAG" "$APK_PATH" \
+              --title "FPS Meter $TAG" \
+              --notes-file RELEASE.md
+          fi
+
+      - name: Clean up Keystore
+        if: always()
+        run: rm -rf app/keystore

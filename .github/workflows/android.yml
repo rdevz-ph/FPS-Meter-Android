@@ -63,15 +63,15 @@ jobs:
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
 
-      - name: Rename APK
+      - name: Rename debug APK
         run: |
           TAG="${{ env.TAG }}"
-          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/FPS-Meter-${TAG}.apk
+          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/FPS-Meter-${TAG}-debug.apk
 
       - name: Upload debug artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FPS-Meter-${{ env.TAG }}
+          name: FPS-Meter-${{ env.TAG }}-debug
           path: app/build/outputs/apk/debug/*.apk
 
       - name: Publish debug APK to GitHub Release
@@ -81,11 +81,14 @@ jobs:
           TAG="${{ env.TAG }}"
           APK_PATH=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
           
-          # Clean up existing release and tag for the same version if present
-          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
-          gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$TAG" 2>/dev/null || true
-          
-          # Create fresh release and upload APK
-          gh release create "$TAG" "$APK_PATH" \
-            --title "FPS Meter $TAG" \
-            --notes-file RELEASE.md
+          # If release exists, upload/update debug APK without recreating the release.
+          # Otherwise create the release.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists. Uploading debug APK..."
+            gh release upload "$TAG" "$APK_PATH" --clobber
+          else
+            echo "Release $TAG not found. Creating release and uploading debug APK..."
+            gh release create "$TAG" "$APK_PATH" \
+              --title "FPS Meter $TAG" \
+              --notes-file RELEASE.md
+          fi
