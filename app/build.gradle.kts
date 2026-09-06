@@ -32,9 +32,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            val releaseSigning = signingConfigs.getByName("release")
-            if (releaseSigning.storeFile != null) {
-                signingConfig = releaseSigning
+            signingConfigs.findByName("release")?.let { releaseSigning ->
+                if (releaseSigning.storeFile != null) {
+                    signingConfig = releaseSigning
+                }
             }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
