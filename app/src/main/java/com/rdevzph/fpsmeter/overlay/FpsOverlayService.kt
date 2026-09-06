@@ -57,6 +57,8 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_MS = "show_ms"
         const val EXTRA_SHOW_TEMP = "show_temp"
         const val EXTRA_SHOW_SOC_TEMP = "show_soc_temp"
+        const val EXTRA_SHOW_CPU_TEMP = "show_cpu_temp"
+        const val EXTRA_SHOW_GPU_TEMP = "show_gpu_temp"
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
         const val EXTRA_FPS_PROVIDER = "fps_provider"
@@ -92,6 +94,8 @@ class FpsOverlayService : Service() {
     private var showMs = false
     private var showTemp = false
     private var showSocTemp = false
+    private var showCpuTemp = false
+    private var showGpuTemp = false
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
@@ -99,6 +103,8 @@ class FpsOverlayService : Service() {
 
     private var batteryTemp: Float = 0f
     private var socTemp: Float = 0f
+    private var cpuTemp: Float = 0f
+    private var gpuTemp: Float = 0f
     private var socThermalMonitor: SocThermalMonitor? = null
 
     private val batteryReceiver = object : BroadcastReceiver() {
@@ -149,6 +155,8 @@ class FpsOverlayService : Service() {
         showMs = saved.showMs
         showTemp = saved.showTemp
         showSocTemp = saved.showSocTemp
+        showCpuTemp = saved.showCpuTemp
+        showGpuTemp = saved.showGpuTemp
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
         fpsProvider = saved.fpsProvider
@@ -242,6 +250,20 @@ class FpsOverlayService : Service() {
                 updateSocThermalMonitoring()
             }
         }
+        if (intent.hasExtra(EXTRA_SHOW_CPU_TEMP)) {
+            val newShowCpu = intent.getBooleanExtra(EXTRA_SHOW_CPU_TEMP, showCpuTemp)
+            if (newShowCpu != showCpuTemp) {
+                showCpuTemp = newShowCpu
+                updateSocThermalMonitoring()
+            }
+        }
+        if (intent.hasExtra(EXTRA_SHOW_GPU_TEMP)) {
+            val newShowGpu = intent.getBooleanExtra(EXTRA_SHOW_GPU_TEMP, showGpuTemp)
+            if (newShowGpu != showGpuTemp) {
+                showGpuTemp = newShowGpu
+                updateSocThermalMonitoring()
+            }
+        }
         if (intent.hasExtra(EXTRA_GRAVITY)) {
             overlayGravity = intent.getIntExtra(EXTRA_GRAVITY, overlayGravity)
         }
@@ -295,10 +317,10 @@ class FpsOverlayService : Service() {
             y = posY
         }
 
-        // Pill shape background
+        // Rounded HUD background
         val shape = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = 1000f // Large corner radius for pill shape
+            cornerRadius = 32f // Smooth rounded corners for single or multi-line HUD
             setColor(Color.parseColor("#CC111111")) // Dark semi-transparent
         }
 
@@ -307,9 +329,9 @@ class FpsOverlayService : Service() {
             textSize = textSizeSp
             typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
             alpha = overlayAlpha
-            isSingleLine = true
-            maxLines = 1
-            setPadding(24, 8, 24, 8)
+            gravity = Gravity.CENTER
+            setLineSpacing(6f, 1f)
+            setPadding(28, 12, 28, 12)
             setShadowLayer(2f, 0f, 0f, Color.BLACK)
             setOnTouchListener(DragTouchListener())
         }
@@ -336,14 +358,32 @@ class FpsOverlayService : Service() {
         val labelColor = Color.parseColor("#00E5FF") // Cyan accent
         val valueColor = Color.WHITE
 
+        val hasApi = fpsProvider == FpsProvider.SURFACE_FLINGER && showGraphicsApi && detectedGraphicsApi != GraphicsApi.UNKNOWN
+        val hasMs = showMs && fps > 0
+        val hasCpu = showCpuTemp
+        val hasGpu = showGpuTemp
+        val hasSoc = showSocTemp
+        val hasBatt = showTemp
+
+        val extraOverlayCount = (if (hasApi) 1 else 0) +
+                (if (hasMs) 1 else 0) +
+                (if (hasCpu) 1 else 0) +
+                (if (hasGpu) 1 else 0) +
+                (if (hasSoc) 1 else 0) +
+                (if (hasBatt) 1 else 0)
+
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt
+        // Only wrap to next line if more than 3 extra overlays are enabled (> 3); stay horizontal for 1-3 overlays
+        val useNextLine = extraOverlayCount > 3 && hasThermals
+
         val ssb = SpannableStringBuilder()
 
-        // FPS segment
+        // === Performance Group (FPS, Graphics API, Frame Time) ===
         ssb.append("FPS ", labelColor, StyleSpan(Typeface.BOLD))
         ssb.append("$fps", fpsValueColor, StyleSpan(Typeface.BOLD))
 
         // Graphics API tag (when using SurfaceFlinger provider and option enabled)
-        if (fpsProvider == FpsProvider.SURFACE_FLINGER && showGraphicsApi && detectedGraphicsApi != GraphicsApi.UNKNOWN) {
+        if (hasApi) {
             val apiColor = if (detectedGraphicsApi == GraphicsApi.VULKAN) {
                 Color.parseColor("#FF5722") // Distinct orange for Vulkan
             } else {
@@ -354,39 +394,57 @@ class FpsOverlayService : Service() {
         }
 
         // MS segment
-        if (showMs && fps > 0) {
+        if (hasMs) {
             ssb.append("  |  ", Color.GRAY)
             ssb.append("MS ", labelColor, StyleSpan(Typeface.BOLD))
             ssb.append("${(1000f / fps).roundToInt()}", valueColor, StyleSpan(Typeface.BOLD))
         }
 
-        // Temp segments
-        if (showTemp && showSocTemp) {
-            // When both are enabled, use clean BATT and SOC tags to stay sleek on a single line
-            ssb.append("  |  ", Color.GRAY)
-            ssb.append("BATT ", labelColor, StyleSpan(Typeface.BOLD))
-            ssb.append("${batteryTemp}°C", valueColor, StyleSpan(Typeface.BOLD))
-
-            ssb.append("  |  ", Color.GRAY)
-            ssb.append("SOC ", labelColor, StyleSpan(Typeface.BOLD))
-            val socDisplay = if (socTemp > 0f) "${socTemp}°C" else "--°C"
-            ssb.append(socDisplay, valueColor, StyleSpan(Typeface.BOLD))
-        } else {
-            if (showTemp) {
-                ssb.append("  |  ", Color.GRAY)
-                ssb.append("TEMP (BATT) ", labelColor, StyleSpan(Typeface.BOLD))
-                ssb.append("${batteryTemp}°C", valueColor, StyleSpan(Typeface.BOLD))
+        // === Hardware / Thermals Group (CPU, GPU, SoC, Battery) ===
+        if (hasThermals) {
+            if (useNextLine) {
+                ssb.append("\n")
+            }
+            var isFirstThermalOnLine = useNextLine
+            fun appendThermal(tag: String, value: String) {
+                if (!isFirstThermalOnLine) {
+                    ssb.append("  |  ", Color.GRAY)
+                }
+                ssb.append("$tag ", labelColor, StyleSpan(Typeface.BOLD))
+                ssb.append(value, valueColor, StyleSpan(Typeface.BOLD))
+                isFirstThermalOnLine = false
             }
 
-            if (showSocTemp) {
-                ssb.append("  |  ", Color.GRAY)
-                ssb.append("TEMP (SOC) ", labelColor, StyleSpan(Typeface.BOLD))
+            if (hasCpu) {
+                val cpuDisplay = if (cpuTemp > 0f) "${cpuTemp}°C" else "--°C"
+                appendThermal("CPU", cpuDisplay)
+            }
+            if (hasGpu) {
+                val gpuDisplay = if (gpuTemp > 0f) "${gpuTemp}°C" else "--°C"
+                appendThermal("GPU", gpuDisplay)
+            }
+            if (hasSoc) {
                 val socDisplay = if (socTemp > 0f) "${socTemp}°C" else "--°C"
-                ssb.append(socDisplay, valueColor, StyleSpan(Typeface.BOLD))
+                appendThermal("SOC", socDisplay)
+            }
+            if (hasBatt) {
+                appendThermal("BATT", "${batteryTemp}°C")
             }
         }
 
+        val shape = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = if (useNextLine) 32f else 1000f
+            setColor(Color.parseColor("#CC111111"))
+        }
+
         overlayView.post {
+            overlayView.background = shape
+            if (useNextLine) {
+                overlayView.setPadding(28, 12, 28, 12)
+            } else {
+                overlayView.setPadding(24, 8, 24, 8)
+            }
             overlayView.text = ssb
         }
     }
@@ -468,21 +526,25 @@ class FpsOverlayService : Service() {
     }
 
     private fun updateSocThermalMonitoring() {
-        if (showSocTemp) {
+        val anyShizukuTempNeeded = showSocTemp || showCpuTemp || showGpuTemp
+        if (anyShizukuTempNeeded) {
             if (socThermalMonitor == null) {
                 socThermalMonitor = SocThermalMonitor(
-                    onTempUpdate = { temp ->
-                        socTemp = temp
+                    onSnapshotUpdate = { snapshot ->
+                        socTemp = snapshot.soc ?: 0f
+                        cpuTemp = snapshot.cpu ?: 0f
+                        gpuTemp = snapshot.gpu ?: 0f
                         if (isOverlayVisible) {
                             updateOverlayText()
                         }
                     },
                     onUnavailable = {
-                        if (socTemp != 0f) {
-                            socTemp = 0f
-                            if (isOverlayVisible) {
-                                updateOverlayText()
-                            }
+                        var changed = false
+                        if (socTemp != 0f) { socTemp = 0f; changed = true }
+                        if (cpuTemp != 0f) { cpuTemp = 0f; changed = true }
+                        if (gpuTemp != 0f) { gpuTemp = 0f; changed = true }
+                        if (changed && isOverlayVisible) {
+                            updateOverlayText()
                         }
                     }
                 )
@@ -492,6 +554,8 @@ class FpsOverlayService : Service() {
             socThermalMonitor?.stop()
             socThermalMonitor = null
             socTemp = 0f
+            cpuTemp = 0f
+            gpuTemp = 0f
             if (isOverlayVisible) {
                 updateOverlayText()
             }

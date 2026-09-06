@@ -1,4 +1,10 @@
-## Version 1.6 | Latest Release | September 6, 2026
+## Version 1.7 | Latest Release | September 7, 2026
+- Qualcomm Snapdragon SoC Temp Fix: Corrected silicon temperature reading on Qualcomm platforms by reading raw cpu-*-usr and gpuss-*-usr thermal zones rather than PMIC battery percentage.
+- Dedicated CPU & GPU Temp Toggles: Added separate switches in Display Settings to monitor live CPU and GPU temperatures independently on the overlay.
+- Adaptive Multi-Line Layout: Sleek single-line pill for 1 to 3 active overlays, automatically organizing into 2 balanced lines (Performance metrics and Thermals) when 4 or more are active.
+- Cross-Platform Hardware Verification: Fully verified across both Qualcomm Snapdragon and MediaTek Dimensity devices.
+
+## Version 1.6 | v1.6 | September 6, 2026
 - Real-Time SoC Temperature Monitoring: Query Android Thermal HAL (dumpsys thermalservice) via Shizuku privileged shell access to display live CPU/GPU processor hotspot thermals alongside battery temperature.
 - Independent Temperature Toggles: Choose between Battery Temp, SoC Temp, or dual monitoring with compact BATT and SOC overlay tags.
 - Built-in Crash Reporter: Process-isolated error activity (:crash) with instant clipboard copying, share sheet integration, and direct GitHub issue filing with pre-filled Markdown reports.

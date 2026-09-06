@@ -1,0 +1,4 @@
+- Fixed Qualcomm Snapdragon SoC temperature readings to calculate true silicon hotspot instead of PMIC battery percent.
+- Added dedicated CPU and GPU temperature overlay toggles.
+- Added adaptive multi-line layout dynamically formatting 1 to 3 metrics in single line and 4+ metrics in two lines.
+- Verified hardware thermal monitoring across Qualcomm and MediaTek devices.

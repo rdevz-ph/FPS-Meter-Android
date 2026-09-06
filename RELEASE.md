@@ -1,11 +1,12 @@
-# FPS Meter Android v1.6
+# FPS Meter Android v1.7
 
-### What's New in v1.6
-- **Real-Time SoC Temperature Monitoring**: Added live hardware CPU/GPU/SoC temperature telemetry via Shizuku privileged Thermal HAL access.
-- **Independent Temperature Toggles**: Separate toggles for Battery Temperature and SoC Temperature in app settings.
-- **Enhanced Overlay Layout**: Strict single-line formatting to eliminate text wrapping in landscape mode, with clean `BATT` and `SOC` tags when both are enabled.
-- **Built-in Crash Reporter & Exception Handler**: Isolated crash reporting screen with full device telemetry, one-tap clipboard copy, system share sheet, and direct GitHub issue filing with pre-filled Markdown reports.
-- **Stability & Upgrade Fix**: Fixed an uninitialized view exception during service cold starts and updates from previous versions.
+### What's New in v1.7
+- **Qualcomm Snapdragon SoC Temperature Fix**: Fixed an issue on Qualcomm platforms (such as Snapdragon 865) where the kernel `soc` zone reported PMIC battery percentage instead of actual silicon temperatures. Now reads raw `cpu-*-usr` and `gpuss-*-usr` thermal zones to report true silicon hotspot peak (`max(CPU, GPU)`).
+- **Dedicated CPU & GPU Temperature Toggles**: Added independent switches in Display Settings allowing you to monitor CPU and GPU silicon temperatures individually on the overlay.
+- **Adaptive Multi-Line Overlay Layout**: Automatically keeps a compact single-line pill when 1 to 3 metrics are active, and seamlessly transitions into 2 organized lines (Line 1: Performance metrics `FPS | VK/GL | MS`, Line 2: Thermal telemetry `CPU | GPU | SOC | BATT`) once 4 or more metrics are active.
+- **Universal Thermal Compatibility**: Preserves native MediaTek Dimensity HAL monitoring while providing accurate Qualcomm Snapdragon telemetry.
+
+Special thanks to [@ikerncore](https://github.com/ikerncore) for reporting, testing, and providing hardware shell scripts in [#4](https://github.com/rdevz-ph/FPS-Meter-Android/issues/4).
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 
@@ -13,13 +14,13 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
 - Automatic Graphics API detection (Vulkan and OpenGL ES)
 - Samsung-style pill-shaped overlay with cyan labels and white values
-- Real-time FPS, frame time (MS), and dual temperature monitoring (Battery and SoC/CPU)
+- Real-time FPS, frame time (MS), and multi-metric temperature monitoring (CPU, GPU, SoC, and Battery)
+- Adaptive single-line or two-line layout dynamically scaling with active metrics
 - Dynamic FPS color coding (green, yellow, orange, red) based on performance thresholds
-- Compact horizontal layout with single-line enforcement and pipe separators
 - Six preset positions (top/bottom left/center/right) with manual drag support
 - Light and dark mode themes
 - Adjustable text size and overlay opacity
-- Optional Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and SoC thermal monitoring
+- Optional Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and hardware thermal monitoring
 - Quick Settings status bar tile and Floating Assistive Bubble
 - Automated game detection via Accessibility Service
 

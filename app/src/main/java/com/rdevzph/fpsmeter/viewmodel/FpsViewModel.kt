@@ -33,6 +33,8 @@ data class OverlaySettings(
     val showMs: Boolean = false,
     val showTemp: Boolean = false,
     val showSocTemp: Boolean = false,
+    val showCpuTemp: Boolean = false,
+    val showGpuTemp: Boolean = false,
     val gravity: Int = Gravity.TOP or Gravity.START,
     val floatingToggleEnabled: Boolean = false,
     val autoStartEnabled: Boolean = false,
@@ -52,6 +54,8 @@ data class OverlaySettings(
         private const val KEY_SHOW_MS = "show_ms"
         private const val KEY_SHOW_TEMP = "show_temp"
         private const val KEY_SHOW_SOC_TEMP = "show_soc_temp"
+        private const val KEY_SHOW_CPU_TEMP = "show_cpu_temp"
+        private const val KEY_SHOW_GPU_TEMP = "show_gpu_temp"
         private const val KEY_GRAVITY = "gravity"
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
         private const val KEY_AUTO_START = "auto_start"
@@ -71,6 +75,8 @@ data class OverlaySettings(
                 showMs = prefs.getBoolean(KEY_SHOW_MS, defaultSettings.showMs),
                 showTemp = prefs.getBoolean(KEY_SHOW_TEMP, defaultSettings.showTemp),
                 showSocTemp = prefs.getBoolean(KEY_SHOW_SOC_TEMP, defaultSettings.showSocTemp),
+                showCpuTemp = prefs.getBoolean(KEY_SHOW_CPU_TEMP, defaultSettings.showCpuTemp),
+                showGpuTemp = prefs.getBoolean(KEY_SHOW_GPU_TEMP, defaultSettings.showGpuTemp),
                 gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
@@ -90,6 +96,8 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_MS, settings.showMs)
                 putBoolean(KEY_SHOW_TEMP, settings.showTemp)
                 putBoolean(KEY_SHOW_SOC_TEMP, settings.showSocTemp)
+                putBoolean(KEY_SHOW_CPU_TEMP, settings.showCpuTemp)
+                putBoolean(KEY_SHOW_GPU_TEMP, settings.showGpuTemp)
                 putInt(KEY_GRAVITY, settings.gravity)
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)

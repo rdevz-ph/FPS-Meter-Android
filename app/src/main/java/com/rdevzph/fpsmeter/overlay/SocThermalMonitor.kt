@@ -10,11 +10,20 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
 /**
+ * Holds simultaneous hardware temperature readings for the silicon die.
+ */
+data class ThermalSnapshot(
+    val soc: Float?,
+    val cpu: Float?,
+    val gpu: Float?
+)
+
+/**
  * Monitors SoC (CPU/GPU) temperature using Shizuku privileged shell commands.
  * Runs on a lightweight background coroutine polling every 1.5 seconds.
  */
 class SocThermalMonitor(
-    private val onTempUpdate: (tempCelsius: Float) -> Unit,
+    private val onSnapshotUpdate: (snapshot: ThermalSnapshot) -> Unit,
     private val onUnavailable: () -> Unit
 ) {
     companion object {
@@ -30,6 +39,9 @@ class SocThermalMonitor(
         // Type constants from android.os.Temperature
         private const val TYPE_CPU = 0
         private const val TYPE_GPU = 1
+        private const val TYPE_BATTERY = 2
+        private const val TYPE_SKIN = 3
+        private const val TYPE_BCL_PERCENTAGE = 8
         private const val TYPE_NPU = 9
         private const val TYPE_SOC = 10
         private const val TYPE_SOC_AIDL = 13
@@ -57,10 +69,14 @@ class SocThermalMonitor(
                         continue
                     }
 
-                    val temp = readSocTemperature()
-                    if (temp != null && temp in 20.0f..115.0f) {
-                        val rounded = (temp * 10f).roundToInt() / 10f
-                        withContext(Dispatchers.Main) { onTempUpdate(rounded) }
+                    val snapshot = readThermalSnapshot()
+                    if (snapshot != null && (snapshot.soc != null || snapshot.cpu != null || snapshot.gpu != null)) {
+                        val roundedSnapshot = ThermalSnapshot(
+                            soc = roundTemp(snapshot.soc),
+                            cpu = roundTemp(snapshot.cpu),
+                            gpu = roundTemp(snapshot.gpu)
+                        )
+                        withContext(Dispatchers.Main) { onSnapshotUpdate(roundedSnapshot) }
                     } else {
                         withContext(Dispatchers.Main) { onUnavailable() }
                     }
@@ -81,15 +97,20 @@ class SocThermalMonitor(
         pollJob = null
     }
 
+    private fun roundTemp(temp: Float?): Float? {
+        if (temp == null || temp !in 20.0f..115.0f) return null
+        return (temp * 10f).roundToInt() / 10f
+    }
+
     /**
-     * Attempts to read SoC / CPU temperature first via dumpsys thermalservice,
+     * Attempts to read SoC / CPU / GPU temperatures first via dumpsys thermalservice,
      * falling back to /sys/class/thermal/thermal_zone* if necessary.
      */
-    private fun readSocTemperature(): Float? {
+    private fun readThermalSnapshot(): ThermalSnapshot? {
         // Strategy 1: dumpsys thermalservice (Android 10+ standard Thermal HAL)
         val dumpsysOutput = runShellCommand("dumpsys thermalservice")
         if (dumpsysOutput.isNotEmpty()) {
-            val parsedFromHal = parseThermalServiceOutput(dumpsysOutput)
+            val parsedFromHal = parseThermalServiceSnapshot(dumpsysOutput)
             if (parsedFromHal != null) {
                 return parsedFromHal
             }
@@ -100,7 +121,7 @@ class SocThermalMonitor(
             "for f in /sys/class/thermal/thermal_zone*; do echo \"$(cat \$f/type 2>/dev/null):$(cat \$f/temp 2>/dev/null)\"; done"
         )
         if (sysfsOutput.isNotEmpty()) {
-            val parsedFromSysfs = parseSysfsThermalOutput(sysfsOutput)
+            val parsedFromSysfs = parseSysfsThermalSnapshot(sysfsOutput)
             if (parsedFromSysfs != null) {
                 return parsedFromSysfs
             }
@@ -109,7 +130,7 @@ class SocThermalMonitor(
         return null
     }
 
-    private fun parseThermalServiceOutput(output: String): Float? {
+    internal fun parseThermalServiceSnapshot(output: String): ThermalSnapshot? {
         // Target live HAL temperatures section to avoid stale cached/shutdown values
         val targetText = if (output.contains("Current temperatures from HAL:")) {
             output.substringAfter("Current temperatures from HAL:")
@@ -120,9 +141,9 @@ class SocThermalMonitor(
         }
 
         val matcher = THERMAL_SERVICE_PATTERN.matcher(targetText)
-        var exactSocTemp: Float? = null
+        val unifiedSocTemps = mutableListOf<Float>()
         val cpuTemps = mutableListOf<Float>()
-        val genericSocTemps = mutableListOf<Float>()
+        val gpuTemps = mutableListOf<Float>()
 
         while (matcher.find()) {
             try {
@@ -134,29 +155,41 @@ class SocThermalMonitor(
                 // Ignore shutdown/tripped cached latch (status 4) when normal readings exist
                 if (status == 4) continue
                 if (value !in 20.0f..115.0f) continue
+                if (type == TYPE_BATTERY || type == TYPE_SKIN || type == TYPE_BCL_PERCENTAGE) continue
+                if (isExcludedZone(name)) continue
 
-                // Check for explicit SoC or AP sensors
-                if (name == "soc" || type == TYPE_SOC_AIDL) {
-                    exactSocTemp = value
-                } else if (type == TYPE_SOC || name.contains("soc") || name.contains("ap-thermal") || name.contains("tsens")) {
-                    genericSocTemps.add(value)
-                } else if (type == TYPE_CPU || name.contains("cpu") || name.contains("gold") || name.contains("silver")) {
+                // Classify by CPU, GPU, or unified SoC sensors
+                if (type == TYPE_CPU || isCpuCoreSensor(name)) {
                     cpuTemps.add(value)
-                } else if (type == TYPE_GPU || name.contains("gpu")) {
-                    cpuTemps.add(value)
+                } else if (type == TYPE_GPU || isGpuSensor(name)) {
+                    gpuTemps.add(value)
+                } else if (isUnifiedSocSensor(name, type)) {
+                    unifiedSocTemps.add(value)
                 }
             } catch (e: Exception) {
                 // Ignore parse errors for individual lines
             }
         }
 
-        return exactSocTemp
-            ?: genericSocTemps.maxOrNull()
-            ?: cpuTemps.maxOrNull()
+        val cpuMax = cpuTemps.maxOrNull()
+        val gpuMax = gpuTemps.maxOrNull()
+        val allSocTemps = unifiedSocTemps + cpuTemps + gpuTemps
+        val socMax = allSocTemps.maxOrNull()
+
+        if (socMax == null && cpuMax == null && gpuMax == null) return null
+        val effectiveCpu = cpuMax ?: if (gpuMax == null) socMax else null
+        return ThermalSnapshot(soc = socMax, cpu = effectiveCpu, gpu = gpuMax)
     }
 
-    private fun parseSysfsThermalOutput(output: String): Float? {
-        val validTemps = mutableListOf<Float>()
+    internal fun parseThermalServiceOutput(output: String): Float? {
+        return parseThermalServiceSnapshot(output)?.soc
+    }
+
+    internal fun parseSysfsThermalSnapshot(output: String): ThermalSnapshot? {
+        val unifiedTemps = mutableListOf<Float>()
+        val cpuTemps = mutableListOf<Float>()
+        val gpuTemps = mutableListOf<Float>()
+        val otherValidTemps = mutableListOf<Float>()
 
         output.lineSequence().forEach { line ->
             val parts = line.split(":", limit = 2)
@@ -164,39 +197,107 @@ class SocThermalMonitor(
                 val type = parts[0].trim().lowercase()
                 val rawTemp = parts[1].trim().toFloatOrNull()
 
-                if (rawTemp != null && isValidSocZoneType(type)) {
-                    val normalized = normalizeSysfsTemp(rawTemp)
+                if (rawTemp != null && !isExcludedZone(type) && isValidSocZoneType(type)) {
+                    val normalized = normalizeSysfsTemp(rawTemp, type)
                     if (normalized != null && normalized in 20.0f..115.0f) {
-                        validTemps.add(normalized)
+                        when {
+                            isCpuCoreSensor(type) -> cpuTemps.add(normalized)
+                            isGpuSensor(type) -> gpuTemps.add(normalized)
+                            isUnifiedSocSensor(type, -1) -> unifiedTemps.add(normalized)
+                            else -> otherValidTemps.add(normalized)
+                        }
                     }
                 }
             }
         }
 
-        return validTemps.maxOrNull()
+        val cpuMax = cpuTemps.maxOrNull()
+        val gpuMax = gpuTemps.maxOrNull()
+        val allSocTemps = unifiedTemps + cpuTemps + gpuTemps
+        val socMax = allSocTemps.maxOrNull() ?: otherValidTemps.maxOrNull()
+
+        if (socMax == null && cpuMax == null && gpuMax == null) return null
+        val effectiveCpu = cpuMax ?: if (gpuMax == null) socMax else null
+        return ThermalSnapshot(soc = socMax, cpu = effectiveCpu, gpu = gpuMax)
     }
 
-    private fun isValidSocZoneType(type: String): Boolean {
-        // Exclude non-SoC zones
-        if (type.contains("battery") || type.contains("bms") || type.contains("chg") ||
-            type.contains("usb") || type.contains("wifi") || type.contains("modem") ||
-            type.contains("skin") || type.contains("quiet") || type.contains("camera") ||
-            type.contains("speaker") || type.contains("display") || type.contains("panel")
-        ) {
-            return false
+    internal fun parseSysfsThermalOutput(output: String): Float? {
+        return parseSysfsThermalSnapshot(output)?.soc
+    }
+
+    internal fun isExcludedZone(type: String): Boolean {
+        // 1. Standalone "soc" (case-insensitive) on Qualcomm platforms is battery State of Charge (%)
+        if (type == "soc" || type == "soc-step" || (type.startsWith("soc") && !type.contains("thermal") && !type.contains("max") && !type.contains("temp") && !type.contains("cpu"))) {
+            return true
         }
 
-        // Include CPU/SoC/AP indicators across Qualcomm, MediaTek, Exynos, Tensor
-        return type.contains("cpu") || type.contains("soc") || type.contains("ap") ||
-                type.contains("tsens") || type.contains("mtktscpu") || type.contains("cluster") ||
-                type.contains("exynos") || type.contains("kryo") || type.contains("cortex")
+        // 2. Qualcomm thermal mitigation step trip points (not temperature readings)
+        if (type.endsWith("-step") || type.contains("-step-") || type.contains("avg-step") || type.contains("max-step")) {
+            return true
+        }
+
+        // 3. PMIC, battery, voltage/current, power limit telemetry
+        if (type.contains("pmic") || type.contains("pm8") || type.contains("pm7") || type.contains("pm6") ||
+            type.contains("pm-") || type.contains("bcl") || type.contains("vbat") || type.contains("ibat") ||
+            type.contains("vph") || type.contains("bms") || type.contains("chg") || type.contains("charge") ||
+            type.contains("battery")
+        ) {
+            return true
+        }
+
+        // 4. Peripherals and external RF / sensors
+        if (type.contains("skin") || type.contains("quiet") || type.contains("camera") ||
+            type.contains("speaker") || type.contains("display") || type.contains("panel") ||
+            type.contains("modem") || type.contains("wifi") || type.contains("wlan") ||
+            type.contains("xo-therm") || type.contains("conn-therm") || type.contains("pa1") || type.contains("pa2")
+        ) {
+            return true
+        }
+
+        return false
     }
 
-    private fun normalizeSysfsTemp(raw: Float): Float? {
+    internal fun isValidSocZoneType(type: String): Boolean {
+        if (isExcludedZone(type)) return false
+
+        // Include CPU/SoC/AP/GPU indicators across Qualcomm, MediaTek, Exynos, Tensor
+        return type.contains("cpu") || type.contains("soc_thermal") || type.contains("soc-thermal") ||
+                type.contains("soc_max") || type.contains("ap-thermal") || type.contains("ap_thermal") ||
+                type.contains("tsens") || type.contains("mtktscpu") || type.contains("mtktsap") ||
+                type.contains("cluster") || type.contains("cpuss") || type.contains("gpuss") ||
+                type.contains("exynos") || type.contains("kryo") || type.contains("cortex") ||
+                type.contains("gpu")
+    }
+
+    internal fun isUnifiedSocSensor(name: String, type: Int): Boolean {
+        if (type == TYPE_SOC || type == TYPE_SOC_AIDL) return true
+        return name.contains("soc_thermal") || name.contains("soc-thermal") || name.contains("soc_max") ||
+                name.contains("ap-thermal") || name.contains("ap_thermal") ||
+                name.contains("mtktsap") || name.contains("cpuss-") || name.contains("tsens_tz_sensor")
+    }
+
+    internal fun isCpuCoreSensor(name: String): Boolean {
+        return (name.contains("cpu") && !name.contains("step")) ||
+                name.contains("gold") || name.contains("silver") ||
+                name.contains("kryo") || name.contains("cortex")
+    }
+
+    internal fun isGpuSensor(name: String): Boolean {
+        return (name.contains("gpu") || name.contains("gpuss")) && !name.contains("step")
+    }
+
+    internal fun normalizeSysfsTemp(raw: Float, type: String = ""): Float? {
         return when {
-            raw > 10000f -> raw / 1000f      // Millidegrees (e.g. 45000 -> 45.0°C)
-            raw > 1000f -> raw / 10f         // Deci-degrees (e.g. 450 -> 45.0°C)
-            raw in 20f..115f -> raw          // Direct degrees Celsius
+            raw > 10000f -> raw / 1000f      // Millidegrees (e.g. 29200 -> 29.2°C)
+            raw > 1000f -> raw / 10f         // Deci-degrees (e.g. 420 -> 42.0°C)
+            raw in 20f..115f -> {
+                // Direct Celsius only valid for explicit thermal/CPU/temp sensors, not raw percentages
+                if (type.contains("cpu") || type.contains("thermal") || type.contains("temp") || type.contains("tsens")) {
+                    raw
+                } else {
+                    null
+                }
+            }
             else -> null
         }
     }

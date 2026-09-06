@@ -196,6 +196,8 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_SHOW_MS, settings.showMs)
                             putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, settings.showTemp)
                             putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, settings.showCpuTemp)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
@@ -220,6 +222,8 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_SHOW_MS, newSettings.showMs)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, newSettings.showTemp)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, newSettings.showSocTemp)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, newSettings.showCpuTemp)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, newSettings.showGpuTemp)
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
@@ -984,7 +988,62 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(8.dp))
 
-        // SoC temp toggle (Requires Shizuku)
+        // CPU & GPU temp toggles (Requires Shizuku)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // CPU temp toggle
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text("CPU Temp", style = MaterialTheme.typography.labelMedium)
+                        if (!shizukuReady) {
+                            Text(
+                                "Requires Shizuku",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = settings.showCpuTemp,
+                        enabled = shizukuReady,
+                        onCheckedChange = { onChange(settings.copy(showCpuTemp = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+
+            // GPU temp toggle
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text("GPU Temp", style = MaterialTheme.typography.labelMedium)
+                        if (!shizukuReady) {
+                            Text(
+                                "Requires Shizuku",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = settings.showGpuTemp,
+                        enabled = shizukuReady,
+                        onCheckedChange = { onChange(settings.copy(showGpuTemp = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        // SoC temp toggle (Requires Shizuku - Silicon Hotspot)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -1064,13 +1123,31 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(12.dp))
 
+        val hasApi = settings.fpsProvider == FpsProvider.SURFACE_FLINGER && settings.showGraphicsApi
+        val hasMs = settings.showMs
+        val hasCpu = settings.showCpuTemp
+        val hasGpu = settings.showGpuTemp
+        val hasSoc = settings.showSocTemp
+        val hasBatt = settings.showTemp
+
+        val extraOverlayCount = (if (hasApi) 1 else 0) +
+                (if (hasMs) 1 else 0) +
+                (if (hasCpu) 1 else 0) +
+                (if (hasGpu) 1 else 0) +
+                (if (hasSoc) 1 else 0) +
+                (if (hasBatt) 1 else 0)
+
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt
+        // Only wrap to next line if more than 3 extra overlays are enabled (> 3); stay horizontal for 1-3 overlays
+        val useNextLine = extraOverlayCount > 3 && hasThermals
+
         // FPS preview chip
         Surface(
             color = Color.DarkGray.copy(alpha = 0.8f),
-            shape = RoundedCornerShape(100.dp)
+            shape = RoundedCornerShape(if (useNextLine) 12.dp else 100.dp)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = if (useNextLine) 8.dp else 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(Icons.Default.Visibility, null, modifier = Modifier.size(14.dp), tint = Color(0xAAFFFFFF))
@@ -1081,6 +1158,7 @@ fun OverlaySettingsPanel(
                         val valueColor = Color.White
                         val fpsValueColor = if (settings.color == OverlaySettings.AUTO_COLOR) Color(0xFF4CAF50) else Color(settings.color)
 
+                        // === Line 1: Performance Group (FPS, Graphics API, Frame Time) ===
                         withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
                             append("FPS ")
                         }
@@ -1088,14 +1166,14 @@ fun OverlaySettingsPanel(
                             append("60")
                         }
 
-                        if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER && settings.showGraphicsApi) {
+                        if (hasApi) {
                             withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
                             withStyle(SpanStyle(color = Color(0xFFFF5722), fontWeight = FontWeight.Bold)) {
                                 append("VK")
                             }
                         }
 
-                        if (settings.showMs) {
+                        if (hasMs) {
                             withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
                             withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
                                 append("MS ")
@@ -1105,47 +1183,35 @@ fun OverlaySettingsPanel(
                             }
                         }
 
-                        if (settings.showTemp && settings.showSocTemp) {
-                            withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
-                            withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                append("BATT ")
+                        // === Hardware / Thermals Group (CPU, GPU, SoC, Battery) ===
+                        if (hasThermals) {
+                            if (useNextLine) {
+                                append("\n")
                             }
-                            withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
-                                append("38.5°C")
-                            }
-
-                            withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
-                            withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                append("SOC ")
-                            }
-                            withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
-                                append("45.2°C")
-                            }
-                        } else {
-                            if (settings.showTemp) {
-                                withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                            var isFirstThermalOnLine = useNextLine
+                            fun appendThermal(tag: String, value: String) {
+                                if (!isFirstThermalOnLine) {
+                                    withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                }
                                 withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                    append("TEMP (BATT) ")
+                                    append("$tag ")
                                 }
                                 withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
-                                    append("38.5°C")
+                                    append(value)
                                 }
+                                isFirstThermalOnLine = false
                             }
 
-                            if (settings.showSocTemp) {
-                                withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
-                                withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                    append("TEMP (SOC) ")
-                                }
-                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
-                                    append("45.2°C")
-                                }
-                            }
+                            if (hasCpu) appendThermal("CPU", "42.1°C")
+                            if (hasGpu) appendThermal("GPU", "38.5°C")
+                            if (hasSoc) appendThermal("SOC", "45.2°C")
+                            if (hasBatt) appendThermal("BATT", "38.5°C")
                         }
                     },
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = settings.textSizeSp.sp * 0.65f
+                        fontSize = settings.textSizeSp.sp * 0.65f,
+                        textAlign = TextAlign.Center
                     )
                 )
             }

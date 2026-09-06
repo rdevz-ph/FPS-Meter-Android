@@ -12,3 +12,7 @@ local.properties
 # Keystore files
 *.jks
 *.keystore
+
+# Environment files
+.env
+.env*

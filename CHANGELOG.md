@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.7] - 2026-09-07
+
+### Added
+- **Dedicated CPU & GPU Temperature Telemetry**: Added independent switches in Display Settings to monitor CPU and GPU silicon temperatures individually on the overlay.
+- **Adaptive Multi-Line Overlay Layout**: Intelligent layout scaling that maintains a sleek single-line pill for 1 to 3 active metrics, and automatically formats into 2 organized lines (Line 1: Performance metrics `FPS | VK/GL | MS`, Line 2: Thermal telemetry `CPU | GPU | SOC | BATT`) once 4 or more metrics are active.
+
+### Fixed
+- **Qualcomm Snapdragon SoC Temperature Accuracy**: Resolved an issue on Qualcomm devices (e.g., Snapdragon 865) where the kernel `soc` thermal zone mirrored PMIC battery charge percentage rather than actual silicon temperature. The thermal engine now reads active `cpu-*-usr` and `gpuss-*-usr` zones, calculating the true hotspot peak as `max(CPU, GPU)`.
+- **Cross-Vendor Thermal Compatibility**: Verified hardware thermal polling across both Qualcomm Snapdragon and MediaTek Dimensity platforms without regressions.
+
+---
+
 ## [v1.6] - 2026-09-06
 
 ### Added
