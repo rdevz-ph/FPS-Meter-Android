@@ -1,0 +1,41 @@
+## Version 1.6 | Latest Release | September 6, 2026
+- Real-Time SoC Temperature Monitoring: Query Android Thermal HAL (dumpsys thermalservice) via Shizuku privileged shell access to display live CPU/GPU processor hotspot thermals alongside battery temperature.
+- Independent Temperature Toggles: Choose between Battery Temp, SoC Temp, or dual monitoring with compact BATT and SOC overlay tags.
+- Built-in Crash Reporter: Process-isolated error activity (:crash) with instant clipboard copying, share sheet integration, and direct GitHub issue filing with pre-filled Markdown reports.
+- Landscape Layout Guard: Strict single-line enforcement on the pill overlay prevents wrapping or clipping in wide aspect ratios.
+- Stability & Upgrade Protection: Resolved UninitializedPropertyAccessException in FpsOverlayService during app upgrades and cold starts.
+
+## Version 1.5 | v1.5 | September 2, 2026
+- Fastlane Metadata Structure: Added structured fastlane metadata and full historical changelogs for automated F-Droid repository indexing.
+- Shizuku Integration Clarity: Updated settings documentation to highlight privileged real game FPS monitoring via SurfaceFlinger.
+- Build Reproducibility Compliance: Removed external resolver plugin from settings.gradle.kts to comply with F-Droid offline build standards.
+
+## Version 1.4 | v1.4 | September 2, 2026
+- SurfaceFlinger Game FPS Provider: Privileged frame monitoring using Shizuku to inspect compositor layers and sample real frame presentation buffers directly from active game SurfaceView buffer queues.
+- Automatic Graphics API Detection: Dynamically inspects foreground game rendering pipelines via system GPU telemetry to detect Vulkan or OpenGL ES.
+- Graphics API Overlay Badge: Optional on-screen [VK] or [GL] badge displayed on the overlay pill next to the FPS value.
+- Self-Healing Layer Recovery: Automated active layer invalidation and presentation timestamp resynchronization to prevent 0 FPS stalls during game switches and splash screens.
+- Graceful Fallback Mechanism: Automatically falls back to Choreographer display vsync measurement if Shizuku is stopped or permissions are revoked.
+
+## Version 1.3 | v1.3 | August 23, 2026
+- Quick Settings Status Bar Tile: Toggle the overlay on or off instantly from inside any game via Android Quick Settings status bar tile.
+- Floating Assistive Quick-Toggle Bubble: Draggable on-screen floating bubble that stays above apps for 1-tap toggle with edge-snapping.
+- Auto Game Detection: Configurable Accessibility Service automatically starts monitoring the moment your selected games launch and turns off on exit.
+- Target Game and App Selector: Searchable in-app dialog with filter chips (All, User Apps, Selected) to configure auto-start targets.
+- Tachometer Brand Icon: Minimalist, high-contrast 2-color app icon in Obsidian Slate and Electric Mint with launcher density centering.
+
+## Version 1.2 | v1.2 | July 15, 2026
+- Persistent Storage via SharedPreferences: Saves and restores overlay customization (text color, scale, opacity, metric visibility, and coordinates) across device restarts.
+- Reset Settings Option: Added one-tap Reset Settings button with confirmation dialog to restore overlay defaults.
+- Interactive Updates Card: Displays installed application version, build flavor, and update verification directly in settings.
+
+## Version 1.1 | v1.1 | July 13, 2026
+- Automatic Permission Detection: Automatically detects when SYSTEM_ALERT_WINDOW permission is granted upon returning to the app without requiring an app restart.
+- CI Packaging Automation: Implemented GitHub Actions automated release pipeline with release notes extraction.
+
+## Version 1.0 | v1.0 | April 18, 2026
+- Initial Release: Lightweight, high-performance real-time FPS monitoring overlay for Android inspired by Samsung Perf Z.
+- Choreographer FPS Engine: Display vsync frame timing measurement with low CPU and battery overhead.
+- Real-Time Telemetry: Live FPS counter, frame time in milliseconds (MS), and battery temperature in Celsius (TEMP).
+- Dynamic Color Thresholds: Real-time color-coded FPS display based on performance drops (green, yellow, orange, red).
+- Custom Positioning: Six preset screen positions (top/bottom left/center/right) with freehand drag-and-drop repositioning.

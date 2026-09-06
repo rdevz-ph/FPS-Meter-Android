@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FPS Meter for Android - Real-Time Game Performance & Thermal Monitor</title>
+
+  <!-- SEO & Social Meta -->
+  <meta name="description"
+    content="A high-performance, lightweight FPS and thermal monitoring overlay for Android inspired by Samsung Perf Z. Features SurfaceFlinger game frame tracking, Vulkan/OpenGL ES detection, and SoC temperature telemetry.">
+  <meta name="keywords"
+    content="FPS Meter, Android FPS counter, Game Performance, SurfaceFlinger, Vulkan, OpenGL ES, SoC Temperature, Shizuku, Open Source">
+  <meta name="author" content="rdevz-ph">
+
+  <meta property="og:title" content="FPS Meter for Android - Real-Time Game Performance & Thermal Monitor">
+  <meta property="og:description"
+    content="Lightweight Samsung Perf Z-style FPS overlay for Android with real-time frame rates, frame times, battery and SoC thermal monitoring.">
+  <meta property="og:image" content="assets/icon.png">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="#" class="brand-link">
+        <img src="assets/icon.png" alt="FPS Meter Icon" class="brand-icon">
+        <div class="brand-title">
+          FPS Meter
+          <span class="brand-badge">Android</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#overview" class="nav-link active">Overview</a></li>
+        <li><a href="#screenshots" class="nav-link">Screenshots</a></li>
+        <li><a href="#whats-new" class="nav-link">What's New</a></li>
+        <li><a href="#features" class="nav-link">Features</a></li>
+        <li><a href="#specs" class="nav-link">Specifications</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer"
+          class="btn btn-outline" id="nav-github-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path
+              d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+            <path d="M9 18c-4.51 2-5-2-7-2" />
+          </svg>
+          GitHub
+        </a>
+        <a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest" class="btn btn-primary"
+          id="nav-download-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download APK
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section / App Store Header -->
+  <main class="hero-section" id="overview">
+    <div class="container">
+      <div class="hero-card">
+        <div class="hero-top">
+          <div class="app-icon-wrapper">
+            <img src="assets/icon.png" alt="FPS Meter App Icon" class="app-icon">
+          </div>
+
+          <div class="hero-info">
+            <div class="app-title-row">
+              <h1 class="app-name">FPS Meter</h1>
+              <span class="app-version-chip" id="hero-version-chip">v1.6 (Latest)</span>
+            </div>
+
+            <div class="app-developer">
+              by <span>rdevz-ph</span>
+              <svg class="verified-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="m9 12 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <span>• Tools & Utilities</span>
+            </div>
+
+            <p class="app-summary">
+              A high-performance, lightweight frame rate & thermal overlay inspired by Samsung Perf Z. Monitor true game
+              FPS, Vulkan/OpenGL ES graphics APIs, battery temperature, and processor SoC thermals in real-time.
+            </p>
+
+            <div class="badge-row">
+              <span class="feature-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                100% Open Source (MIT)
+              </span>
+              <span class="feature-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m4.93 4.93 4.24 4.24" />
+                  <path d="m14.83 9.17 4.24-4.24" />
+                  <path d="m14.83 14.83 4.24 4.24" />
+                  <path d="m9.17 14.83-4.24 4.24" />
+                </svg>
+                Zero Tracking & Ads
+              </span>
+              <span class="feature-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+                </svg>
+                SurfaceFlinger & Thermal HAL
+              </span>
+              <span class="feature-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
+                No Root Required
+              </span>
+            </div>
+
+            <div class="hero-actions">
+              <a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest" class="btn btn-primary btn-lg"
+                id="main-download-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span>Download APK</span>
+                <span class="code-pill" id="apk-size-pill">11.4 MB</span>
+              </a>
+
+              <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer"
+                class="btn btn-outline btn-lg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path
+                    d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                  <path d="M9 18c-4.51 2-5-2-7-2" />
+                </svg>
+                Source Code
+              </a>
+
+              <button class="btn btn-secondary btn-lg" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                Share
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats Strip -->
+        <div class="stats-strip">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-version">v1.6</div>
+            <div class="stat-label">Version</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-value">Android 8+</div>
+            <div class="stat-label">Requires</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-value">MIT</div>
+            <div class="stat-label">License</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-value">No Root</div>
+            <div class="stat-label">Shizuku Ready</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Screenshots Carousel Section -->
+  <section class="section" id="screenshots">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-subtitle">Visual Preview</span>
+          <h2 class="section-title">Screenshots & Gameplay Test</h2>
+        </div>
+        <div class="gallery-nav">
+          <button class="gallery-btn" id="scroll-prev" aria-label="Previous screenshot">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button class="gallery-btn" id="scroll-next" aria-label="Next screenshot">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="screenshots-scroll" id="screenshots-container">
+        <!-- Screenshot 1 -->
+        <div class="screenshot-card" data-src="assets/Screenshot_1.jpg"
+          data-caption="Dashboard, Dual Temperature Switches & Auto-Start Configuration">
+          <img src="assets/Screenshot_1.jpg" alt="FPS Meter Main Settings" class="screenshot-img" loading="lazy">
+          <div class="screenshot-caption">
+            <span>Dashboard & Dual Temp</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h6v6" />
+              <path d="M9 21H3v-6" />
+              <path d="M21 3l-7 7" />
+              <path d="M3 21l7-7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Screenshot 2 -->
+        <div class="screenshot-card" data-src="assets/Screenshot_2.jpg"
+          data-caption="Position Presets, Opacity, Custom Dragging & Assistive Floating Bubble">
+          <img src="assets/Screenshot_2.jpg" alt="Overlay Customization & Positions" class="screenshot-img"
+            loading="lazy">
+          <div class="screenshot-caption">
+            <span>Overlay Customization</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h6v6" />
+              <path d="M9 21H3v-6" />
+              <path d="M21 3l-7 7" />
+              <path d="M3 21l7-7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Screenshot 3: Vulkan Game In-Action (Landscape) -->
+        <div class="screenshot-card landscape-card" data-src="assets/game_screenshot_vk.jpg"
+          data-caption="In-Game SurfaceFlinger Overlay with Vulkan [VK] Badge & Real-Time SoC Thermals">
+          <img src="assets/game_screenshot_vk.jpg" alt="Live Vulkan Game Overlay" class="screenshot-img" loading="lazy">
+          <div class="screenshot-caption">
+            <span>Vulkan In-Game Telemetry</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h6v6" />
+              <path d="M9 21H3v-6" />
+              <path d="M21 3l-7 7" />
+              <path d="M3 21l7-7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Screenshot 4: OpenGL Game In-Action (Landscape) -->
+        <div class="screenshot-card landscape-card" data-src="assets/game_screenshot_gl.jpg"
+          data-caption="In-Game SurfaceFlinger Overlay with OpenGL ES [GL] Badge & Clean Single-Line Layout">
+          <img src="assets/game_screenshot_gl.jpg" alt="Live OpenGL ES Game Overlay" class="screenshot-img"
+            loading="lazy">
+          <div class="screenshot-caption">
+            <span>OpenGL ES In-Game Telemetry</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h6v6" />
+              <path d="M9 21H3v-6" />
+              <path d="M21 3l-7 7" />
+              <path d="M3 21l7-7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What's New & Release History Section -->
+  <section class="section" id="whats-new">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-subtitle">Changelog & Updates</span>
+          <h2 class="section-title">Release History</h2>
+        </div>
+      </div>
+
+      <!-- Changelog accordion dynamically parsed from changelogs.txt -->
+      <div class="changelogs-stack" id="changelogs-container"></div>
+    </div>
+  </section>
+
+  <!-- Key Features Grid -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-subtitle">Core Capabilities</span>
+          <h2 class="section-title">Designed for Competitive Mobile Gamers</h2>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <!-- Card 1 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2" />
+              <polyline points="2 17 12 22 22 17" />
+              <polyline points="2 12 12 17 22 12" />
+            </svg>
+          </div>
+          <h4>True SurfaceFlinger FPS</h4>
+          <p>Unlike standard apps that only measure UI vsync timing, SurfaceFlinger mode hooks into compositor
+            presentation buffers to measure true gameplay frame rates.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m18 15-6-6-6 6" />
+              <rect x="2" y="3" width="20" height="18" rx="2" />
+            </svg>
+          </div>
+          <h4>Graphics API Detection</h4>
+          <p>Automatically identifies whether your active game is running on Vulkan or OpenGL ES, displaying a crisp
+            <code>[VK]</code> or <code>[GL]</code> badge on the overlay.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
+            </svg>
+          </div>
+          <h4>Dual Thermal Telemetry</h4>
+          <p>Monitor your device’s battery temperature and the processor SoC hotspot in real time to prevent thermal
+            throttling before it causes stutters.</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="6" />
+              <line x1="9" y1="12" x2="15" y2="12" />
+            </svg>
+          </div>
+          <h4>Samsung Perf Z Pill Styling</h4>
+          <p>Clean semi-transparent dark pill with cyan telemetry labels, white digits, and dynamic
+            green-yellow-orange-red color thresholds based on framerate drops.</p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+          <h4>Quick Settings & Floating Bubble</h4>
+          <p>Toggle the overlay on or off without leaving your game via an Android Quick Settings status bar tile or an
+            edge-snapping floating assistive button.</p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="feature-card">
+          <div class="feature-icon-box cyan">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <h4>Auto Game Detection</h4>
+          <p>Configurable Accessibility Service automatically starts monitoring the moment your selected games launch
+            and turns off immediately when you exit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Specifications Table -->
+  <section class="section" id="specs">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-subtitle">Technical Details</span>
+          <h2 class="section-title">App Specifications</h2>
+        </div>
+      </div>
+
+      <div class="specs-card">
+        <table class="specs-table">
+          <tbody>
+            <tr>
+              <th>Package Name</th>
+              <td><span class="code-pill">com.rdevzph.fpsmeter</span></td>
+            </tr>
+            <tr>
+              <th>Current Version</th>
+              <td><span id="table-version">1.6</span> (VersionCode: <span id="table-version-code">7</span>)</td>
+            </tr>
+            <tr>
+              <th>Operating System</th>
+              <td>Android 8.0 (API 26) through Android 16 (API 36)</td>
+            </tr>
+            <tr>
+              <th>Architectures</th>
+              <td>Universal (arm64-v8a, armeabi-v7a, x86, x86_64)</td>
+            </tr>
+            <tr>
+              <th>Core Permissions</th>
+              <td><code>SYSTEM_ALERT_WINDOW</code>, <code>FOREGROUND_SERVICE_SPECIAL_USE</code></td>
+            </tr>
+            <tr>
+              <th>Optional Integrations</th>
+              <td>Shizuku (privileged shell access for SurfaceFlinger & SoC Thermal HAL)</td>
+            </tr>
+            <tr>
+              <th>Privacy Policy</th>
+              <td>100% Offline • Zero Analytics • Zero Crash SDKs • No User Data Collection</td>
+            </tr>
+            <tr>
+              <th>Source Repository</th>
+              <td><a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer"
+                  style="color: var(--primary); text-decoration: underline;">github.com/rdevz-ph/FPS-Meter-Android</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox-modal" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close image preview">&times;</button>
+    <div class="lightbox-content">
+      <img src="" alt="Screenshot Full View" class="lightbox-img" id="lightbox-img">
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+      <path d="m5 13 4 4L19 7" />
+    </svg>
+    <span id="toast-message">Link copied to clipboard!</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <ul class="footer-links">
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer"
+            class="footer-link">GitHub</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases" target="_blank" rel="noopener noreferrer"
+            class="footer-link">Releases</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer"
+            class="footer-link">Issue Tracker</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/LICENSE" target="_blank"
+            rel="noopener noreferrer" class="footer-link">MIT License</a></li>
+      </ul>
+
+      <p class="footer-meta">
+        FPS Meter for Android • Developed by <strong>rdevz-ph</strong> • Released under MIT License
+      </p>
+    </div>
+  </footer>
+
+  <!-- Interactive JavaScript -->
+  <script src="changelogs.js"></script>
+  <script>
+    // Dynamic Changelogs Loader & Parser from changelogs.txt
+    function parseAndRenderChangelogs(text) {
+      const container = document.getElementById('changelogs-container');
+      if (!container || !text) return;
+
+      const rawReleases = text.trim().split(/\n(?=##\s)/);
+      let html = '';
+
+      rawReleases.forEach((block, idx) => {
+        const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+        if (!lines.length) return;
+
+        const headerLine = lines[0].replace(/^##\s*/, '');
+        const parts = headerLine.split('|').map(s => s.trim());
+        const version = parts[0] || 'Release';
+        const tag = parts[1] || version;
+        const date = parts[2] || '';
+        const isLatest = idx === 0;
+
+        const items = lines.slice(1).filter(l => l.startsWith('- ')).map(l => {
+          const content = l.replace(/^- \s*/, '');
+          const colonIdx = content.indexOf(':');
+          if (colonIdx !== -1) {
+            const title = content.substring(0, colonIdx);
+            const desc = content.substring(colonIdx + 1);
+            return `<li class="changelog-item"><span class="changelog-bullet"></span><div><strong>${title}:</strong>${desc}</div></li>`;
+          }
+          return `<li class="changelog-item"><span class="changelog-bullet"></span><div>${content}</div></li>`;
+        }).join('');
+
+        html += `
+          <details class="changelog-details ${isLatest ? 'is-latest' : ''}" ${isLatest ? 'open' : ''}>
+            <summary class="changelog-summary">
+              <div class="changelog-summary-left">
+                <span class="changelog-version-title">${version}</span>
+                <span class="changelog-tag ${isLatest ? '' : 'prev'}">${tag}</span>
+              </div>
+              <div class="changelog-summary-right">
+                <span class="changelog-date">${date}</span>
+                <svg class="changelog-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </summary>
+            <div class="changelog-body">
+              <ul class="changelog-list">${items}</ul>
+            </div>
+          </details>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      // Update scroll-spy when user expands/collapses accordion items
+      container.querySelectorAll('.changelog-details').forEach(detail => {
+        detail.addEventListener('toggle', () => {
+          if (typeof updateActiveNav === 'function') {
+            updateActiveNav();
+          }
+        });
+      });
+    }
+
+    async function loadChangelogs() {
+      // 1. Try fetching changelogs.txt directly (HTTP / GitHub Pages)
+      try {
+        const response = await fetch('changelogs.txt');
+        if (response.ok) {
+          const text = await response.text();
+          if (text && text.trim().startsWith('##')) {
+            parseAndRenderChangelogs(text);
+            return;
+          }
+        }
+      } catch (_) {
+        // Fall through to local fallback
+      }
+
+      // 2. Local fallback via changelogs.js (handles file:// protocol without CORS restriction)
+      if (window.CHANGELOGS_TEXT) {
+        parseAndRenderChangelogs(window.CHANGELOGS_TEXT);
+      }
+    }
+
+    loadChangelogs();
+
+    // GitHub API dynamically loads release details
+    const REPO_OWNER = 'rdevz-ph';
+    const REPO_NAME = 'FPS-Meter-Android';
+    const GITHUB_API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
+
+    async function fetchLatestRelease() {
+      try {
+        const response = await fetch(GITHUB_API_URL);
+        if (!response.ok) return;
+        const release = await response.json();
+
+        if (release.tag_name) {
+          const versionTag = release.tag_name;
+          document.getElementById('hero-version-chip').textContent = `${versionTag} (Latest)`;
+          document.getElementById('stat-version').textContent = versionTag;
+          document.getElementById('table-version').textContent = versionTag.replace('v', '');
+        }
+
+        // Search for official release APK asset
+        const apkAsset = release.assets?.find(a => a.name.endsWith('.apk') && !a.name.includes('-debug'));
+        if (apkAsset) {
+          const sizeMB = (apkAsset.size / (1024 * 1024)).toFixed(1);
+          document.getElementById('apk-size-pill').textContent = `${sizeMB} MB`;
+          document.getElementById('main-download-btn').href = apkAsset.browser_download_url;
+          document.getElementById('nav-download-btn').href = apkAsset.browser_download_url;
+        }
+      } catch (e) {
+        console.log('Using default static release links:', e);
+      }
+    }
+
+    fetchLatestRelease();
+
+    // Screenshot Gallery Horizontal Scroll Buttons
+    const gallery = document.getElementById('screenshots-container');
+    document.getElementById('scroll-prev').addEventListener('click', () => {
+      gallery.scrollBy({ left: -320, behavior: 'smooth' });
+    });
+    document.getElementById('scroll-next').addEventListener('click', () => {
+      gallery.scrollBy({ left: 320, behavior: 'smooth' });
+    });
+
+    // Lightbox Modal for Screenshots
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxClose = document.getElementById('lightbox-close');
+
+    document.querySelectorAll('.screenshot-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const src = card.getAttribute('data-src');
+        lightboxImg.src = src;
+        lightbox.classList.add('active');
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+        closeLightbox();
+      }
+    });
+
+    // Share Button & Toast
+    const shareBtn = document.getElementById('share-btn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-message');
+
+    function showToast(message) {
+      toastMsg.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    shareBtn.addEventListener('click', async () => {
+      const shareData = {
+        title: 'FPS Meter for Android',
+        text: 'Real-Time Game Performance & Thermal Monitor for Android with SurfaceFlinger and SoC thermal support.',
+        url: window.location.href
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          // User cancelled share
+        }
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast('Website link copied to clipboard!');
+      }
+    });
+
+    // Active Navigation Link Indicator (Scroll Spy)
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = Array.from(navLinks).map(link => {
+      const id = link.getAttribute('href').replace('#', '');
+      return document.getElementById(id);
+    }).filter(Boolean);
+
+    function setActiveNav(targetId) {
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === `#${targetId}`) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+
+    function updateActiveNav() {
+      if (!sections.length) return;
+
+      const scrollPosition = window.scrollY + window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // 1. Bottom of page edge case: activate the last section (Specifications)
+      if (documentHeight - scrollPosition <= 120) {
+        setActiveNav(sections[sections.length - 1].id);
+        return;
+      }
+
+      // 2. Viewport-based detection
+      const triggerPoint = 180;
+      let activeSection = sections[0];
+
+      for (const section of sections) {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= triggerPoint) {
+          activeSection = section;
+        }
+      }
+
+      if (activeSection) {
+        setActiveNav(activeSection.id);
+      }
+    }
+
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+    window.addEventListener('resize', updateActiveNav, { passive: true });
+    window.addEventListener('hashchange', updateActiveNav, { passive: true });
+
+    // Initial check on load or deep-link hash
+    if (window.location.hash) {
+      const initialId = window.location.hash.substring(1);
+      if (document.getElementById(initialId)) {
+        setActiveNav(initialId);
+      } else {
+        updateActiveNav();
+      }
+    } else {
+      updateActiveNav();
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        const targetId = link.getAttribute('href').replace('#', '');
+        setActiveNav(targetId);
+      });
+    });
+
+    document.querySelectorAll('.changelog-details').forEach(detail => {
+      detail.addEventListener('toggle', () => {
+        updateActiveNav();
+      });
+    });
+  </script>
+</body>
+
+</html>
