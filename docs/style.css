@@ -144,6 +144,7 @@ header, main, section, footer {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .brand-badge {
@@ -422,6 +423,31 @@ header, main, section, footer {
   flex-wrap: wrap;
   gap: 0.85rem;
   align-items: center;
+}
+
+.download-note {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  margin-top: 0.85rem;
+}
+
+.download-note svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.download-note a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.download-note a:hover {
+  color: #fff;
 }
 
 /* App Store Quick Stats Bar */
@@ -1043,6 +1069,13 @@ header, main, section, footer {
   .hero-actions .btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .download-note {
+    justify-content: center;
+    text-align: center;
+    font-size: 0.775rem;
+    margin-top: 0.25rem;
   }
 
   .stats-strip {
