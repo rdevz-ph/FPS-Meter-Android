@@ -379,9 +379,11 @@ header, main, section, footer {
 }
 
 .verified-icon {
-  width: 1rem;
-  height: 1rem;
-  color: #38bdf8;
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .app-summary {

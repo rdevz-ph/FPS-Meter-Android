@@ -8,9 +8,12 @@
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
   [![Version](https://img.shields.io/badge/version-1.6-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
+  [![Website](https://img.shields.io/badge/Website-Live%20Showcase-00e676?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rdevz-ph.github.io/FPS-Meter-Android/)
 
   <p align="center">
     A high-performance, lightweight FPS monitoring tool for Android. This application provides a real-time frame rate overlay inspired by the Samsung Perf Z aesthetic, offering a professional monitoring experience for mobile gaming and performance testing.
+    <br><br>
+    <strong>Official Website & Showcase:</strong> <a href="https://rdevz-ph.github.io/FPS-Meter-Android/">https://rdevz-ph.github.io/FPS-Meter-Android/</a>
   </p>
 
 </div>
@@ -42,7 +45,7 @@
   <sub><i>(F-Droid coming soon)</i></sub>
 </p>
 
-Navigate to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK. For troubleshooting installation issues (Google Play Protect) or Android 13+ permission restrictions, check out the [Troubleshooting and Setup Guide](./tutorials/README.md).
+Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-Android/) to explore interactive features, test screenshots, and view full release changelogs. You can also navigate directly to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK. For troubleshooting installation issues (Google Play Protect) or Android 13+ permission restrictions, check out the [Troubleshooting and Setup Guide](./tutorials/README.md).
 
 ## Screenshots
 
