@@ -4,6 +4,8 @@
 - **Real-Time SoC Temperature Monitoring**: Added live hardware CPU/GPU/SoC temperature telemetry via Shizuku privileged Thermal HAL access.
 - **Independent Temperature Toggles**: Separate toggles for Battery Temperature and SoC Temperature in app settings.
 - **Enhanced Overlay Layout**: Strict single-line formatting to eliminate text wrapping in landscape mode, with clean `BATT` and `SOC` tags when both are enabled.
+- **Built-in Crash Reporter & Exception Handler**: Isolated crash reporting screen with full device telemetry, one-tap clipboard copy, system share sheet, and direct GitHub issue filing with pre-filled Markdown reports.
+- **Stability & Upgrade Fix**: Fixed an uninitialized view exception during service cold starts and updates from previous versions.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 

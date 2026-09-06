@@ -1,3 +1,5 @@
 - Added real-time SoC (CPU/GPU) temperature monitoring via Shizuku privileged Thermal HAL access.
 - Added independent toggles for Battery Temp and SoC Temp in overlay settings.
 - Enhanced overlay layout with single-line enforcement and distinct BATT and SOC tags.
+- Added built-in crash reporter with copy, share, and direct GitHub issue filing.
+- Fixed overlay view initialization safety during app startup and upgrades.

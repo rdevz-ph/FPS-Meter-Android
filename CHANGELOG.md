@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Independent Temperature Settings**: Added distinct toggles for Battery Temp and SoC Temp in the overlay settings panel.
 - **Dual Temperature Overlay Layout**: Streamlined overlay labeling to display `TEMP (BATT)` and `TEMP (SOC)` when single, and compact `BATT` and `SOC` tags when both are enabled.
 - **Single-Line Layout Constraint**: Enforced single-line rendering on the overlay pill to prevent multi-line wrapping in landscape orientation.
+- **Built-in Crash Reporter & Exception Handler**: Added an isolated crash activity (`:crash` process) and global exception handler featuring one-tap report copying, system share sheet export, direct GitHub issue filing with pre-formatted Markdown telemetry, and clean app restart.
+
+### Fixed
+- **Overlay Initialization Safety**: Resolved an `UninitializedPropertyAccessException` in `FpsOverlayService` during app upgrades and cold starts by guarding `overlayView` access before view inflation.
 
 ---
 
