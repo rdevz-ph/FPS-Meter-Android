@@ -265,74 +265,136 @@ fun MainScreen(
                 // === Info Card ===
                 InfoCard()
 
-                // === Developer Card ===
-                DeveloperCard()
-
-                // === Footer (Check Updates Card) ===
-                Spacer(Modifier.height(8.dp))
-                Card(
+                // === Developer & Footer Links Section ===
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                    )
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rdevz-ph/FPS-Meter-Android"))
-                                context.startActivity(intent)
-                            }
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    DeveloperCard()
+
+                    // === Official Website Card ===
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                        )
                     ) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .clickable {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://rdevz-ph.github.io/FPS-Meter-Android/"))
+                                    context.startActivity(intent)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 13.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Language,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Check for Updates",
+                                    text = "Official Website",
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Spacer(Modifier.width(8.dp))
+                                Spacer(Modifier.height(2.dp))
                                 Text(
-                                    text = "v$versionName",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    fontWeight = FontWeight.Medium
+                                    text = "Setup tutorials, guides & feature previews",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = "github.com/rdevz-ph/FPS-Meter-Android",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+
+                    // === Footer (Check Updates Card) ===
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                         )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rdevz-ph/FPS-Meter-Android"))
+                                    context.startActivity(intent)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 13.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Check for Updates",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = "v$versionName",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    text = "github.com/rdevz-ph/FPS-Meter-Android",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -1301,13 +1363,13 @@ fun DeveloperCard() {
     ) {
         Column(
             modifier = Modifier
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 14.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -1320,7 +1382,7 @@ fun DeveloperCard() {
                 )
             }
             
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
             
             Text(
                 text = "rdevz-ph",
@@ -1335,30 +1397,55 @@ fun DeveloperCard() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
             
-            Button(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rdevz-ph"))
-                    context.startActivity(intent)
-                },
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Launch,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Visit GitHub Profile", fontWeight = FontWeight.Bold)
+                OutlinedButton(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://rdevz-ph.github.io/FPS-Meter-Android/"))
+                        context.startActivity(intent)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Language,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Website", fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(Modifier.width(12.dp))
+
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rdevz-ph"))
+                        context.startActivity(intent)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Launch,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("GitHub Profile", fontWeight = FontWeight.Bold)
+                }
             }
             
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             
             Text(
                 text = "Built with ❤️ for gamers",

@@ -220,24 +220,7 @@ class FpsViewModel(
                     .sortedWith(compareBy({ it.isSystemApp }, { it.appName.lowercase() }))
                 _installedApps.value = apps
             } catch (e: Exception) {
-                // Fallback using getInstalledApplications
-                try {
-                    val installed = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-                    val apps = installed
-                        .filter { it.packageName != context.packageName }
-                        .map {
-                            val isSys = (it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
-                            AppInfo(
-                                packageName = it.packageName,
-                                appName = it.loadLabel(packageManager).toString(),
-                                isSystemApp = isSys
-                            )
-                        }
-                        .sortedWith(compareBy({ it.isSystemApp }, { it.appName.lowercase() }))
-                    _installedApps.value = apps
-                } catch (e2: Exception) {
-                    // Ignore
-                }
+                // Ignore failure querying launcher activities
             }
         }
     }

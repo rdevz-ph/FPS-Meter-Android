@@ -16,3 +16,6 @@ local.properties
 # Environment files
 .env
 .env*
+
+# Built APKs
+*.apk

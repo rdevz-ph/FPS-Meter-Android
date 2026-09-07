@@ -1,12 +1,11 @@
-# FPS Meter Android v1.7
+# FPS Meter Android v1.8
 
-### What's New in v1.7
-- **Qualcomm Snapdragon SoC Temperature Fix**: Fixed an issue on Qualcomm platforms (such as Snapdragon 865) where the kernel `soc` zone reported PMIC battery percentage instead of actual silicon temperatures. Now reads raw `cpu-*-usr` and `gpuss-*-usr` thermal zones to report true silicon hotspot peak (`max(CPU, GPU)`).
-- **Dedicated CPU & GPU Temperature Toggles**: Added independent switches in Display Settings allowing you to monitor CPU and GPU silicon temperatures individually on the overlay.
-- **Adaptive Multi-Line Overlay Layout**: Automatically keeps a compact single-line pill when 1 to 3 metrics are active, and seamlessly transitions into 2 organized lines (Line 1: Performance metrics `FPS | VK/GL | MS`, Line 2: Thermal telemetry `CPU | GPU | SOC | BATT`) once 4 or more metrics are active.
-- **Universal Thermal Compatibility**: Preserves native MediaTek Dimensity HAL monitoring while providing accurate Qualcomm Snapdragon telemetry.
-
-Special thanks to [@ikerncore](https://github.com/ikerncore) for reporting, testing, and providing hardware shell scripts in [#4](https://github.com/rdevz-ph/FPS-Meter-Android/issues/4).
+### What's New in v1.8
+- **Hardened Package Visibility & Security**: Removed broad `QUERY_ALL_PACKAGES` permission in accordance with Android privacy best practices and least privilege principles. The game auto-start selector now cleanly uses a targeted `<queries>` launcher-intent filter (`Intent.ACTION_MAIN` + `Intent.CATEGORY_LAUNCHER`).
+- **Reduced Permission Footprint**: Retained zero network permissions, minimal manifest requirements, and fully isolated hardware telemetry.
+- **Refined Layout Spacing**: Streamlined spacing across the developer card and footer action cards for a cleaner, cohesive interface.
+- **Official Website Quick Access**: Added direct access to official setup tutorials, guides, and feature previews.
+- Includes all silicon thermal improvements, dedicated CPU/GPU toggles, and adaptive multi-line layout introduced in v1.7.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 

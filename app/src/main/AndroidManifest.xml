@@ -15,11 +15,6 @@
     <!-- Post notifications (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Query all installed packages to allow selecting user games and apps for Auto-start -->
-    <uses-permission
-        android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
-
     <queries>
         <package android:name="moe.shizuku.privileged.api" />
         <intent>

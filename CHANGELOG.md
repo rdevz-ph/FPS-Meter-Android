@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.8] - 2026-09-07
+
+### Security & Privacy
+- **Hardened Package Visibility**: Removed broad `android.permission.QUERY_ALL_PACKAGES` permission following the principle of least privilege. The app now relies exclusively on the targeted `<queries>` launcher-intent filter (`Intent.ACTION_MAIN` + `Intent.CATEGORY_LAUNCHER`) for discovering user-installed games and apps for Auto-start.
+- **Permission Footprint Optimization**: Reduced app manifest permissions to the absolute minimum required for overlay display, accessibility detection, and optional Shizuku hardware telemetry.
+
+### UI & Layout
+- **Refined Footer & Developer Card Layout**: Tightened vertical spacing across the developer profile and action cards for a cohesive, balanced bottom sheet design.
+- **Official Website Quick Access**: Added quick access to official project documentation, tutorials, and release guides directly from the app.
+
+---
+
 ## [v1.7] - 2026-09-07
 
 ### Added

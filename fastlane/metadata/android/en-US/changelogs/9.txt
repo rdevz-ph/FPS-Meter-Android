@@ -1,0 +1,3 @@
+- Hardened privacy: Replaced broad QUERY_ALL_PACKAGES permission with targeted launcher-intent queries filter.
+- Streamlined layout spacing across developer card and footer actions.
+- Added official website and setup documentation quick access.

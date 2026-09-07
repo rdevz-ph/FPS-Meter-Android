@@ -1,5 +1,10 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 1.7 | Latest Release | September 7, 2026
+window.CHANGELOGS_TEXT = `## Version 1.8 | Latest Release | September 7, 2026
+- Privacy & Security Hardening: Removed broad QUERY_ALL_PACKAGES permission following least privilege, transitioning cleanly to targeted <queries> launcher-intent filter for game selection.
+- Refined Layout Spacing: Streamlined vertical spacing across developer profile and footer action cards for a cohesive interface.
+- Official Website: Added quick access to official project documentation, tutorials, and release guides directly from the app.
+
+## Version 1.7 | v1.7 | September 7, 2026
 - Qualcomm Snapdragon SoC Temp Fix: Corrected silicon temperature reading on Qualcomm platforms by reading raw cpu-*-usr and gpuss-*-usr thermal zones rather than PMIC battery percentage.
 - Dedicated CPU & GPU Temp Toggles: Added separate switches in Display Settings to monitor live CPU and GPU temperatures independently on the overlay.
 - Adaptive Multi-Line Layout: Sleek single-line pill for 1 to 3 active overlays, automatically organizing into 2 balanced lines (Performance metrics and Thermals) when 4 or more are active.

@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -11,20 +14,34 @@ android {
         applicationId = "com.rdevzph.fpsmeter"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.7"
+        versionCode = 9
+        versionName = "1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         create("release") {
-            val keystorePath = System.getenv("KEYSTORE_FILE")
+            var keystorePath = System.getenv("KEYSTORE_FILE")
+            var keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+            var keyAlias = System.getenv("KEY_ALIAS") ?: "fpsmeter"
+            var keyPassword = System.getenv("KEY_PASSWORD") ?: keystorePassword
+
+            val envFile = rootProject.file(".env")
+            if (envFile.exists()) {
+                val envProps = Properties()
+                FileInputStream(envFile).use { envProps.load(it) }
+                keystorePath = keystorePath ?: envProps.getProperty("KEYSTORE_FILE")
+                keystorePassword = keystorePassword ?: envProps.getProperty("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS") ?: envProps.getProperty("KEY_ALIAS") ?: "fpsmeter"
+                keyPassword = keyPassword ?: envProps.getProperty("KEY_PASSWORD") ?: keystorePassword
+            }
+
             if (!keystorePath.isNullOrEmpty() && file(keystorePath).exists()) {
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS") ?: "fpsmeter"
-                keyPassword = System.getenv("KEY_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")
+                storePassword = keystorePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
             }
         }
     }
