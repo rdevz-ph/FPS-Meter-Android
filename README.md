@@ -51,9 +51,9 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 ## Screenshots
 
 ### Application Interface
-| Choreographer Mode | SurfaceFlinger Mode |
-|:------------------:|:-------------------:|
-| ![Choreographer](./screenshots/Screenshot_1.jpg) | ![SurfaceFlinger](./screenshots/Screenshot_2.jpg) |
+| Choreographer & Multi-Temp | SurfaceFlinger & Shizuku | Quick Access & Auto-Start |
+|:--------------------------:|:------------------------:|:-------------------------:|
+| ![Choreographer](./screenshots/Screenshot_1.jpg) | ![SurfaceFlinger](./screenshots/Screenshot_2.jpg) | ![Quick Access & Auto-Start](./screenshots/Screenshot_3.jpg) |
 
 ### In-Game Performance Testing
 | OpenGL ES `[GL]` | Vulkan `[VK]` |
