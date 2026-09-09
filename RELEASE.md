@@ -8,12 +8,12 @@
 - **Direct Game Launch Button**: Added a dedicated 1-tap launch button beside every game on the Games screen to launch games directly from FPS Meter.
 - **Recording Configuration Guard**: In-game recording through the assistive menu is strictly gated to games explicitly enabled in the user's Games recording list, displaying a clean status indicator when disabled.
 
-For the complete release history, see [CHANGELOG.md](https://github.com/rdevzph/FPS-Meter-Android/blob/main/CHANGELOG.md).
+For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 
 ### Preview
 | Meter & Telemetry | SurfaceFlinger & Shizuku | Games & Auto-Recording | Performance History Logs |
 |:-----------------:|:------------------------:|:----------------------:|:------------------------:|
-| ![Meter & Telemetry](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_1.png) | ![SurfaceFlinger & Shizuku](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_2.png) | ![Games & Auto-Recording](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_3.png) | ![Performance History Logs](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_4.png) |
+| ![Meter & Telemetry](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_1.png) | ![SurfaceFlinger & Shizuku](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_2.png) | ![Games & Auto-Recording](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_3.png) | ![Performance History Logs](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_4.png) |
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
