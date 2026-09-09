@@ -64,42 +64,14 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 
 ## Features
 
-### FPS Measurement Providers
-- **Choreographer Mode**: Standard display refresh timing with minimal system overhead. Ideal for general UI monitoring and lightweight apps.
-- **SurfaceFlinger Mode**: Measures true game rendering frame rates using Shizuku privileged shell access. Directly monitors game buffer queues (SurfaceView BLAST layers).
-- **Automatic Graphics API Detection**: Dynamically inspects the foreground game's rendering pipeline (via Android GPU services and dumpsys metrics) to detect Vulkan or OpenGL ES.
-- **Graphics API Badge**: Displays an on-screen [VK] or [GL] badge next to the FPS value when SurfaceFlinger mode is active.
-- **Graceful Fallback**: Automatically reverts to Choreographer if Shizuku permissions are revoked or if the service disconnects.
-
-### Quick Access & Status Bar Tile
-- **Quick Settings Tile**: Pull down the Android status bar / Quick Settings panel in any game and tap **FPS Meter** to start or stop the overlay instantly.
-- **Floating Assistive Bubble**: A minimal draggable bubble on screen for instant 1-tap show/hide of the FPS counter without opening the app.
-- **Notification Controls**: Dedicated **Hide / Show** and **Stop** action buttons directly in the persistent notification.
-
-### Auto On/Off for Games & Apps
-- **Automated Detection**: Automatically starts the FPS counter when selected games or benchmark apps launch, and automatically stops it when closed.
-- **In-App App Picker**: Easily search and checkmark target apps with filter chips (**All**, **User Apps**, and **Selected**).
-
-### Samsung-Style Aesthetic
-The overlay utilizes a pill-shaped background with high-contrast, color-coded metrics for optimal visibility.
-- **Labels (FPS, MS, BATT, SOC)**: Displayed in Cyan (#00E5FF).
-- **Values**: Rendered in White for clarity.
-- **Dynamic FPS Color**: The FPS value automatically changes color (Green, Yellow, Orange, Red) based on real-time performance thresholds.
-
-### Improved Horizontal Layout
-The metrics are presented in a compact horizontal display using pipe separators (|). This design minimizes screen obstruction while providing essential performance data at a glance.
-
-### Position Presets
-Quick-snap presets allow for instant positioning across six key screen locations:
-- Top Left, Top Center, Top Right
-- Bottom Left, Bottom Center, Bottom Right
-- Manual dragging is fully supported for custom placement.
-
-### Real-time Updates
-Configuration changes apply immediately to the active overlay. Adjustments to text size, opacity, color mode, provider, and visibility do not require a service restart.
-
-### Shizuku Integration (Optional)
-The setup process includes an optional Shizuku panel to auto-grant the "Display over other apps" permission, bypassing the need for manual navigation through system settings, and powers the SurfaceFlinger FPS provider.
+- **Dual FPS Measurement Providers**: Choose between lightweight **Choreographer** (vsync display rate) and privileged **SurfaceFlinger** (true game rendering frame rates hooked directly into compositor presentation buffers via Shizuku).
+- **Automatic Graphics API Detection**: Dynamically inspects the foreground game pipeline to display real-time **Vulkan `[VK]`** or **OpenGL ES `[GL]`** on-screen badges.
+- **In-Memory FPS Recording & History Logs**: Lightweight per-game session recorder capturing Average FPS, Peak FPS, Min FPS, and duration in memory without disk I/O lag or battery drain, paired with a dedicated **History** screen to review historical benchmarks.
+- **Floating Assistive Quick Menu**: An interactive on-screen bubble expanding into an in-game HUD menu to start/stop FPS recording and toggle HUD visibility without leaving your game, with outside-touch protection and auto-dismiss.
+- **Direct Game Launcher & Auto-Start**: Built-in Games screen with direct 1-tap game launching, search filters, and automated overlay start/stop upon entering or exiting designated games via Accessibility Service.
+- **Hardware Temperature Telemetry**: Live multi-sensor thermal monitoring across CPU, GPU, SoC, and Battery with independent metric toggles to track heat and thermal throttling.
+- **Samsung Perf Z HUD Styling**: Compact semi-transparent pill overlay with cyan labels, white digits, dynamic green-yellow-orange-red FPS performance color coding, adjustable text size, opacity, and drag-and-drop repositioning.
+- **Zero-Friction Setup**: Optional Shizuku integration to auto-grant overlay permissions with 1 tap and a Quick Settings status bar tile for quick toggling from any screen.
 
 ## Requirements
 - Android 8.0+ (API 26)
