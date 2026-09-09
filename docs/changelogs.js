@@ -1,5 +1,13 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 1.8 | Latest Release | September 7, 2026
+window.CHANGELOGS_TEXT = `## Version 1.9 | Latest Release | September 9, 2026
+- Material 3 Bottom Navigation: Modernized navigation bar separating features into Overlay, Games, and History tabs.
+- Per-Game FPS Recording: Lightweight in-memory session tracking aggregating average, peak, and minimum FPS without disk overhead.
+- Dedicated FPS History Screen: Inspect recorded gameplay sessions with performance badges, timestamps, and delete confirmation.
+- Interactive Floating Assistive Menu: Draggable on-screen bubble expands into a quick HUD menu to start/stop recording and toggle overlay in-game with auto-dismiss.
+- Direct Game Launch Button: Dedicated 1-tap launcher button beside every game on the Games screen to launch games directly from FPS Meter.
+- Recording Configuration Guard: In-game recording through the assistive menu is strictly gated to games enabled in the Games recording list.
+
+## Version 1.8 | v1.8 | September 7, 2026
 - Privacy & Security Hardening: Removed broad QUERY_ALL_PACKAGES permission following least privilege, transitioning cleanly to targeted <queries> launcher-intent filter for game selection.
 - Refined Layout Spacing: Streamlined vertical spacing across developer profile and footer action cards for a cohesive interface.
 - Official Website: Added quick access to official project documentation, tutorials, and release guides directly from the app.

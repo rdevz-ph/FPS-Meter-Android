@@ -24,14 +24,20 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import android.content.pm.PackageManager
 import com.rdevzph.fpsmeter.MainActivity
 import com.rdevzph.fpsmeter.R
+import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.GraphicsApi
+import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
+import kotlinx.coroutines.*
 import rikka.shizuku.Shizuku
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import kotlin.math.roundToInt
 
 /**
@@ -72,6 +78,14 @@ class FpsOverlayService : Service() {
     private lateinit var overlayView: TextView
     private lateinit var layoutParams: WindowManager.LayoutParams
     private var floatingToggleButton: FloatingToggleButton? = null
+    private var lastDetectedPackage: String? = null
+    private var lastUseNextLine: Boolean? = null
+    private var lastRecordingState: Boolean? = null
+    private var lastForegroundPkgForAssistive: String? = null
+
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var choreoDetectorJob: Job? = null
+    @Volatile private var choreoForegroundPkg: String? = null
 
     // Choreographer for frame timing
     private val choreographer = Choreographer.getInstance()
@@ -116,6 +130,15 @@ class FpsOverlayService : Service() {
         }
     }
 
+    private fun getAppNameForPackage(pkg: String): String {
+        return try {
+            val appInfo = packageManager.getApplicationInfo(pkg, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: Exception) {
+            pkg
+        }
+    }
+
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             frameCount++
@@ -132,6 +155,22 @@ class FpsOverlayService : Service() {
                 lastSampleTime = now
                 if (isOverlayVisible) {
                     updateOverlayText()
+                }
+
+                // In-memory FPS recording integration
+                val fgPkg = choreoForegroundPkg ?: FpsAccessibilityService.currentForegroundPackage
+                if (fgPkg != null && fgPkg != packageName) {
+                    lastDetectedPackage = fgPkg
+                }
+                val samplePkg = fgPkg ?: lastDetectedPackage ?: FpsRecordingManager.getActivePackage()
+                val appName = samplePkg?.let { getAppNameForPackage(it) }
+                FpsRecordingManager.onFpsSample(this@FpsOverlayService, samplePkg, currentFps, appName)
+
+                val recActive = FpsRecordingManager.isRecordingActive()
+                if (recActive != lastRecordingState || fgPkg != lastForegroundPkgForAssistive) {
+                    lastRecordingState = recActive
+                    lastForegroundPkgForAssistive = fgPkg
+                    floatingToggleButton?.updateState()
                 }
             }
 
@@ -195,14 +234,86 @@ class FpsOverlayService : Service() {
         return START_STICKY
     }
 
+    private fun getActiveGamePackage(): String? {
+        val recorded = FpsRecordingManager.getActivePackage()
+        if (recorded != null) return recorded
+        val lastRec = FpsRecordingManager.getLastRecordedPackage()
+        if (lastRec != null && lastRec != packageName) return lastRec
+        val sfPkg = surfaceFlingerFpsMonitor?.getCurrentForegroundPackage()
+        if (sfPkg != null && sfPkg != packageName) return sfPkg
+        val choreoPkg = choreoForegroundPkg
+        if (choreoPkg != null && choreoPkg != packageName) return choreoPkg
+        val accPkg = FpsAccessibilityService.currentForegroundPackage
+        if (accPkg != null && accPkg != packageName) return accPkg
+        return lastDetectedPackage?.takeIf { it != packageName }
+    }
+
+    private fun getActiveGameName(): String {
+        val recordedName = FpsRecordingManager.getActiveAppName()
+        if (recordedName.isNotEmpty()) return recordedName
+        val lastRecName = FpsRecordingManager.getLastRecordedAppName()
+        if (lastRecName.isNotEmpty()) return lastRecName
+        val pkg = getActiveGamePackage() ?: return "No Active Game"
+        return getAppNameForPackage(pkg)
+    }
+
+    private fun isGameRecordingConfigured(): Boolean {
+        val pkg = getActiveGamePackage() ?: return false
+        val settings = OverlaySettings.load(this)
+        return settings.recordingPackages.contains(pkg)
+    }
+
+    private fun startRecordingActiveGame(): Boolean {
+        val pkg = getActiveGamePackage()
+        if (pkg == null) {
+            Toast.makeText(this, "No active game detected to record", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        val settings = OverlaySettings.load(this)
+        val appName = getAppNameForPackage(pkg)
+        if (!settings.recordingPackages.contains(pkg)) {
+            Toast.makeText(this, "Recording is not enabled for $appName in Games list", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        lastDetectedPackage = pkg
+        val started = FpsRecordingManager.startRecording(this, pkg, appName)
+        if (started) {
+            Toast.makeText(this, "Recording FPS for $appName", Toast.LENGTH_SHORT).show()
+            floatingToggleButton?.updateState()
+            return true
+        }
+        return false
+    }
+
+    private fun stopRecordingActiveGame() {
+        val record = FpsRecordingManager.stopRecording(this)
+        if (record != null) {
+            Toast.makeText(
+                this,
+                "Saved: ${record.appName} (Avg: ${record.avgFps} FPS, Max: ${record.maxFps})",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            Toast.makeText(this, "FPS recording stopped", Toast.LENGTH_SHORT).show()
+        }
+        floatingToggleButton?.updateState()
+    }
+
     private fun syncFloatingToggleButton() {
         if (floatingToggleEnabled) {
             if (floatingToggleButton == null) {
-                floatingToggleButton = FloatingToggleButton(this) {
-                    toggleOverlayVisibility()
-                }
+                floatingToggleButton = FloatingToggleButton(
+                    context = this,
+                    onToggleOverlay = { toggleOverlayVisibility() },
+                    onStartRecording = { startRecordingActiveGame() },
+                    onStopRecording = { stopRecordingActiveGame() },
+                    isRecordingActive = { FpsRecordingManager.isRecordingActive() },
+                    isOverlayVisible = { isOverlayVisible },
+                    getActiveGameName = { getActiveGameName() },
+                    isGameRecordingConfigured = { isGameRecordingConfigured() }
+                )
             }
-            floatingToggleButton?.setOverlayActive(isOverlayVisible)
+            floatingToggleButton?.updateState()
             floatingToggleButton?.show()
         } else {
             floatingToggleButton?.hide()
@@ -215,7 +326,7 @@ class FpsOverlayService : Service() {
         if (::overlayView.isInitialized) {
             overlayView.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
         }
-        floatingToggleButton?.setOverlayActive(isOverlayVisible)
+        floatingToggleButton?.updateState()
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIF_ID, buildNotification())
@@ -432,18 +543,19 @@ class FpsOverlayService : Service() {
             }
         }
 
-        val shape = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = if (useNextLine) 32f else 1000f
-            setColor(Color.parseColor("#CC111111"))
-        }
-
         overlayView.post {
-            overlayView.background = shape
-            if (useNextLine) {
-                overlayView.setPadding(28, 12, 28, 12)
-            } else {
-                overlayView.setPadding(24, 8, 24, 8)
+            if (lastUseNextLine != useNextLine) {
+                lastUseNextLine = useNextLine
+                overlayView.background = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = if (useNextLine) 32f else 1000f
+                    setColor(Color.parseColor("#CC111111"))
+                }
+                if (useNextLine) {
+                    overlayView.setPadding(28, 12, 28, 12)
+                } else {
+                    overlayView.setPadding(24, 8, 24, 8)
+                }
             }
             overlayView.text = ssb
         }
@@ -489,6 +601,7 @@ class FpsOverlayService : Service() {
             frameCount = 0
             isChoreographerMeasuring = true
             choreographer.postFrameCallback(frameCallback)
+            startChoreoForegroundDetection()
         }
     }
 
@@ -496,17 +609,115 @@ class FpsOverlayService : Service() {
         if (isChoreographerMeasuring) {
             choreographer.removeFrameCallback(frameCallback)
             isChoreographerMeasuring = false
+            stopChoreoForegroundDetection()
+        }
+    }
+
+    private fun startChoreoForegroundDetection() {
+        stopChoreoForegroundDetection()
+        choreoDetectorJob = serviceScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                try {
+                    val pkg = getChoreoForegroundPackage()
+                    choreoForegroundPkg = pkg
+                } catch (e: CancellationException) {
+                    break
+                } catch (e: Exception) {
+                    // Ignore
+                }
+                delay(1000L)
+            }
+        }
+    }
+
+    private fun stopChoreoForegroundDetection() {
+        choreoDetectorJob?.cancel()
+        choreoDetectorJob = null
+        choreoForegroundPkg = null
+    }
+
+    private fun getChoreoForegroundPackage(): String? {
+        val isShizukuReady = try {
+            Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (e: Exception) {
+            false
+        }
+        if (isShizukuReady) {
+            val windowOutput = runShizukuShellCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'")
+            for (line in windowOutput.lines()) {
+                val match = Regex("(?:mCurrentFocus|mFocusedApp)=.*?([a-zA-Z0-9._]+)/[a-zA-Z0-9._]+").find(line)
+                if (match != null) {
+                    val pkg = match.groupValues[1]
+                    if (pkg != packageName) {
+                        return pkg
+                    }
+                }
+            }
+
+            val actOutput = runShizukuShellCommand("dumpsys activity activities | grep -E 'mResumedActivity|ResumedActivity'")
+            for (line in actOutput.lines()) {
+                val match = Regex("([a-zA-Z0-9._]+)/[a-zA-Z0-9._]+").find(line)
+                if (match != null) {
+                    val pkg = match.groupValues[1]
+                    if (pkg != packageName) {
+                        return pkg
+                    }
+                }
+            }
+        }
+
+        return FpsAccessibilityService.currentForegroundPackage
+    }
+
+    @Suppress("DEPRECATION")
+    private fun runShizukuShellCommand(command: String): String {
+        var process: Process? = null
+        return try {
+            process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
+            val output = StringBuilder()
+            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    output.append(line).append("\n")
+                }
+            }
+            process.waitFor()
+            output.toString()
+        } catch (e: Exception) {
+            ""
+        } finally {
+            try {
+                process?.destroy()
+            } catch (e: Exception) {
+                // Ignore
+            }
         }
     }
 
     private fun startSurfaceFlingerMeasuring() {
         if (surfaceFlingerFpsMonitor == null) {
             surfaceFlingerFpsMonitor = SurfaceFlingerFpsMonitor(
-                onFpsUpdate = { fps, _, api, _ ->
+                onFpsUpdate = { fps, _, api, _, fgPkg ->
                     currentFps = fps
                     detectedGraphicsApi = api
                     if (isOverlayVisible) {
                         updateOverlayText()
+                    }
+
+                    // In-memory FPS recording integration
+                    val activePkg = fgPkg ?: FpsAccessibilityService.currentForegroundPackage
+                    if (activePkg != null && activePkg != packageName) {
+                        lastDetectedPackage = activePkg
+                    }
+                    val samplePkg = activePkg ?: lastDetectedPackage ?: FpsRecordingManager.getActivePackage()
+                    val appName = samplePkg?.let { getAppNameForPackage(it) }
+                    FpsRecordingManager.onFpsSample(this@FpsOverlayService, samplePkg, currentFps, appName)
+
+                    val recActive = FpsRecordingManager.isRecordingActive()
+                    if (recActive != lastRecordingState || activePkg != lastForegroundPkgForAssistive) {
+                        lastRecordingState = recActive
+                        lastForegroundPkgForAssistive = activePkg
+                        floatingToggleButton?.updateState()
                     }
                 },
                 onFallbackNeeded = {
@@ -621,10 +832,12 @@ class FpsOverlayService : Service() {
         super.onDestroy()
         isRunning = false
         isAutoStarted = false
+        serviceScope.cancel()
         stopChoreographerMeasuring()
         stopSurfaceFlingerMeasuring()
         socThermalMonitor?.stop()
         socThermalMonitor = null
+        FpsRecordingManager.endCurrentSession(this)
         unregisterReceiver(batteryReceiver)
         if (::overlayView.isInitialized) {
             try {

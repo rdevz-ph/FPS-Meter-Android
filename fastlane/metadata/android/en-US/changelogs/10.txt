@@ -1,0 +1,6 @@
+- Modernized Material 3 bottom navigation with dedicated Overlay, Games, and History tabs.
+- Added optional lightweight per-game FPS recording and session statistics.
+- Added dedicated FPS History screen with session records and delete confirmation.
+- Added interactive floating assistive quick menu to start/stop recording and toggle HUD in-game.
+- Added direct 1-tap game launcher button in Games list.
+- Recording protection guard gating in-game recording strictly to enabled games.

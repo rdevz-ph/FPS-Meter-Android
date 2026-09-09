@@ -16,6 +16,7 @@ class FpsAccessibilityService : AccessibilityService() {
 
     companion object {
         var isServiceRunning = false
+        var currentForegroundPackage: String? = null
     }
 
     private val ignoredPackages = setOf(
@@ -32,19 +33,23 @@ class FpsAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        val eventType = event?.eventType ?: return
+        if (eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+            eventType != AccessibilityEvent.TYPE_WINDOWS_CHANGED) return
 
-        val rawPkg = event.packageName?.toString() ?: return
+        val rawPkg = event.packageName?.toString()
+            ?: try { rootInActiveWindow?.packageName?.toString() } catch (e: Exception) { null }
+            ?: return
         if (rawPkg in ignoredPackages || rawPkg == packageName) return
+        currentForegroundPackage = rawPkg
 
         val settings = OverlaySettings.load(this)
-        if (!settings.autoStartEnabled) return
-
-        val isTargetApp = settings.autoStartPackages.contains(rawPkg)
+        val shouldAutoStart = settings.autoStartEnabled && (settings.autoStartPackages.contains(rawPkg) || settings.recordingPackages.contains(rawPkg))
+        val isTargetApp = settings.autoStartPackages.contains(rawPkg) || settings.recordingPackages.contains(rawPkg)
 
         if (isTargetApp) {
-            // Target app opened: start FPS overlay if not already running
-            if (!FpsOverlayService.isRunning && Settings.canDrawOverlays(this)) {
+            // Target or recorded game opened: start FPS overlay if auto-start is enabled and not already running
+            if (shouldAutoStart && !FpsOverlayService.isRunning && Settings.canDrawOverlays(this)) {
                 FpsOverlayService.isAutoStarted = true
                 val startIntent = Intent(this, FpsOverlayService::class.java)
                 ContextCompat.startForegroundService(this, startIntent)
@@ -68,5 +73,6 @@ class FpsAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         isServiceRunning = false
+        currentForegroundPackage = null
     }
 }

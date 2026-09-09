@@ -19,9 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +46,12 @@ import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.viewmodel.FpsViewModel
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
+
+enum class MainNavTab(val title: String, val icon: ImageVector) {
+    METER("Meter", Icons.Default.Speed),
+    GAMES("Games", Icons.Default.SportsEsports),
+    HISTORY("History", Icons.Default.QueryStats)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +81,8 @@ fun MainScreen(
     val accessibilityEnabled by viewModel.accessibilityEnabled.collectAsState()
     val installedApps by viewModel.installedApps.collectAsState()
 
-    var showAppSelectionDialog by remember { mutableStateOf(false) }
+    val sessions by viewModel.sessions.collectAsState()
+    var currentTab by rememberSaveable { mutableStateOf(MainNavTab.METER) }
 
     // Check overlay permission & accessibility on composition
     LaunchedEffect(Unit) {
@@ -106,15 +115,6 @@ fun MainScreen(
         }
     }
 
-    if (showAppSelectionDialog) {
-        AppSelectionDialog(
-            installedApps = installedApps,
-            selectedPackages = settings.autoStartPackages,
-            onTogglePackage = { pkg -> viewModel.toggleAutoStartPackage(pkg) },
-            onDismiss = { showAppSelectionDialog = false }
-        )
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -123,7 +123,7 @@ fun MainScreen(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Speed,
+                                imageVector = currentTab.icon,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(28.dp)
@@ -136,7 +136,11 @@ fun MainScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    "Live overlay counter",
+                                    when (currentTab) {
+                                        MainNavTab.METER -> "Live overlay counter"
+                                        MainNavTab.GAMES -> "Auto-start & game recording"
+                                        MainNavTab.HISTORY -> "Performance session logs"
+                                    },
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -147,9 +151,29 @@ fun MainScreen(
                         containerColor = MaterialTheme.colorScheme.surface
                     )
                 )
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
+                    MainNavTab.values().forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentTab == tab,
+                            onClick = { currentTab = tab },
+                            icon = {
+                                Icon(tab.icon, contentDescription = tab.title)
+                            },
+                            label = {
+                                Text(tab.title)
+                            }
+                        )
+                    }
+                }
             }
         ) { padding ->
-            Column(
+            when (currentTab) {
+                MainNavTab.METER -> {
+                    Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
@@ -249,18 +273,6 @@ fun MainScreen(
                     }
                 )
 
-                // === Auto On/Off per App ===
-                AutoStartCard(
-                    settings = settings,
-                    accessibilityEnabled = accessibilityEnabled,
-                    onOpenAccessibilitySettings = {
-                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    },
-                    onToggleAutoStart = { enabled ->
-                        viewModel.updateSettings(settings.copy(autoStartEnabled = enabled))
-                    },
-                    onOpenAppPicker = { showAppSelectionDialog = true }
-                )
 
                 // === Info Card ===
                 InfoCard()
@@ -323,7 +335,7 @@ fun MainScreen(
                                 )
                             }
                             Icon(
-                                imageVector = Icons.Default.KeyboardArrowRight,
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -390,7 +402,7 @@ fun MainScreen(
                                 )
                             }
                             Icon(
-                                imageVector = Icons.Default.KeyboardArrowRight,
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -400,6 +412,43 @@ fun MainScreen(
                 Spacer(Modifier.height(16.dp))
             }
         }
+        MainNavTab.GAMES -> {
+            GamesScreen(
+                settings = settings,
+                installedApps = installedApps,
+                accessibilityEnabled = accessibilityEnabled,
+                onOpenAccessibilitySettings = {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                },
+                onToggleAutoStart = { enabled ->
+                    viewModel.updateSettings(settings.copy(autoStartEnabled = enabled))
+                },
+                onTogglePackage = { pkg ->
+                    viewModel.toggleAutoStartPackage(pkg)
+                },
+                onSetRecordingPackage = { pkg, enabled ->
+                    viewModel.setRecordingPackage(pkg, enabled)
+                },
+                modifier = Modifier.padding(padding)
+            )
+        }
+        MainNavTab.HISTORY -> {
+            HistoryScreen(
+                sessions = sessions,
+                onDeleteSession = { sessionId ->
+                    viewModel.deleteSession(sessionId)
+                },
+                onClearAllSessions = {
+                    viewModel.clearAllSessions()
+                },
+                onNavigateToGames = {
+                    currentTab = MainNavTab.GAMES
+                },
+                modifier = Modifier.padding(padding)
+            )
+        }
+    }
+}
 
         // Splash overlay
         AnimatedVisibility(
@@ -1436,7 +1485,7 @@ fun DeveloperCard() {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Launch,
+                        imageVector = Icons.AutoMirrored.Filled.Launch,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
@@ -1500,7 +1549,7 @@ fun QuickAccessCard(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        "Draggable on-screen bubble to instantly show/hide FPS overlay from any app.",
+                        "Draggable on-screen bubble with a quick menu to start/stop game FPS recording and toggle HUD visibility from any app.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1551,290 +1600,4 @@ fun QuickAccessCard(
     }
 }
 
-@Composable
-fun AutoStartCard(
-    settings: OverlaySettings,
-    accessibilityEnabled: Boolean,
-    onOpenAccessibilitySettings: () -> Unit,
-    onToggleAutoStart: (Boolean) -> Unit,
-    onOpenAppPicker: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.Autorenew,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Auto On/Off per App",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
 
-            Spacer(Modifier.height(12.dp))
-
-            // Accessibility Service Warning / Status
-            if (!accessibilityEnabled) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "Accessibility Service Required",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                "Enable FPS Meter in Accessibility to detect when games open.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Spacer(Modifier.width(8.dp))
-                        Button(
-                            onClick = onOpenAccessibilitySettings,
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text("Enable", style = MaterialTheme.typography.labelSmall)
-                        }
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-            }
-
-            // Auto-start switch
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Auto-Start on Target Apps",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        "Automatically start overlay when target apps open, and stop when exited.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Switch(
-                    checked = settings.autoStartEnabled,
-                    onCheckedChange = onToggleAutoStart,
-                    enabled = accessibilityEnabled
-                )
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            // App selection button
-            OutlinedButton(
-                onClick = onOpenAppPicker,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(
-                    Icons.Default.Gamepad,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    if (settings.autoStartPackages.isEmpty()) "Select Target Games & Apps"
-                    else "Target Apps (${settings.autoStartPackages.size} selected)",
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AppSelectionDialog(
-    installedApps: List<FpsViewModel.AppInfo>,
-    selectedPackages: Set<String>,
-    onTogglePackage: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var searchQuery by remember { mutableStateOf("") }
-    var filterMode by remember { mutableStateOf(0) } // 0: All, 1: User Apps only, 2: Selected only
-
-    val filteredApps = remember(searchQuery, installedApps, filterMode, selectedPackages) {
-        installedApps.filter { app ->
-            val matchesSearch = searchQuery.isBlank() ||
-                    app.appName.contains(searchQuery, ignoreCase = true) ||
-                    app.packageName.contains(searchQuery, ignoreCase = true)
-            val matchesFilter = when (filterMode) {
-                1 -> !app.isSystemApp // User apps only
-                2 -> selectedPackages.contains(app.packageName) // Selected only
-                else -> true
-            }
-            matchesSearch && matchesFilter
-        }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                "Select Target Games & Apps",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search apps or games...") },
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = null)
-                    },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Clear, contentDescription = null)
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                // Filter options
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    FilterChip(
-                        selected = filterMode == 0,
-                        onClick = { filterMode = 0 },
-                        label = { Text("All", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    FilterChip(
-                        selected = filterMode == 1,
-                        onClick = { filterMode = 1 },
-                        label = { Text("User Apps", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    FilterChip(
-                        selected = filterMode == 2,
-                        onClick = { filterMode = 2 },
-                        label = { Text("Selected (${selectedPackages.size})", style = MaterialTheme.typography.labelSmall) }
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                if (filteredApps.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "No apps found",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 350.dp)
-                    ) {
-                        items(filteredApps, key = { it.packageName }) { app ->
-                            val isSelected = selectedPackages.contains(app.packageName)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onTogglePackage(app.packageName) }
-                                    .padding(vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Checkbox(
-                                    checked = isSelected,
-                                    onCheckedChange = { onTogglePackage(app.packageName) }
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = app.appName,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                        if (!app.isSystemApp) {
-                                            Spacer(Modifier.width(6.dp))
-                                            Surface(
-                                                color = MaterialTheme.colorScheme.primaryContainer,
-                                                shape = RoundedCornerShape(4.dp)
-                                            ) {
-                                                Text(
-                                                    "User",
-                                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    fontSize = 9.sp,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                                )
-                                            }
-                                        }
-                                    }
-                                    Text(
-                                        text = app.packageName,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text("Done")
-            }
-        }
-    )
-}

@@ -14,7 +14,7 @@ import kotlin.math.roundToInt
  * using Shizuku privileged shell commands.
  */
 class SurfaceFlingerFpsMonitor(
-    private val onFpsUpdate: (fps: Int, frameTimeMs: Float, api: GraphicsApi, layerName: String?) -> Unit,
+    private val onFpsUpdate: (fps: Int, frameTimeMs: Float, api: GraphicsApi, layerName: String?, foregroundPackage: String?) -> Unit,
     private val onFallbackNeeded: () -> Unit
 ) {
     companion object {
@@ -88,6 +88,8 @@ class SurfaceFlingerFpsMonitor(
         zeroFpsCount = 0
     }
 
+    fun getCurrentForegroundPackage(): String? = currentForegroundPackage
+
     private suspend fun sampleFps() {
         val now = System.currentTimeMillis()
         val elapsedMs = if (lastSampleTime == 0L) 1000L else (now - lastSampleTime).coerceAtLeast(1L)
@@ -104,7 +106,7 @@ class SurfaceFlingerFpsMonitor(
             zeroFpsCount = 0
             consecutiveFailures = 0
             withContext(Dispatchers.Main) {
-                onFpsUpdate(0, 0f, GraphicsApi.UNKNOWN, null)
+                onFpsUpdate(0, 0f, GraphicsApi.UNKNOWN, null, null)
             }
             return
         }
@@ -132,7 +134,7 @@ class SurfaceFlingerFpsMonitor(
 
         if (layer == null) {
             withContext(Dispatchers.Main) {
-                onFpsUpdate(0, 0f, currentGraphicsApi, null)
+                onFpsUpdate(0, 0f, currentGraphicsApi, null, foregroundPkg)
             }
             return
         }
@@ -158,7 +160,7 @@ class SurfaceFlingerFpsMonitor(
 
         consecutiveFailures = 0
         withContext(Dispatchers.Main) {
-            onFpsUpdate(fpsResult.fps, fpsResult.frameTimeMs, currentGraphicsApi, layer)
+            onFpsUpdate(fpsResult.fps, fpsResult.frameTimeMs, currentGraphicsApi, layer, foregroundPkg)
         }
     }
 

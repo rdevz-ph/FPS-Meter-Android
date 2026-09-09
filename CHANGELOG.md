@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.9] - 2026-09-09
+
+### Added
+- **Material 3 Bottom Navigation**: Redesigned core app navigation with Material 3 Navigation Bar featuring dedicated tabs: **Overlay** (appearance and live adjustments), **Games** (target games management and recording configuration), and **History** (FPS session logs).
+- **Per-Game FPS Recording & Statistics**: Added optional, lightweight in-memory recording for selected games. Tracks average FPS, highest FPS, lowest FPS, and session duration without heavy sample-by-sample disk writes.
+- **Dedicated FPS History Page**: Added a dedicated screen displaying stored game performance logs with statistics badges, date/time timestamps, single-session deletion with confirmation dialog, and clear all history functionality.
+- **Floating Assistive Quick Menu**: The on-screen assistive bubble expands into a quick HUD menu allowing users to start/stop FPS recording and toggle HUD visibility directly inside games without leaving the active session.
+- **Direct Game Launch Button**: Added a direct 1-tap launcher button (`PlayArrow`) beside each game item on the Games screen to launch games directly from FPS Meter.
+- **Recording Protection Guard**: Blocks starting recording from the assistive overlay if the active game has not been explicitly enabled in the Games recording list, displaying a clean status indicator (`REC OFF` / `Recording Not Enabled`).
+
+### Changed
+- **Floating Assistive Bubble**: Upgraded from a simple toggle into an interactive in-game control hub. Clicking start/stop automatically dismisses the menu so in-game view remains clear and unobstructed.
+- **Anti-Flicker Menu Updates**: Converted menu updates to in-place View property updates, eliminating WindowManager view churn and window flickering.
+- **Touch Stability**: Removed outside-touch dismiss flags so automated touch tools (such as ZoneTouch Master) and fast-paced touch inputs do not accidentally hide the menu.
+
+---
+
 ## [v1.8] - 2026-09-07
 
 ### Security & Privacy

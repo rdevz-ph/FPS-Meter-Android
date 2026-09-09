@@ -18,6 +18,8 @@ import androidx.lifecycle.viewModelScope
 import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.model.FpsProvider
+import com.rdevzph.fpsmeter.model.FpsSessionRecord
+import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.shizuku.ShizukuHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +41,7 @@ data class OverlaySettings(
     val floatingToggleEnabled: Boolean = false,
     val autoStartEnabled: Boolean = false,
     val autoStartPackages: Set<String> = emptySet(),
+    val recordingPackages: Set<String> = emptySet(),
     val fpsProvider: FpsProvider = FpsProvider.CHOREOGRAPHER,
     val showGraphicsApi: Boolean = true
 ) {
@@ -60,6 +63,7 @@ data class OverlaySettings(
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
         private const val KEY_AUTO_START = "auto_start"
         private const val KEY_AUTO_PACKAGES = "auto_packages"
+        private const val KEY_RECORDING_PACKAGES = "recording_packages"
         private const val KEY_FPS_PROVIDER = "fps_provider"
         private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
 
@@ -81,6 +85,7 @@ data class OverlaySettings(
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
                 autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet(),
+                recordingPackages = prefs.getStringSet(KEY_RECORDING_PACKAGES, defaultSettings.recordingPackages) ?: emptySet(),
                 fpsProvider = FpsProvider.fromString(prefs.getString(KEY_FPS_PROVIDER, defaultSettings.fpsProvider.name)),
                 showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi)
             )
@@ -102,6 +107,7 @@ data class OverlaySettings(
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)
                 putStringSet(KEY_AUTO_PACKAGES, settings.autoStartPackages)
+                putStringSet(KEY_RECORDING_PACKAGES, settings.recordingPackages)
                 putString(KEY_FPS_PROVIDER, settings.fpsProvider.name)
                 putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
                 apply()
@@ -132,8 +138,12 @@ class FpsViewModel(
     private val _statusMessage = MutableStateFlow("")
     val statusMessage: StateFlow<String> = _statusMessage.asStateFlow()
 
+    private val _sessions = MutableStateFlow<List<FpsSessionRecord>>(emptyList())
+    val sessions: StateFlow<List<FpsSessionRecord>> = _sessions.asStateFlow()
+
     init {
         shizukuHelper.updateAvailability(packageManager)
+        refreshSessions()
     }
 
     fun refreshStatus() {
@@ -142,6 +152,11 @@ class FpsViewModel(
         _settings.value = OverlaySettings.load(context)
         checkOverlayPermission(context)
         checkAccessibilityService(context)
+        refreshSessions()
+    }
+
+    fun refreshSessions() {
+        _sessions.value = FpsRecordingManager.getSessions(context)
     }
 
     fun checkOverlayPermission(context: Context): Boolean {
@@ -266,6 +281,32 @@ class FpsViewModel(
             updatedSet.add(pkg)
         }
         updateSettings(current.copy(autoStartPackages = updatedSet))
+    }
+
+    fun setRecordingPackage(pkg: String, enable: Boolean) {
+        val current = _settings.value
+        val updatedSet = current.recordingPackages.toMutableSet()
+        if (enable) {
+            updatedSet.add(pkg)
+        } else {
+            updatedSet.remove(pkg)
+        }
+        updateSettings(current.copy(recordingPackages = updatedSet))
+    }
+
+    fun deleteSession(sessionId: String) {
+        FpsRecordingManager.deleteSession(context, sessionId)
+        refreshSessions()
+    }
+
+    fun clearSessionsForPackage(packageName: String) {
+        FpsRecordingManager.clearSessionsForPackage(context, packageName)
+        refreshSessions()
+    }
+
+    fun clearAllSessions() {
+        FpsRecordingManager.clearAllSessions(context)
+        refreshSessions()
     }
 
     fun requestShizukuPermission() = shizukuHelper.requestPermission()

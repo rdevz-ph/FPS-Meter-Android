@@ -1,13 +1,19 @@
-# FPS Meter Android v1.8
+# FPS Meter Android v1.9
 
-### What's New in v1.8
-- **Hardened Package Visibility & Security**: Removed broad `QUERY_ALL_PACKAGES` permission in accordance with Android privacy best practices and least privilege principles. The game auto-start selector now cleanly uses a targeted `<queries>` launcher-intent filter (`Intent.ACTION_MAIN` + `Intent.CATEGORY_LAUNCHER`).
-- **Reduced Permission Footprint**: Retained zero network permissions, minimal manifest requirements, and fully isolated hardware telemetry.
-- **Refined Layout Spacing**: Streamlined spacing across the developer card and footer action cards for a cleaner, cohesive interface.
-- **Official Website Quick Access**: Added direct access to official setup tutorials, guides, and feature previews.
-- Includes all silicon thermal improvements, dedicated CPU/GPU toggles, and adaptive multi-line layout introduced in v1.7.
+### What's New in v1.9
+- **Material 3 Bottom Navigation**: Restructured the app layout using Material 3 Navigation Bar, separating features across three dedicated screens: **Overlay** (appearance and live adjustments), **Games** (target games management and recording configuration), and **History** (FPS performance logs).
+- **Per-Game FPS Recording**: Optional, lightweight in-memory session recorder that captures average FPS, peak FPS, min FPS, and duration without heavy disk writes or sample-by-sample overhead.
+- **Dedicated FPS History Screen**: Inspect historical gameplay logs with performance badges, date/time timestamps, single-session deletion with confirmation, and clear-all functionality.
+- **Floating Assistive Quick Menu**: The on-screen bubble now expands into a quick HUD menu allowing users to start/stop FPS recording and toggle overlay visibility without leaving their game. Tapping start/stop auto-dismisses the menu so gameplay view is never obstructed.
+- **Direct Game Launch Button**: Added a dedicated 1-tap launch button beside every game on the Games screen to launch games directly from FPS Meter.
+- **Recording Configuration Guard**: In-game recording through the assistive menu is strictly gated to games explicitly enabled in the user's Games recording list, displaying a clean status indicator when disabled.
 
-For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
+For the complete release history, see [CHANGELOG.md](https://github.com/rdevzph/FPS-Meter-Android/blob/main/CHANGELOG.md).
+
+### Preview
+| Meter & Telemetry | SurfaceFlinger & Shizuku | Games & Auto-Recording | Performance History Logs |
+|:-----------------:|:------------------------:|:----------------------:|:------------------------:|
+| ![Meter & Telemetry](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_1.png) | ![SurfaceFlinger & Shizuku](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_2.png) | ![Games & Auto-Recording](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_3.png) | ![Performance History Logs](https://raw.githubusercontent.com/rdevzph/FPS-Meter-Android/main/screenshots/Screenshot_4.png) |
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
@@ -16,12 +22,13 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Real-time FPS, frame time (MS), and multi-metric temperature monitoring (CPU, GPU, SoC, and Battery)
 - Adaptive single-line or two-line layout dynamically scaling with active metrics
 - Dynamic FPS color coding (green, yellow, orange, red) based on performance thresholds
+- In-memory per-game FPS session recording with dedicated History screen
+- Interactive floating assistive bubble with in-game quick control menu
 - Six preset positions (top/bottom left/center/right) with manual drag support
 - Light and dark mode themes
 - Adjustable text size and overlay opacity
 - Optional Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and hardware thermal monitoring
-- Quick Settings status bar tile and Floating Assistive Bubble
-- Automated game detection via Accessibility Service
+- Quick Settings status bar tile and automated game detection via Accessibility Service
 
 ### Requirements
 - Android 8.0+ (API 26)
