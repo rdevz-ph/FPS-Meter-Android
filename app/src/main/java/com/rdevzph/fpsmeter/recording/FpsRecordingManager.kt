@@ -63,7 +63,7 @@ object FpsRecordingManager {
                 endCurrentSession(context)
                 userStoppedPackage = null
                 // If the new app is also a recorded game, fall through to start a session for it
-                if (!settings.recordingPackages.contains(currentPackage)) {
+                if (!settings.autoRecordAll && !settings.recordingPackages.contains(currentPackage)) {
                     return
                 }
             } else {
@@ -92,8 +92,12 @@ object FpsRecordingManager {
             userStoppedPackage = null
         }
 
-        // No active session: auto-start if currentPackage is enabled in recordingPackages
-        if (currentPackage != null && settings.recordingPackages.contains(currentPackage)) {
+        // No active session: auto-start if currentPackage is enabled in recordingPackages or autoRecordAll is enabled
+        val isEligible = currentPackage != null &&
+                currentPackage != context.packageName &&
+                !isSystemTransientPackage(currentPackage) &&
+                (settings.autoRecordAll || settings.recordingPackages.contains(currentPackage))
+        if (isEligible) {
             activePackage = currentPackage
             activeAppName = appName ?: currentPackage
             lastRecordedPackage = currentPackage
@@ -126,7 +130,7 @@ object FpsRecordingManager {
     @Synchronized
     fun startRecording(context: Context, packageName: String, appName: String): Boolean {
         val settings = OverlaySettings.load(context)
-        if (!settings.recordingPackages.contains(packageName)) {
+        if (!settings.autoRecordAll && !settings.recordingPackages.contains(packageName)) {
             return false
         }
 

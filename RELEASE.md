@@ -1,19 +1,18 @@
-# FPS Meter Android v1.9
+# FPS Meter Android v2.0
 
-### What's New in v1.9
-- **Material 3 Bottom Navigation**: Restructured the app layout using Material 3 Navigation Bar, separating features across three dedicated screens: **Overlay** (appearance and live adjustments), **Games** (target games management and recording configuration), and **History** (FPS performance logs).
-- **Per-Game FPS Recording**: Optional, lightweight in-memory session recorder that captures average FPS, peak FPS, min FPS, and duration without heavy disk writes or sample-by-sample overhead.
-- **Dedicated FPS History Screen**: Inspect historical gameplay logs with performance badges, date/time timestamps, single-session deletion with confirmation, and clear-all functionality.
-- **Floating Assistive Quick Menu**: The on-screen bubble now expands into a quick HUD menu allowing users to start/stop FPS recording and toggle overlay visibility without leaving their game. Tapping start/stop auto-dismisses the menu so gameplay view is never obstructed.
-- **Direct Game Launch Button**: Added a dedicated 1-tap launch button beside every game on the Games screen to launch games directly from FPS Meter.
-- **Recording Configuration Guard**: In-game recording through the assistive menu is strictly gated to games explicitly enabled in the user's Games recording list, displaying a clean status indicator when disabled.
+### What's New in v2.0
+- **Auto-Record All Games (QoL Option)**: Added a master toggle on the Games screen to automatically record FPS performance sessions for any active game or launched app without needing to enable apps individually one by one.
+- **Streamlined Game List UI**: When Auto-Record All is enabled, individual per-game record dot buttons are automatically hidden to declutter the interface.
+- **Safety Confirmation Dialog**: An informative confirmation dialog explains background monitoring, History summary logging, and lightweight aggregation before activating universal recording.
+- **Assistive Bubble Universal Mode**: The assistive floating bubble quick menu now immediately permits 1-tap recording for any active game without requiring prior per-game configuration when Auto-Record All is active.
+- **Per-App Icons in History Screen**: Session cards in the History tab now display real application launcher icons loaded asynchronously with an in-memory LRU cache for stutter-free 60/120Hz scrolling.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 
-### Preview
-| Meter & Telemetry | SurfaceFlinger & Shizuku | Games & Auto-Recording | Performance History Logs |
-|:-----------------:|:------------------------:|:----------------------:|:------------------------:|
-| ![Meter & Telemetry](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_1.png) | ![SurfaceFlinger & Shizuku](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_2.png) | ![Games & Auto-Recording](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_3.png) | ![Performance History Logs](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/Screenshot_4.png) |
+### New Features Preview
+| Auto-Record All Games Toggle | Confirmation & Notice Dialog |
+|:----------------------------:|:----------------------------:|
+| ![Auto-Record All Games](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/enable-all.jpg) | ![Confirmation Dialog](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/fps-record-warning.jpg) |
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers

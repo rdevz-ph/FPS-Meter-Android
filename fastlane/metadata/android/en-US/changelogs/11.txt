@@ -1,0 +1,5 @@
+- Added universal Auto-Record All Games master toggle on Games screen.
+- Streamlined Games interface by hiding per-game recording dot buttons when Auto-Record All is active.
+- Added informative safety confirmation dialog before activating universal recording.
+- Assistive floating bubble menu allows immediate 1-tap recording without per-game configuration when Auto-Record All is enabled.
+- Added real per-app launcher icons in History screen with asynchronous loading and in-memory LRU caching.

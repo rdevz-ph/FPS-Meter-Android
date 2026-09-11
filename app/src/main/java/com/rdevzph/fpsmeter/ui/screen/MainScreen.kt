@@ -423,6 +423,9 @@ fun MainScreen(
                 onToggleAutoStart = { enabled ->
                     viewModel.updateSettings(settings.copy(autoStartEnabled = enabled))
                 },
+                onToggleAutoRecordAll = { enabled ->
+                    viewModel.setAutoRecordAll(enabled)
+                },
                 onTogglePackage = { pkg ->
                     viewModel.toggleAutoStartPackage(pkg)
                 },

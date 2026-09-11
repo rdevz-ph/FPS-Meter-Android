@@ -1,4 +1,11 @@
-## Version 1.9 | Latest Release | September 9, 2026
+## Version 2.0 | Latest Release | September 12, 2026
+- Auto-Record All Games: Added a universal master toggle on the Games screen to automatically record FPS sessions for any active game or app without per-game configuration.
+- Clean Streamlined Game List: Per-game recording dot buttons automatically hide when Auto-Record All is enabled to reduce visual clutter.
+- Safety Confirmation Dialog: Added an informative confirmation notice explaining background logging and lightweight memory aggregation before enabling universal recording.
+- Assistive Bubble Universal Mode: The floating bubble menu immediately allows 1-tap recording for any active game when Auto-Record All is active without requiring prior list configuration.
+- Per-App Icons in History Screen: Session benchmark cards in the History tab display real application launcher icons loaded asynchronously with in-memory LRU caching.
+
+## Version 1.9 | v1.9 | September 9, 2026
 - Material 3 Bottom Navigation: Modernized navigation bar separating features into Overlay, Games, and History tabs.
 - Per-Game FPS Recording: Lightweight in-memory session tracking aggregating average, peak, and minimum FPS without disk overhead.
 - Dedicated FPS History Screen: Inspect recorded gameplay sessions with performance badges, timestamps, and delete confirmation.

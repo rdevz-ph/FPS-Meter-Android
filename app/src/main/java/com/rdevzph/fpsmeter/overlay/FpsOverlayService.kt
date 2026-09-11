@@ -258,8 +258,9 @@ class FpsOverlayService : Service() {
     }
 
     private fun isGameRecordingConfigured(): Boolean {
-        val pkg = getActiveGamePackage() ?: return false
         val settings = OverlaySettings.load(this)
+        if (settings.autoRecordAll) return true
+        val pkg = getActiveGamePackage() ?: return false
         return settings.recordingPackages.contains(pkg)
     }
 
@@ -271,7 +272,7 @@ class FpsOverlayService : Service() {
         }
         val settings = OverlaySettings.load(this)
         val appName = getAppNameForPackage(pkg)
-        if (!settings.recordingPackages.contains(pkg)) {
+        if (!settings.autoRecordAll && !settings.recordingPackages.contains(pkg)) {
             Toast.makeText(this, "Recording is not enabled for $appName in Games list", Toast.LENGTH_SHORT).show()
             return false
         }

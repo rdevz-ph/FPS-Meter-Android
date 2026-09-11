@@ -42,6 +42,7 @@ data class OverlaySettings(
     val autoStartEnabled: Boolean = false,
     val autoStartPackages: Set<String> = emptySet(),
     val recordingPackages: Set<String> = emptySet(),
+    val autoRecordAll: Boolean = false,
     val fpsProvider: FpsProvider = FpsProvider.CHOREOGRAPHER,
     val showGraphicsApi: Boolean = true
 ) {
@@ -64,6 +65,7 @@ data class OverlaySettings(
         private const val KEY_AUTO_START = "auto_start"
         private const val KEY_AUTO_PACKAGES = "auto_packages"
         private const val KEY_RECORDING_PACKAGES = "recording_packages"
+        private const val KEY_AUTO_RECORD_ALL = "auto_record_all"
         private const val KEY_FPS_PROVIDER = "fps_provider"
         private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
 
@@ -86,6 +88,7 @@ data class OverlaySettings(
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
                 autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet(),
                 recordingPackages = prefs.getStringSet(KEY_RECORDING_PACKAGES, defaultSettings.recordingPackages) ?: emptySet(),
+                autoRecordAll = prefs.getBoolean(KEY_AUTO_RECORD_ALL, defaultSettings.autoRecordAll),
                 fpsProvider = FpsProvider.fromString(prefs.getString(KEY_FPS_PROVIDER, defaultSettings.fpsProvider.name)),
                 showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi)
             )
@@ -108,6 +111,7 @@ data class OverlaySettings(
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)
                 putStringSet(KEY_AUTO_PACKAGES, settings.autoStartPackages)
                 putStringSet(KEY_RECORDING_PACKAGES, settings.recordingPackages)
+                putBoolean(KEY_AUTO_RECORD_ALL, settings.autoRecordAll)
                 putString(KEY_FPS_PROVIDER, settings.fpsProvider.name)
                 putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
                 apply()
@@ -292,6 +296,11 @@ class FpsViewModel(
             updatedSet.remove(pkg)
         }
         updateSettings(current.copy(recordingPackages = updatedSet))
+    }
+
+    fun setAutoRecordAll(enabled: Boolean) {
+        val current = _settings.value
+        updateSettings(current.copy(autoRecordAll = enabled))
     }
 
     fun deleteSession(sessionId: String) {

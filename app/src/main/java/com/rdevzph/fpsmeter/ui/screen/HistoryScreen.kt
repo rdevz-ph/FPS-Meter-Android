@@ -1,5 +1,7 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import android.util.LruCache
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,12 +13,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -320,6 +329,65 @@ private fun SummaryStatItem(label: String, value: String) {
     }
 }
 
+private object AppIconCache {
+    private val cache = LruCache<String, androidx.compose.ui.graphics.ImageBitmap>(100)
+
+    fun get(pkg: String): androidx.compose.ui.graphics.ImageBitmap? = cache.get(pkg)
+    fun put(pkg: String, bitmap: androidx.compose.ui.graphics.ImageBitmap) {
+        cache.put(pkg, bitmap)
+    }
+}
+
+@Composable
+private fun AppIconImage(
+    packageName: String,
+    appName: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var iconBitmap by remember(packageName) { mutableStateOf(AppIconCache.get(packageName)) }
+
+    LaunchedEffect(packageName) {
+        if (iconBitmap == null) {
+            val bitmap = withContext(Dispatchers.IO) {
+                try {
+                    val drawable = context.packageManager.getApplicationIcon(packageName)
+                    drawable.toBitmap(width = 120, height = 120).asImageBitmap()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            if (bitmap != null) {
+                AppIconCache.put(packageName, bitmap)
+                iconBitmap = bitmap
+            }
+        }
+    }
+
+    if (iconBitmap != null) {
+        Image(
+            bitmap = iconBitmap!!,
+            contentDescription = appName,
+            modifier = modifier.clip(RoundedCornerShape(10.dp))
+        )
+    } else {
+        Surface(
+            modifier = modifier,
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.SportsEsports,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun SessionCard(
     session: FpsSessionRecord,
@@ -339,14 +407,23 @@ private fun SessionCard(
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                AppIconImage(
+                    packageName = session.packageName,
+                    appName = session.appName,
+                    modifier = Modifier.size(42.dp)
+                )
+
+                Spacer(Modifier.width(12.dp))
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = session.appName,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = formattedDate,

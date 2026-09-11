@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.0] - 2026-09-12
+
+### Added
+- **Auto-Record All Games (QoL Option)**: Added a master toggle on the Games screen to automatically record FPS performance sessions for any active game or launched app without requiring per-game list configuration.
+- **Safety Confirmation Dialog**: An interactive confirmation notice dialog details background monitoring, session logging, and lightweight aggregation before activating universal recording.
+- **Assistive Bubble Universal Mode**: The assistive floating bubble quick menu now immediately permits 1-tap recording for any active game without requiring prior per-game configuration when Auto-Record All is active.
+- **Per-App Icons in History Screen**: Session cards in the History tab now display real application launcher icons loaded asynchronously with an in-memory LRU cache for stutter-free 60/120Hz scrolling.
+
+### Changed
+- **Streamlined Game List UI**: When Auto-Record All is enabled, individual per-game record dot buttons are automatically hidden to declutter the interface.
+- **Dynamic Filter Chips & Hints**: Updated the Games screen filter chip to `Rec (All)` and helper text to `Checkbox = Auto-Start` when Auto-Record All is active.
+
+---
+
 ## [v1.9] - 2026-09-09
 
 ### Added

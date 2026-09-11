@@ -32,6 +32,7 @@ fun GamesScreen(
     accessibilityEnabled: Boolean,
     onOpenAccessibilitySettings: () -> Unit,
     onToggleAutoStart: (Boolean) -> Unit,
+    onToggleAutoRecordAll: (Boolean) -> Unit,
     onTogglePackage: (String) -> Unit,
     onSetRecordingPackage: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -40,8 +41,9 @@ fun GamesScreen(
     var searchQuery by remember { mutableStateOf("") }
     var filterMode by remember { mutableStateOf(0) } // 0: All, 1: User Apps, 2: Auto-Start, 3: Recording
     var appToConfirmRecording by remember { mutableStateOf<FpsViewModel.AppInfo?>(null) }
+    var showAutoRecordAllDialog by remember { mutableStateOf(false) }
 
-    val filteredApps = remember(searchQuery, installedApps, filterMode, settings.autoStartPackages, settings.recordingPackages) {
+    val filteredApps = remember(searchQuery, installedApps, filterMode, settings.autoStartPackages, settings.recordingPackages, settings.autoRecordAll) {
         installedApps.filter { app ->
             val matchesSearch = searchQuery.isBlank() ||
                     app.appName.contains(searchQuery, ignoreCase = true) ||
@@ -49,7 +51,7 @@ fun GamesScreen(
             val matchesFilter = when (filterMode) {
                 1 -> !app.isSystemApp // User apps only
                 2 -> settings.autoStartPackages.contains(app.packageName) // Auto-Start target apps
-                3 -> settings.recordingPackages.contains(app.packageName) // Recording enabled
+                3 -> settings.autoRecordAll || settings.recordingPackages.contains(app.packageName) // Recording enabled
                 else -> true
             }
             matchesSearch && matchesFilter
@@ -115,6 +117,72 @@ fun GamesScreen(
             dismissButton = {
                 OutlinedButton(
                     onClick = { appToConfirmRecording = null },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Confirmation Warning Dialog for Auto-Recording All Apps/Games
+    if (showAutoRecordAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showAutoRecordAllDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Enable Auto-Record for All Games?",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "Enabling this option will automatically record frame rate performance sessions for any active game or launched application.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(
+                            text = "Notice: Continuous background monitoring will record session metrics for all apps without needing to toggle them individually.",
+                            modifier = Modifier.padding(10.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Text(
+                        text = "Per-game recording dot buttons will be hidden while this option is active. Lightweight memory aggregation keeps device overhead minimal.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onToggleAutoRecordAll(true)
+                        showAutoRecordAllDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Confirm & Enable")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showAutoRecordAllDialog = false },
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Cancel")
@@ -207,6 +275,38 @@ fun GamesScreen(
                         enabled = accessibilityEnabled
                     )
                 }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+                // Auto-Record All master toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Auto-Record All Games",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "Automatically record FPS sessions for any active game without per-game configuration.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = settings.autoRecordAll,
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                showAutoRecordAllDialog = true
+                            } else {
+                                onToggleAutoRecordAll(false)
+                            }
+                        }
+                    )
+                }
             }
         }
 
@@ -253,7 +353,12 @@ fun GamesScreen(
             FilterChip(
                 selected = filterMode == 3,
                 onClick = { filterMode = 3 },
-                label = { Text("Rec (${settings.recordingPackages.size})", style = MaterialTheme.typography.labelSmall) }
+                label = {
+                    Text(
+                        if (settings.autoRecordAll) "Rec (All)" else "Rec (${settings.recordingPackages.size})",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             )
         }
 
@@ -270,7 +375,7 @@ fun GamesScreen(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Checkbox = Auto • Dot = Rec",
+                text = if (settings.autoRecordAll) "Checkbox = Auto-Start" else "Checkbox = Auto • Dot = Rec",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -309,7 +414,7 @@ fun GamesScreen(
                         ),
                         border = androidx.compose.foundation.BorderStroke(
                             1.dp,
-                            if (isAutoStart || isRecording) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            if (isAutoStart || (!settings.autoRecordAll && isRecording)) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                             else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                         )
                     ) {
@@ -385,26 +490,28 @@ fun GamesScreen(
                                 )
                             }
 
-                            // Per-game recording toggle button
-                            FilledTonalIconButton(
-                                onClick = {
-                                    if (isRecording) {
-                                        onSetRecordingPackage(app.packageName, false)
-                                    } else {
-                                        appToConfirmRecording = app
-                                    }
-                                },
-                                modifier = Modifier.size(38.dp),
-                                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                    containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                    contentColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = if (isRecording) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                    contentDescription = if (isRecording) "FPS recording enabled for ${app.appName}" else "Enable FPS recording for ${app.appName}",
-                                    modifier = Modifier.size(20.dp)
-                                )
+                            // Per-game recording toggle button (hidden when Auto-Record All is enabled)
+                            if (!settings.autoRecordAll) {
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        if (isRecording) {
+                                            onSetRecordingPackage(app.packageName, false)
+                                        } else {
+                                            appToConfirmRecording = app
+                                        }
+                                    },
+                                    modifier = Modifier.size(38.dp),
+                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                        containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                        contentColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = if (isRecording) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                        contentDescription = if (isRecording) "FPS recording enabled for ${app.appName}" else "Enable FPS recording for ${app.appName}",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                     }
