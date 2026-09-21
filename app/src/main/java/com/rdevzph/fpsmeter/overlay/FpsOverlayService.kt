@@ -69,6 +69,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
         const val EXTRA_FPS_PROVIDER = "fps_provider"
         const val EXTRA_SHOW_API = "show_api"
+        const val EXTRA_SHOW_BATTERY_LEVEL = "show_battery_level"
 
         var isRunning = false
         var isAutoStarted = false
@@ -114,8 +115,10 @@ class FpsOverlayService : Service() {
     private var floatingToggleEnabled = false
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
     private var showGraphicsApi = true
+    private var showBatteryLevel = false
 
     private var batteryTemp: Float = 0f
+    private var batteryLevel: Int = -1
     private var socTemp: Float = 0f
     private var cpuTemp: Float = 0f
     private var gpuTemp: Float = 0f
@@ -126,6 +129,11 @@ class FpsOverlayService : Service() {
             intent?.let {
                 val temp = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
                 batteryTemp = temp / 10f
+                val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                if (level >= 0 && scale > 0) {
+                    batteryLevel = (level * 100) / scale
+                }
             }
         }
     }
@@ -182,7 +190,23 @@ class FpsOverlayService : Service() {
         super.onCreate()
         isRunning = true
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val stickyBattery = registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        stickyBattery?.let {
+            val temp = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
+            batteryTemp = temp / 10f
+            val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            if (level >= 0 && scale > 0) {
+                batteryLevel = (level * 100) / scale
+            }
+        }
+        if (batteryLevel < 0) {
+            val bm = getSystemService(BATTERY_SERVICE) as? BatteryManager
+            val cap = bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) ?: -1
+            if (cap in 0..100) {
+                batteryLevel = cap
+            }
+        }
 
         // Load initial settings from SharedPreferences
         val saved = OverlaySettings.load(this)
@@ -200,6 +224,7 @@ class FpsOverlayService : Service() {
         floatingToggleEnabled = saved.floatingToggleEnabled
         fpsProvider = saved.fpsProvider
         showGraphicsApi = saved.showGraphicsApi
+        showBatteryLevel = saved.showBatteryLevel
 
         updateSocThermalMonitoring()
 
@@ -395,6 +420,9 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_SHOW_API)) {
             showGraphicsApi = intent.getBooleanExtra(EXTRA_SHOW_API, showGraphicsApi)
         }
+        if (intent.hasExtra(EXTRA_SHOW_BATTERY_LEVEL)) {
+            showBatteryLevel = intent.getBooleanExtra(EXTRA_SHOW_BATTERY_LEVEL, showBatteryLevel)
+        }
     }
 
     private fun updateOverlayAppearance() {
@@ -476,15 +504,17 @@ class FpsOverlayService : Service() {
         val hasGpu = showGpuTemp
         val hasSoc = showSocTemp
         val hasBatt = showTemp
+        val hasBattLevel = showBatteryLevel
+        val hasBattBoth = hasBatt && hasBattLevel
 
         val extraOverlayCount = (if (hasApi) 1 else 0) +
                 (if (hasMs) 1 else 0) +
                 (if (hasCpu) 1 else 0) +
                 (if (hasGpu) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
-                (if (hasBatt) 1 else 0)
+                (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0)))
 
-        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel
         // Only wrap to next line if more than 3 extra overlays are enabled (> 3); stay horizontal for 1-3 overlays
         val useNextLine = extraOverlayCount > 3 && hasThermals
 
@@ -539,8 +569,15 @@ class FpsOverlayService : Service() {
                 val socDisplay = if (socTemp > 0f) "${socTemp}°C" else "--°C"
                 appendThermal("SOC", socDisplay)
             }
-            if (hasBatt) {
+            if (hasBattBoth) {
+                val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
+                val tempDisplay = if (batteryTemp > 0f) "${batteryTemp}°C" else "--°C"
+                appendThermal("BAT", "$tempDisplay ($levelDisplay)")
+            } else if (hasBatt) {
                 appendThermal("BATT", "${batteryTemp}°C")
+            } else if (hasBattLevel) {
+                val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
+                appendThermal("BAT", levelDisplay)
             }
         }
 

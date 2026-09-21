@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.1] - 2026-09-21
+
+### Added
+- **Dark AMOLED Theme**: Pure pitch-black theme (`#000000`) specifically tailored for OLED and AMOLED displays to maximize contrast, reduce power consumption, and elevate visual immersion.
+- **Dedicated Settings Screen**: Full-page Settings view with theme mode selection (System / Dark / Light), Dark AMOLED toggle switch, Dynamic Colors toggle (Android 12+), developer profile, and project links.
+- **TopAppBar Overflow Menu**: Added top-bar options menu with About dialog, dedicated Settings screen navigation, and Support & Donation chooser.
+- **Battery Percentage Overlay Metric**: Added real-time remaining battery percentage readout (`BAT xx%`) to the HUD overlay for fullscreen gaming sessions (as requested in [#7](https://github.com/rdevz-ph/FPS-Meter-Android/issues/7)).
+- **Unified Battery Telemetry**: Automatically merges battery temperature and remaining charge percentage into a compact single indicator `BAT <temp> (<level>)` when both metrics are enabled.
+- **Support & Donation Chooser**: Integrated dialog supporting Ko-fi (`romelbrosas`) and Buy Me a Coffee (`rdevzph`) platforms.
+
+---
+
 ## [v2.0] - 2026-09-12
 
 ### Added

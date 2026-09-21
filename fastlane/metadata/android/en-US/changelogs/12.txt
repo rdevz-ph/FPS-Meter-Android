@@ -1,0 +1,6 @@
+- Added pure pitch-black Dark AMOLED theme for OLED displays to maximize contrast and battery efficiency.
+- Added dedicated full-page Settings screen with back navigation for themes, developer info, and project links.
+- Added TopAppBar overflow menu with About info, Settings page navigation, and Support donation chooser.
+- Added real-time Battery Percentage indicator to HUD overlay for fullscreen gaming sessions.
+- Automatically merged battery temperature and percentage into a compact single indicator when both are enabled.
+- Integrated Support and Donation chooser modal with direct links for Ko-fi and Buy Me a Coffee.

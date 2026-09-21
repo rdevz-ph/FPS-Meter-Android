@@ -10,11 +10,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.ui.screen.MainScreen
+import com.rdevzph.fpsmeter.ui.theme.AppThemeMode
 import com.rdevzph.fpsmeter.ui.theme.FpsMeterTheme
 import com.rdevzph.fpsmeter.viewmodel.FpsViewModel
 import kotlinx.coroutines.delay
@@ -51,7 +53,19 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            FpsMeterTheme {
+            val themeSettings by viewModel.themeSettings.collectAsState()
+            val isDark = when (themeSettings.themeMode) {
+                AppThemeMode.SYSTEM -> isSystemInDarkTheme()
+                AppThemeMode.DARK -> true
+                AppThemeMode.LIGHT -> false
+            }
+            val isAmoled = themeSettings.amoledDark && isDark
+
+            FpsMeterTheme(
+                darkTheme = isDark,
+                dynamicColor = themeSettings.dynamicColor,
+                isAmoled = isAmoled
+            ) {
                 var showSplash by remember { mutableStateOf(true) }
 
                 LaunchedEffect(Unit) {

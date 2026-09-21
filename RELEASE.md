@@ -1,18 +1,14 @@
-# FPS Meter Android v2.0
+# FPS Meter Android v2.1
 
-### What's New in v2.0
-- **Auto-Record All Games (QoL Option)**: Added a master toggle on the Games screen to automatically record FPS performance sessions for any active game or launched app without needing to enable apps individually one by one.
-- **Streamlined Game List UI**: When Auto-Record All is enabled, individual per-game record dot buttons are automatically hidden to declutter the interface.
-- **Safety Confirmation Dialog**: An informative confirmation dialog explains background monitoring, History summary logging, and lightweight aggregation before activating universal recording.
-- **Assistive Bubble Universal Mode**: The assistive floating bubble quick menu now immediately permits 1-tap recording for any active game without requiring prior per-game configuration when Auto-Record All is active.
-- **Per-App Icons in History Screen**: Session cards in the History tab now display real application launcher icons loaded asynchronously with an in-memory LRU cache for stutter-free 60/120Hz scrolling.
+### What's New in v2.1
+- **Dark AMOLED Mode**: Pure pitch-black theme (`#000000`) designed for OLED/AMOLED displays, providing maximum contrast and power efficiency.
+- **Dedicated Settings Screen**: Moved configuration out of popups into a dedicated Settings page with top app bar back navigation.
+- **TopAppBar Overflow Menu**: Quick access menu featuring About information, Settings navigation, and a Donation platform chooser.
+- **Remaining Battery Percentage Overlay**: Real-time battery level indicator (`BAT xx%`) visible directly on the floating overlay during fullscreen gaming ([#7](https://github.com/rdevz-ph/FPS-Meter-Android/issues/7)).
+- **Unified Battery Telemetry**: Automatically merges battery temperature and percentage into a single compact readout (`BAT 38.5°C (85%)`) when both are active to conserve HUD space and prevent line wrapping.
+- **Support & Donations**: Support the developer via Ko-fi (`romelbrosas`) and Buy Me a Coffee (`rdevzph`).
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
-
-### New Features Preview
-| Auto-Record All Games Toggle | Confirmation & Notice Dialog |
-|:----------------------------:|:----------------------------:|
-| ![Auto-Record All Games](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/enable-all.jpg) | ![Confirmation Dialog](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/fps-record-warning.jpg) |
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
