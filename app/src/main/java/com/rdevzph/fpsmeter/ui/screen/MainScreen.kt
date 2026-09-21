@@ -115,35 +115,94 @@ fun MainScreen(
         }
     }
 
+    val themeSettings by viewModel.themeSettings.collectAsState()
+    var showAboutDialog by remember { mutableStateOf(false) }
+    var isSettingsOpen by rememberSaveable { mutableStateOf(false) }
+    var showDonationDialog by remember { mutableStateOf(false) }
+    var showOverflowMenu by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = currentTab.icon,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    "FPS Meter",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold
+        if (isSettingsOpen) {
+            SettingsScreen(
+                themeSettings = themeSettings,
+                onThemeChange = { viewModel.updateThemeSettings(it) },
+                onOpenDonation = { showDonationDialog = true },
+                onBack = { isSettingsOpen = false }
+            )
+        } else {
+            Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = currentTab.icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(28.dp)
                                 )
-                                Text(
-                                    when (currentTab) {
-                                        MainNavTab.METER -> "Live overlay counter"
-                                        MainNavTab.GAMES -> "Auto-start & game recording"
-                                        MainNavTab.HISTORY -> "Performance session logs"
-                                    },
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Spacer(Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        "FPS Meter",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        when (currentTab) {
+                                            MainNavTab.METER -> "Live overlay counter"
+                                            MainNavTab.GAMES -> "Auto-start & game recording"
+                                            MainNavTab.HISTORY -> "Performance session logs"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        },
+                        actions = {
+                            Box {
+                                IconButton(onClick = { showOverflowMenu = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "More Options"
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showOverflowMenu,
+                                    onDismissRequest = { showOverflowMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("About") },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Info, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showOverflowMenu = false
+                                            showAboutDialog = true
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Settings") },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Settings, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showOverflowMenu = false
+                                            isSettingsOpen = true
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Donate") },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFE91E63))
+                                        },
+                                        onClick = {
+                                            showOverflowMenu = false
+                                            showDonationDialog = true
+                                        }
+                                    )
                             }
                         }
                     },
@@ -226,6 +285,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                             putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                         }
                         context.startForegroundService(intent)
                         viewModel.setOverlayRunning(true)
@@ -252,6 +312,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_API, newSettings.showGraphicsApi)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, newSettings.showBatteryLevel)
                             }
                             context.startForegroundService(intent)
                         }
@@ -452,6 +513,7 @@ fun MainScreen(
         }
     }
 }
+        }
 
         // Splash overlay
         AnimatedVisibility(
@@ -459,6 +521,14 @@ fun MainScreen(
             exit = fadeOut(animationSpec = tween(500))
         ) {
             SplashOverlay()
+        }
+
+        if (showAboutDialog) {
+            AboutDialog(onDismiss = { showAboutDialog = false })
+        }
+
+        if (showDonationDialog) {
+            DonationChooserDialog(onDismiss = { showDonationDialog = false })
         }
     }
 }
@@ -488,7 +558,7 @@ fun SplashOverlay() {
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                "by rdevzph",
+                "by rdevz-ph",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1157,11 +1227,12 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(8.dp))
 
-        // SoC temp toggle (Requires Shizuku - Silicon Hotspot)
+        // SoC temp & Battery level toggles
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+            // SoC temp toggle (Requires Shizuku - Silicon Hotspot)
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column {
@@ -1184,7 +1255,19 @@ fun OverlaySettingsPanel(
                 }
             }
             Spacer(Modifier.width(16.dp))
-            Spacer(Modifier.weight(1f))
+
+            // Battery level toggle
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Battery Level", style = MaterialTheme.typography.labelMedium)
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = settings.showBatteryLevel,
+                        onCheckedChange = { onChange(settings.copy(showBatteryLevel = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(12.dp))
@@ -1243,15 +1326,17 @@ fun OverlaySettingsPanel(
         val hasGpu = settings.showGpuTemp
         val hasSoc = settings.showSocTemp
         val hasBatt = settings.showTemp
+        val hasBattLevel = settings.showBatteryLevel
+        val hasBattBoth = hasBatt && hasBattLevel
 
         val extraOverlayCount = (if (hasApi) 1 else 0) +
                 (if (hasMs) 1 else 0) +
                 (if (hasCpu) 1 else 0) +
                 (if (hasGpu) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
-                (if (hasBatt) 1 else 0)
+                (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0)))
 
-        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel
         // Only wrap to next line if more than 3 extra overlays are enabled (> 3); stay horizontal for 1-3 overlays
         val useNextLine = extraOverlayCount > 3 && hasThermals
 
@@ -1319,7 +1404,13 @@ fun OverlaySettingsPanel(
                             if (hasCpu) appendThermal("CPU", "42.1°C")
                             if (hasGpu) appendThermal("GPU", "38.5°C")
                             if (hasSoc) appendThermal("SOC", "45.2°C")
-                            if (hasBatt) appendThermal("BATT", "38.5°C")
+                            if (hasBattBoth) {
+                                appendThermal("BAT", "38.5°C (85%)")
+                            } else if (hasBatt) {
+                                appendThermal("BATT", "38.5°C")
+                            } else if (hasBattLevel) {
+                                appendThermal("BAT", "85%")
+                            }
                         }
                     },
                     style = MaterialTheme.typography.labelSmall.copy(
@@ -1421,30 +1512,52 @@ fun DeveloperCard() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    .clickable {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://romel-portfolio.vercel.app/"))
+                        context.startActivity(intent)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
             
             Spacer(Modifier.height(10.dp))
             
-            Text(
-                text = "rdevz-ph",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://romel-portfolio.vercel.app/"))
+                        context.startActivity(intent)
+                    }
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "Romel",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.width(6.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = "Portfolio",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
             
             Text(
-                text = "Android Developer",
+                text = "rdevz-ph • Lead Developer",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1500,7 +1613,7 @@ fun DeveloperCard() {
             Spacer(Modifier.height(8.dp))
             
             Text(
-                text = "Built with ❤️ for gamers",
+                text = "Built with passion for gamers",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )

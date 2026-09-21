@@ -21,6 +21,7 @@ import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
 import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.shizuku.ShizukuHelper
+import com.rdevzph.fpsmeter.ui.theme.AppThemeSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,7 +45,8 @@ data class OverlaySettings(
     val recordingPackages: Set<String> = emptySet(),
     val autoRecordAll: Boolean = false,
     val fpsProvider: FpsProvider = FpsProvider.CHOREOGRAPHER,
-    val showGraphicsApi: Boolean = true
+    val showGraphicsApi: Boolean = true,
+    val showBatteryLevel: Boolean = false
 ) {
     companion object {
         const val AUTO_COLOR = 0 // Sentinel value for automatic coloring
@@ -68,6 +70,7 @@ data class OverlaySettings(
         private const val KEY_AUTO_RECORD_ALL = "auto_record_all"
         private const val KEY_FPS_PROVIDER = "fps_provider"
         private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
+        private const val KEY_SHOW_BATTERY_LEVEL = "show_battery_level"
 
         fun load(context: Context): OverlaySettings {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -90,7 +93,8 @@ data class OverlaySettings(
                 recordingPackages = prefs.getStringSet(KEY_RECORDING_PACKAGES, defaultSettings.recordingPackages) ?: emptySet(),
                 autoRecordAll = prefs.getBoolean(KEY_AUTO_RECORD_ALL, defaultSettings.autoRecordAll),
                 fpsProvider = FpsProvider.fromString(prefs.getString(KEY_FPS_PROVIDER, defaultSettings.fpsProvider.name)),
-                showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi)
+                showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi),
+                showBatteryLevel = prefs.getBoolean(KEY_SHOW_BATTERY_LEVEL, defaultSettings.showBatteryLevel)
             )
         }
 
@@ -114,6 +118,7 @@ data class OverlaySettings(
                 putBoolean(KEY_AUTO_RECORD_ALL, settings.autoRecordAll)
                 putString(KEY_FPS_PROVIDER, settings.fpsProvider.name)
                 putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
+                putBoolean(KEY_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                 apply()
             }
         }
@@ -139,6 +144,9 @@ class FpsViewModel(
     private val _settings = MutableStateFlow(OverlaySettings.load(context))
     val settings: StateFlow<OverlaySettings> = _settings.asStateFlow()
 
+    private val _themeSettings = MutableStateFlow(AppThemeSettings.load(context))
+    val themeSettings: StateFlow<AppThemeSettings> = _themeSettings.asStateFlow()
+
     private val _statusMessage = MutableStateFlow("")
     val statusMessage: StateFlow<String> = _statusMessage.asStateFlow()
 
@@ -154,6 +162,7 @@ class FpsViewModel(
         _isOverlayRunning.value = FpsOverlayService.isRunning
         shizukuHelper.updateAvailability(packageManager)
         _settings.value = OverlaySettings.load(context)
+        _themeSettings.value = AppThemeSettings.load(context)
         checkOverlayPermission(context)
         checkAccessibilityService(context)
         refreshSessions()
@@ -324,6 +333,11 @@ class FpsViewModel(
     fun updateSettings(new: OverlaySettings) {
         _settings.value = new
         OverlaySettings.save(context, new)
+    }
+
+    fun updateThemeSettings(newSettings: AppThemeSettings) {
+        _themeSettings.value = newSettings
+        AppThemeSettings.save(context, newSettings)
     }
 
     fun setOverlayRunning(running: Boolean) {
