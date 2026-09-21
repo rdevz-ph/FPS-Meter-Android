@@ -2,7 +2,7 @@
 
 ### What's New in v2.1
 - **Dark AMOLED Mode**: Pure pitch-black theme (`#000000`) designed for OLED/AMOLED displays, providing maximum contrast and power efficiency.
-- **Dedicated Settings Screen**: Moved configuration out of popups into a dedicated Settings page with top app bar back navigation.
+- **Dedicated Settings Screen**: Full-page Settings view featuring app theme selection (System / Dark / Light), Dark AMOLED toggle switch, developer profile, and community links.
 - **TopAppBar Overflow Menu**: Quick access menu featuring About information, Settings navigation, and a Donation platform chooser.
 - **Remaining Battery Percentage Overlay**: Real-time battery level indicator (`BAT xx%`) visible directly on the floating overlay during fullscreen gaming ([#7](https://github.com/rdevz-ph/FPS-Meter-Android/issues/7)).
 - **Unified Battery Telemetry**: Automatically merges battery temperature and percentage into a single compact readout (`BAT 38.5°C (85%)`) when both are active to conserve HUD space and prevent line wrapping.

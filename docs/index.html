@@ -138,6 +138,15 @@
                 </svg>
                 No Root Required
               </span>
+              <a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases" target="_blank" rel="noopener noreferrer"
+                class="feature-pill downloads-pill" id="hero-downloads-pill" title="Total Releases Downloads">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span id="hero-downloads-count">4,200+ Downloads</span>
+              </a>
             </div>
 
             <div class="hero-actions">
@@ -189,6 +198,18 @@
 
         <!-- Quick Stats Strip -->
         <div class="stats-strip">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-downloads">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary)" stroke-width="2.5" style="display:inline-block; vertical-align:middle;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span id="stat-downloads-val">4.2k+</span>
+            </div>
+            <div class="stat-label">Downloads</div>
+          </div>
+
           <div class="stat-item">
             <div class="stat-value" id="stat-version">v2.1</div>
             <div class="stat-label">Version</div>
@@ -525,6 +546,10 @@
               <td><span id="table-version">2.1</span> (VersionCode: <span id="table-version-code">12</span>)</td>
             </tr>
             <tr>
+              <th>Downloads</th>
+              <td><span class="code-pill" id="table-downloads">4,200+</span> total downloads via GitHub Releases</td>
+            </tr>
+            <tr>
               <th>Operating System</th>
               <td>Android 8.0 (API 26) through Android 16 (API 36)</td>
             </tr>
@@ -729,6 +754,35 @@
     }
 
     fetchLatestRelease();
+
+    // Live Downloads Counter API integration
+    const DOWNLOADS_API_URL = `https://my-release-badge-api.netlify.app/api/badge?owner=${REPO_OWNER}&repo=${REPO_NAME}&mode=json`;
+
+    async function fetchDownloadsCount() {
+      try {
+        const response = await fetch(DOWNLOADS_API_URL);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data && typeof data.downloads === 'number') {
+          const count = data.downloads;
+          const formattedK = count >= 1000 ? (count / 1000).toFixed(1).replace('.0', '') + 'k+' : count.toLocaleString();
+          const countComma = count.toLocaleString();
+
+          const statEl = document.getElementById('stat-downloads-val');
+          if (statEl) statEl.textContent = formattedK;
+
+          const heroEl = document.getElementById('hero-downloads-count');
+          if (heroEl) heroEl.textContent = `${countComma} Downloads`;
+
+          const tableEl = document.getElementById('table-downloads');
+          if (tableEl) tableEl.textContent = `${countComma} downloads`;
+        }
+      } catch (err) {
+        console.log('Unable to fetch live download count:', err);
+      }
+    }
+
+    fetchDownloadsCount();
 
     // Screenshot Gallery Horizontal Scroll Buttons
     const gallery = document.getElementById('screenshots-container');

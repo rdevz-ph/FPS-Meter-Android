@@ -452,10 +452,23 @@ header, main, section, footer {
   color: #fff;
 }
 
+.feature-pill.downloads-pill {
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.feature-pill.downloads-pill:hover {
+  background-color: var(--card-hover);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 /* App Store Quick Stats Bar */
 .stats-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   margin-top: 2.25rem;
   padding-top: 1.75rem;
@@ -1081,7 +1094,7 @@ header, main, section, footer {
   }
 
   .stats-strip {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
     gap: 1.25rem 0.75rem;
     margin-top: 1.75rem;
     padding-top: 1.25rem;
