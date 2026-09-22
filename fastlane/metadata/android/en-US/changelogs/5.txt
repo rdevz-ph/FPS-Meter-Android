@@ -1,10 +1,6 @@
-- FPS Provider Setting: Added the ability to choose how FPS is measured:
-  - Choreographer (Default): Measures display vsync timing with low overhead, ideal for standard UI monitoring.
-  - SurfaceFlinger: Measures true game rendering frame rates using Shizuku privileged shell access to inspect active compositor layers.
-- SurfaceFlinger Game FPS Measurement: Samples real frame presentation buffers directly from active game SurfaceView buffer queues, delivering accurate in-game FPS counters for demanding titles.
-- Automatic Graphics API Detection: Dynamically inspects the foreground game's rendering pipeline (via system GPU telemetry and dumpsys metrics) to detect whether the game is running on Vulkan or OpenGL ES, applying the appropriate frame measurement strategy for each API.
-- Graphics API Overlay Badge: Optional toggle to display an on-screen [VK] or [GL] badge directly on the overlay pill next to the FPS value when SurfaceFlinger mode is active.
-- Self-Healing Layer Recovery: Automated active layer invalidation and presentation timestamp resynchronization to prevent 0 FPS stalls during game switching.
-- Graceful Fallback Mechanism: If Shizuku is unavailable, permissions are revoked, or the game is minimized, the measurement engine automatically falls back to Choreographer to ensure uninterrupted monitoring.
-- Dynamic Shizuku Requirement Handling: The SurfaceFlinger option is automatically enabled when Shizuku is installed and running with permissions granted; otherwise, it is disabled with a clear requirement indicator.
-- In-Game Testing & Verification: Added and documented in-game verification showcasing real-time game performance tracking with the overlay.
+- SurfaceFlinger FPS: Measure true game frame rates via privileged Shizuku access.
+- Choreographer Mode: Low-overhead display vsync timing for general UI monitoring.
+- Graphics API Detection: Automatically detects Vulkan and OpenGL ES game pipelines.
+- Graphics API Overlay Badge: Optional [VK] or [GL] HUD badge on the overlay.
+- Self-Healing Layer Recovery: Prevents 0 FPS stalls when switching between games.
+- Graceful fallback to Choreographer if Shizuku is stopped.
