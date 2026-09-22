@@ -58,6 +58,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_COLOR = "color"
         const val EXTRA_SIZE = "size"
         const val EXTRA_ALPHA = "alpha"
+        const val EXTRA_BACKGROUND_ALPHA = "background_alpha"
         const val EXTRA_POSITION_X = "pos_x"
         const val EXTRA_POSITION_Y = "pos_y"
         const val EXTRA_SHOW_MS = "show_ms"
@@ -103,7 +104,8 @@ class FpsOverlayService : Service() {
     // Settings (with defaults)
     private var textColor = OverlaySettings.AUTO_COLOR
     private var textSizeSp = 14f
-    private var overlayAlpha = 0.9f
+    private var overlayAlpha = 1.0f
+    private var backgroundAlpha = 0.8f
     private var posX = 0
     private var posY = 100
     private var showMs = false
@@ -213,6 +215,7 @@ class FpsOverlayService : Service() {
         textColor = saved.color
         textSizeSp = saved.textSizeSp
         overlayAlpha = saved.alpha
+        backgroundAlpha = saved.backgroundAlpha
         posX = saved.posX
         posY = saved.posY
         showMs = saved.showMs
@@ -368,6 +371,9 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_ALPHA)) {
             overlayAlpha = intent.getFloatExtra(EXTRA_ALPHA, overlayAlpha)
         }
+        if (intent.hasExtra(EXTRA_BACKGROUND_ALPHA)) {
+            backgroundAlpha = intent.getFloatExtra(EXTRA_BACKGROUND_ALPHA, backgroundAlpha)
+        }
         if (intent.hasExtra(EXTRA_POSITION_X)) {
             posX = intent.getIntExtra(EXTRA_POSITION_X, posX)
         }
@@ -425,11 +431,21 @@ class FpsOverlayService : Service() {
         }
     }
 
+    private fun createOverlayBackgroundDrawable(isMultiLine: Boolean): GradientDrawable {
+        val bgAlphaInt = (backgroundAlpha.coerceIn(0f, 1f) * 255).toInt()
+        return GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = if (isMultiLine) 32f else 1000f
+            setColor(Color.argb(bgAlphaInt, 17, 17, 17))
+        }
+    }
+
     private fun updateOverlayAppearance() {
         if (::overlayView.isInitialized) {
             overlayView.post {
                 overlayView.textSize = textSizeSp
-                overlayView.alpha = overlayAlpha
+                overlayView.background = createOverlayBackgroundDrawable(lastUseNextLine == true)
+                overlayView.alpha = overlayAlpha.coerceIn(0.1f, 1.0f)
                 
                 layoutParams.gravity = overlayGravity
                 layoutParams.x = posX
@@ -457,21 +473,14 @@ class FpsOverlayService : Service() {
             y = posY
         }
 
-        // Rounded HUD background
-        val shape = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 32f // Smooth rounded corners for single or multi-line HUD
-            setColor(Color.parseColor("#CC111111")) // Dark semi-transparent
-        }
-
         overlayView = TextView(this).apply {
-            background = shape
+            background = createOverlayBackgroundDrawable(false)
             textSize = textSizeSp
             typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
-            alpha = overlayAlpha
+            alpha = overlayAlpha.coerceIn(0.1f, 1.0f)
             gravity = Gravity.CENTER
             setLineSpacing(6f, 1f)
-            setPadding(28, 12, 28, 12)
+            setPadding(24, 8, 24, 8)
             setShadowLayer(2f, 0f, 0f, Color.BLACK)
             setOnTouchListener(DragTouchListener())
         }
@@ -584,11 +593,7 @@ class FpsOverlayService : Service() {
         overlayView.post {
             if (lastUseNextLine != useNextLine) {
                 lastUseNextLine = useNextLine
-                overlayView.background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    cornerRadius = if (useNextLine) 32f else 1000f
-                    setColor(Color.parseColor("#CC111111"))
-                }
+                overlayView.background = createOverlayBackgroundDrawable(useNextLine)
                 if (useNextLine) {
                     overlayView.setPadding(28, 12, 28, 12)
                 } else {

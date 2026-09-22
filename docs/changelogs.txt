@@ -1,4 +1,11 @@
-## Version 2.1 | Latest Release | September 21, 2026
+## Version 2.2 | Latest Release | September 22, 2026
+- Independent Overlay Background Opacity: Configure HUD pill opacity (0-100%) independently from text and numbers. Text stays 100% sharp and solid.
+- Dual Opacity Controls: Added dedicated "Opacity" and "Bg Opacity" sliders to the Overlay Settings panel.
+- Games Screen Shimmer Skeleton Loading: Added animated loading placeholders to the Games screen while apps load in the background.
+- Lazy-Loaded Game List: Optimized app startup performance by querying launcher apps only when the Games tab is selected.
+- Benchmark Scorecard Template Sharing: Export and share custom benchmark scorecard card images from recorded gameplay sessions via Android Sharesheet.
+
+## Version 2.1 | September 21, 2026
 - Dark AMOLED Theme: Pure pitch-black theme (#000000) tailored for OLED and AMOLED displays to maximize contrast, reduce power consumption, and elevate visual immersion.
 - Dedicated Settings Screen: Full-page Settings view with theme mode selection (System / Dark / Light), Dark AMOLED toggle switch, Dynamic Colors toggle (Android 12+), developer profile, and project links.
 - TopAppBar Overflow Menu: Added top bar options menu featuring About dialog, Settings navigation, and Support & Donation chooser.

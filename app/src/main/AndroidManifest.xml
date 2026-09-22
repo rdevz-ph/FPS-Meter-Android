@@ -43,6 +43,17 @@
             android:multiprocess="false"
             android:permission="android.permission.INTERNET" />
 
+        <!-- FileProvider for sharing benchmark scorecards -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -59,7 +70,7 @@
             android:name=".ui.crash.CrashActivity"
             android:exported="false"
             android:process=":crash"
-            android:theme="@style/Theme.WuWaConfig" />
+            android:theme="@style/Theme.FpsMeter" />
 
         <!-- FPS Overlay Foreground Service -->
         <service

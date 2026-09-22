@@ -30,7 +30,8 @@ import kotlinx.coroutines.launch
 data class OverlaySettings(
     val color: Int = AUTO_COLOR,
     val textSizeSp: Float = 14f,
-    val alpha: Float = 0.9f,
+    val alpha: Float = 1.0f,
+    val backgroundAlpha: Float = 0.8f,
     val posX: Int = 0,
     val posY: Int = 100,
     val showMs: Boolean = false,
@@ -55,6 +56,7 @@ data class OverlaySettings(
         private const val KEY_COLOR = "color"
         private const val KEY_TEXT_SIZE = "text_size"
         private const val KEY_ALPHA = "alpha"
+        private const val KEY_BACKGROUND_ALPHA = "background_alpha"
         private const val KEY_POS_X = "pos_x"
         private const val KEY_POS_Y = "pos_y"
         private const val KEY_SHOW_MS = "show_ms"
@@ -79,6 +81,7 @@ data class OverlaySettings(
                 color = prefs.getInt(KEY_COLOR, defaultSettings.color),
                 textSizeSp = prefs.getFloat(KEY_TEXT_SIZE, defaultSettings.textSizeSp),
                 alpha = prefs.getFloat(KEY_ALPHA, defaultSettings.alpha),
+                backgroundAlpha = prefs.getFloat(KEY_BACKGROUND_ALPHA, defaultSettings.backgroundAlpha),
                 posX = prefs.getInt(KEY_POS_X, defaultSettings.posX),
                 posY = prefs.getInt(KEY_POS_Y, defaultSettings.posY),
                 showMs = prefs.getBoolean(KEY_SHOW_MS, defaultSettings.showMs),
@@ -103,6 +106,7 @@ data class OverlaySettings(
                 putInt(KEY_COLOR, settings.color)
                 putFloat(KEY_TEXT_SIZE, settings.textSizeSp)
                 putFloat(KEY_ALPHA, settings.alpha)
+                putFloat(KEY_BACKGROUND_ALPHA, settings.backgroundAlpha)
                 putInt(KEY_POS_X, settings.posX)
                 putInt(KEY_POS_Y, settings.posY)
                 putBoolean(KEY_SHOW_MS, settings.showMs)
@@ -216,12 +220,18 @@ class FpsViewModel(
     private val _installedApps = MutableStateFlow<List<AppInfo>>(emptyList())
     val installedApps: StateFlow<List<AppInfo>> = _installedApps.asStateFlow()
 
+    private val _isLoadingApps = MutableStateFlow(false)
+    val isLoadingApps: StateFlow<Boolean> = _isLoadingApps.asStateFlow()
+
     private val _accessibilityEnabled = MutableStateFlow(false)
     val accessibilityEnabled: StateFlow<Boolean> = _accessibilityEnabled.asStateFlow()
 
     fun loadInstalledApps() {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            _isLoadingApps.value = true
             try {
+                // Ensure a smooth, noticeable skeleton shimmer transition
+                kotlinx.coroutines.delay(450)
                 val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
                     addCategory(Intent.CATEGORY_LAUNCHER)
                 }
@@ -249,6 +259,8 @@ class FpsViewModel(
                 _installedApps.value = apps
             } catch (e: Exception) {
                 // Ignore failure querying launcher activities
+            } finally {
+                _isLoadingApps.value = false
             }
         }
     }

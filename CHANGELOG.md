@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.2] - 2026-09-22
+
+### Added
+- **Independent Overlay Background Opacity**: Configure the HUD background pill opacity (from 0% glass/transparent to 100% solid dark) independently from text and metrics ([#9](https://github.com/rdevz-ph/FPS-Meter-Android/issues/9)). Text remains 100% sharp, opaque, and legible regardless of background opacity level.
+- **Dual Opacity Sliders**: Added separate "Opacity" (overall text transparency) and "Bg Opacity" (background pill transparency) controls directly in the Overlay Settings panel.
+- **Games Screen Shimmer Skeleton Loading**: Integrated smooth animated shimmer skeleton placeholders that display while the installed launcher applications list is being loaded.
+- **Lazy-Loaded App List**: Deferred querying installed launcher applications until the user switches to the Games tab, improving initial app startup performance.
+- **Benchmark Scorecard Template Sharing**: Generate and share custom performance scorecard card images directly from individual History session cards via the Android Sharesheet, highlighting game icon, Average/Peak/Lowest FPS, session duration, device model, and performance tier.
+
+---
+
 ## [v2.1] - 2026-09-21
 
 ### Added

@@ -65,9 +65,9 @@ fun MainScreen(
     val versionName = remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageInfo.versionName ?: "1.0.0"
+            packageInfo.versionName ?: "2.2"
         } catch (e: Exception) {
-            "1.0.0"
+            "2.2"
         }
     }
 
@@ -80,6 +80,7 @@ fun MainScreen(
 
     val accessibilityEnabled by viewModel.accessibilityEnabled.collectAsState()
     val installedApps by viewModel.installedApps.collectAsState()
+    val isLoadingApps by viewModel.isLoadingApps.collectAsState()
 
     val sessions by viewModel.sessions.collectAsState()
     var currentTab by rememberSaveable { mutableStateOf(MainNavTab.METER) }
@@ -88,7 +89,13 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.checkOverlayPermission(context)
         viewModel.checkAccessibilityService(context)
-        viewModel.loadInstalledApps()
+    }
+
+    // Lazy load installed apps only when navigating to the Games tab
+    LaunchedEffect(currentTab) {
+        if (currentTab == MainNavTab.GAMES && installedApps.isEmpty()) {
+            viewModel.loadInstalledApps()
+        }
     }
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -274,6 +281,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_COLOR, settings.color)
                             putExtra(FpsOverlayService.EXTRA_SIZE, settings.textSizeSp)
                             putExtra(FpsOverlayService.EXTRA_ALPHA, settings.alpha)
+                            putExtra(FpsOverlayService.EXTRA_BACKGROUND_ALPHA, settings.backgroundAlpha)
                             putExtra(FpsOverlayService.EXTRA_POSITION_X, settings.posX)
                             putExtra(FpsOverlayService.EXTRA_POSITION_Y, settings.posY)
                             putExtra(FpsOverlayService.EXTRA_SHOW_MS, settings.showMs)
@@ -301,6 +309,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_COLOR, newSettings.color)
                                 putExtra(FpsOverlayService.EXTRA_SIZE, newSettings.textSizeSp)
                                 putExtra(FpsOverlayService.EXTRA_ALPHA, newSettings.alpha)
+                                putExtra(FpsOverlayService.EXTRA_BACKGROUND_ALPHA, newSettings.backgroundAlpha)
                                 putExtra(FpsOverlayService.EXTRA_POSITION_X, newSettings.posX)
                                 putExtra(FpsOverlayService.EXTRA_POSITION_Y, newSettings.posY)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_MS, newSettings.showMs)
@@ -477,6 +486,7 @@ fun MainScreen(
             GamesScreen(
                 settings = settings,
                 installedApps = installedApps,
+                isLoading = isLoadingApps,
                 accessibilityEnabled = accessibilityEnabled,
                 onOpenAccessibilitySettings = {
                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -1066,17 +1076,34 @@ fun OverlaySettingsPanel(
             )
         }
 
-        // Opacity
+        // Overall Opacity
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Opacity", style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
             Slider(
                 value = settings.alpha,
                 onValueChange = { onChange(settings.copy(alpha = it)) },
-                valueRange = 0.3f..1.0f,
+                valueRange = 0.2f..1.0f,
                 modifier = Modifier.weight(1f)
             )
             Text(
                 "${(settings.alpha * 100).toInt()}%",
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.width(36.dp),
+                fontFamily = FontFamily.Monospace
+            )
+        }
+
+        // Background Opacity
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Bg Opacity", style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Slider(
+                value = settings.backgroundAlpha,
+                onValueChange = { onChange(settings.copy(backgroundAlpha = it)) },
+                valueRange = 0.0f..1.0f,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                "${(settings.backgroundAlpha * 100).toInt()}%",
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.width(36.dp),
                 fontFamily = FontFamily.Monospace

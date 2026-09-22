@@ -24,7 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
+import com.rdevzph.fpsmeter.util.BenchmarkCardGenerator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,6 +44,8 @@ fun HistoryScreen(
     onNavigateToGames: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
     var confirmClearAll by remember { mutableStateOf(false) }
     var sessionToDelete by remember { mutableStateOf<FpsSessionRecord?>(null) }
@@ -304,6 +308,11 @@ fun HistoryScreen(
                     SessionCard(
                         session = session,
                         formattedDate = dateFormat.format(Date(session.startTime)),
+                        onShare = {
+                            coroutineScope.launch {
+                                BenchmarkCardGenerator.shareSessionCard(context, session)
+                            }
+                        },
                         onDelete = { sessionToDelete = session }
                     )
                 }
@@ -392,6 +401,7 @@ private fun AppIconImage(
 private fun SessionCard(
     session: FpsSessionRecord,
     formattedDate: String,
+    onShare: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -431,6 +441,18 @@ private fun SessionCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                IconButton(
+                    onClick = onShare,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share benchmark card",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(Modifier.width(4.dp))
                 IconButton(
                     onClick = onDelete,
                     modifier = Modifier.size(32.dp)

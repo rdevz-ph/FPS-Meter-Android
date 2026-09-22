@@ -1,10 +1,14 @@
 package com.rdevzph.fpsmeter.ui.screen
 
 import android.widget.Toast
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,6 +16,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,6 +37,7 @@ import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
 fun GamesScreen(
     settings: OverlaySettings,
     installedApps: List<FpsViewModel.AppInfo>,
+    isLoading: Boolean = false,
     accessibilityEnabled: Boolean,
     onOpenAccessibilitySettings: () -> Unit,
     onToggleAutoStart: (Boolean) -> Unit,
@@ -382,7 +391,19 @@ fun GamesScreen(
         }
 
         // List of Apps
-        if (filteredApps.isEmpty()) {
+        if (isLoading) {
+            val shimmerBrush = rememberShimmerBrush()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                items(7) {
+                    AppCardSkeleton(shimmerBrush)
+                }
+            }
+        } else if (filteredApps.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -520,3 +541,97 @@ fun GamesScreen(
         }
     }
 }
+
+@Composable
+fun rememberShimmerBrush(): Brush {
+    val transition = rememberInfiniteTransition(label = "shimmerTransition")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1100, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmerTranslate"
+    )
+
+    val isDark = isSystemInDarkTheme()
+    val shimmerColors = if (isDark) {
+        listOf(
+            Color(0xFF24272B),
+            Color(0xFF383C42),
+            Color(0xFF24272B)
+        )
+    } else {
+        listOf(
+            Color(0xFFE2E5E9),
+            Color(0xFFF2F4F7),
+            Color(0xFFE2E5E9)
+        )
+    }
+
+    return Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(translateAnim - 250f, translateAnim - 250f),
+        end = Offset(translateAnim + 250f, translateAnim + 250f)
+    )
+}
+
+@Composable
+fun AppCardSkeleton(brush: Brush) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Checkbox placeholder
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(brush)
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                // App title line placeholder
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.55f)
+                        .height(15.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+                Spacer(Modifier.height(8.dp))
+                // Package name line placeholder
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(11.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            // Launch/Record button placeholder
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(brush)
+            )
+        }
+    }
+}
+

@@ -1,14 +1,18 @@
-# FPS Meter Android v2.1
+# FPS Meter Android v2.2
 
-### What's New in v2.1
-- **Dark AMOLED Mode**: Pure pitch-black theme (`#000000`) designed for OLED/AMOLED displays, providing maximum contrast and power efficiency.
-- **Dedicated Settings Screen**: Full-page Settings view featuring app theme selection (System / Dark / Light), Dark AMOLED toggle switch, developer profile, and community links.
-- **TopAppBar Overflow Menu**: Quick access menu featuring About information, Settings navigation, and a Donation platform chooser.
-- **Remaining Battery Percentage Overlay**: Real-time battery level indicator (`BAT xx%`) visible directly on the floating overlay during fullscreen gaming ([#7](https://github.com/rdevz-ph/FPS-Meter-Android/issues/7)).
-- **Unified Battery Telemetry**: Automatically merges battery temperature and percentage into a single compact readout (`BAT 38.5°C (85%)`) when both are active to conserve HUD space and prevent line wrapping.
-- **Support & Donations**: Support the developer via Ko-fi (`romelbrosas`) and Buy Me a Coffee (`rdevzph`).
+### What's New in v2.2
+- **Independent Overlay Background Opacity**: Configure the HUD background pill opacity (from 0% glass/transparent to 100% solid dark) independently from text and metrics ([#9](https://github.com/rdevz-ph/FPS-Meter-Android/issues/9)). Text remains 100% sharp, opaque, and legible regardless of background opacity level.
+- **Dual Opacity Sliders**: Added separate "Opacity" (overall text transparency) and "Bg Opacity" (background pill transparency) controls directly in the Overlay Settings panel.
+- **Games Screen Shimmer Skeleton Loading**: Integrated smooth animated shimmer skeleton placeholders that display while the installed launcher applications list is being loaded.
+- **Lazy-Loaded App List**: Deferred querying installed launcher applications until the user switches to the Games tab, improving initial app startup performance.
+- **Benchmark Scorecard Template Sharing**: Generate and share custom performance scorecard card images directly from individual History session cards via the Android Sharesheet, highlighting game icon, Average/Peak/Lowest FPS, session duration, device model, and performance tier.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
+
+### Update Highlights Preview
+| Benchmark Scorecard Sample 1 | Benchmark Scorecard Sample 2 |
+|:----------------------------:|:----------------------------:|
+| ![Benchmark Scorecard Sample 1](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/benchmark-sample-1.jpg) | ![Benchmark Scorecard Sample 2](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/benchmark-sample-2.png) |
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers

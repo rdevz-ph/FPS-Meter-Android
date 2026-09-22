@@ -1,0 +1,4 @@
+- Independent Background Opacity: Set HUD background pill opacity (0-100%) independently from text opacity.
+- Dual Opacity Controls: Separate overall opacity and background pill opacity sliders in Overlay settings.
+- Benchmark Scorecard Sharing: Export and share custom performance scorecard images from recorded gameplay sessions.
+- Shimmer Skeleton Loading: Added animated loading placeholders to the Games screen while launcher apps load.
