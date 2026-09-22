@@ -27,8 +27,8 @@
 >   - **Choreographer (Default)**: Uses Android's `Choreographer` API to receive frame callbacks, measuring elapsed time to calculate real-time frames per second (FPS). Frame time (MS) is derived directly from this rate.
 >   - **SurfaceFlinger (Game FPS via Shizuku)**: Connects to Android's compositor via privileged Shizuku shell commands to measure real game frame presentation buffers from active `SurfaceView` buffer queues.
 > - **Automatic Graphics API Detection**: Automatically detects whether the foreground game is rendering with **Vulkan** or **OpenGL ES** (tested on games such as Genshin Impact and Wuthering Waves) using system GPU telemetry (`dumpsys gpu` and `dumpsys gfxinfo`), adapting the measurement method accordingly.
-> - **Hardware Temperature Telemetry**:
->   - **Battery Temp (`TEMP (BATT)`)**: Uses a dynamic `BroadcastReceiver` for `Intent.ACTION_BATTERY_CHANGED` to read and display real-time battery temperature without needing special permissions.
+> - **Hardware & Battery Telemetry**:
+>   - **Battery Temperature & Charge Level (`BAT`)**: Uses a dynamic `BroadcastReceiver` for `Intent.ACTION_BATTERY_CHANGED` to monitor real-time battery temperature and remaining charge percentage (`BAT xx%`) for fullscreen gaming. When both are enabled, they automatically merge into a unified indicator: `BAT <temp> (<level>)` (e.g. `BAT 38°C (85%)`).
 >   - **SoC, CPU & GPU Temps (`SOC`, `CPU`, `GPU`)**: Queries Android's Thermal HAL (`dumpsys thermalservice`) and Linux sysfs thermal zones (`cpu-*-usr`, `gpuss-*-usr`) via Shizuku privileged shell access to monitor accurate live silicon hotspot, individual CPU core, and GPU temperatures during gaming across Qualcomm Snapdragon and MediaTek platforms.
 > - **Adaptive Dynamic Layout**: Automatically presents a clean single-line pill when 1 to 3 metrics are enabled, and organizes into a structured two-line layout (Line 1: Performance metrics, Line 2: Temperatures) when 4 or more metrics are active.
 > - **Material 3 Navigation & Dedicated Screens**: Modern navigation featuring Overlay settings, Games manager with 1-tap game launching, and dedicated FPS session History with per-app launcher icons.
@@ -77,8 +77,9 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 - **In-Memory FPS Recording & History Logs**: Lightweight per-game session recorder capturing Average FPS, Peak FPS, Min FPS, and duration in memory without disk I/O lag or battery drain, paired with a dedicated **History** screen to review historical benchmarks.
 - **Floating Assistive Quick Menu**: An interactive on-screen bubble expanding into an in-game HUD menu to start/stop FPS recording and toggle HUD visibility without leaving your game, with outside-touch protection and auto-dismiss.
 - **Direct Game Launcher & Auto-Start**: Built-in Games screen with direct 1-tap game launching, search filters, and automated overlay start/stop upon entering or exiting designated games via Accessibility Service.
-- **Hardware Temperature Telemetry**: Live multi-sensor thermal monitoring across CPU, GPU, SoC, and Battery with independent metric toggles to track heat and thermal throttling.
+- **Hardware & Battery Telemetry**: Live multi-sensor thermal monitoring across CPU, GPU, SoC, and Battery with independent metric toggles to track heat and thermal throttling, plus an on-screen **Battery Percentage** indicator. Automatically merges battery temperature and charge level into a compact unified readout (`BAT <temp> (<level>)`) when both metrics are enabled.
 - **Samsung Perf Z HUD Styling**: Compact semi-transparent pill overlay with cyan labels, white digits, dynamic green-yellow-orange-red FPS performance color coding, adjustable text size, opacity, and drag-and-drop repositioning.
+- **Dark AMOLED Theme & Dedicated Settings**: Pure pitch-black theme (#000000) tailored for OLED and AMOLED displays to maximize contrast and battery efficiency, paired with a full-page Settings screen for theme modes, Dynamic Colors, and developer links.
 - **Zero-Friction Setup**: Optional Shizuku integration to auto-grant overlay permissions with 1 tap and a Quick Settings status bar tile for quick toggling from any screen.
 
 ## Requirements

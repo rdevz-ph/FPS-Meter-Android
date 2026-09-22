@@ -105,7 +105,7 @@
 
             <p class="app-summary">
               A high-performance, lightweight frame rate & thermal overlay inspired by Samsung Perf Z. Monitor true game
-              FPS, Vulkan/OpenGL ES graphics APIs, battery temperature, CPU/GPU thermals, and record per-game performance benchmarks in real-time.
+              FPS, Vulkan/OpenGL ES graphics APIs, battery level & thermals, CPU/GPU temperatures, and record per-game performance benchmarks in real-time.
             </p>
 
             <div class="badge-row">
@@ -145,7 +145,7 @@
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                <span id="hero-downloads-count">4,200+ Downloads</span>
+                <span id="hero-downloads-count">Downloads</span>
               </a>
             </div>
 
@@ -205,7 +205,7 @@
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              <span id="stat-downloads-val">4.2k+</span>
+              <span id="stat-downloads-val">--</span>
             </div>
             <div class="stat-label">Downloads</div>
           </div>
@@ -442,11 +442,14 @@
         <div class="feature-card">
           <div class="feature-icon-box">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
+              <rect x="2" y="7" width="16" height="10" rx="2" ry="2" />
+              <line x1="22" y1="11" x2="22" y2="13" stroke-linecap="round" />
+              <line x1="6" y1="10" x2="6" y2="14" />
+              <line x1="10" y1="10" x2="10" y2="14" />
             </svg>
           </div>
-          <h4>Multi-Temperature Telemetry</h4>
-          <p>Monitor real-time thermals across dedicated CPU, GPU, and Battery sensors with independent toggles to track hardware heat and prevent thermal throttling.</p>
+          <h4>Battery & Thermal Telemetry</h4>
+          <p>Monitor real-time thermals across CPU, GPU, SoC, and Battery, plus live battery percentage. Merges into a compact unified readout (<code>BAT 38°C (85%)</code>) when both are active.</p>
         </div>
 
         <!-- Card 4 -->
@@ -547,7 +550,7 @@
             </tr>
             <tr>
               <th>Downloads</th>
-              <td><span class="code-pill" id="table-downloads">4,200+</span> total downloads via GitHub Releases</td>
+              <td><span class="code-pill" id="table-downloads">--</span> total downloads via GitHub Releases</td>
             </tr>
             <tr>
               <th>Operating System</th>
@@ -758,24 +761,41 @@
     // Live Downloads Counter API integration
     const DOWNLOADS_API_URL = `https://my-release-badge-api.netlify.app/api/badge?owner=${REPO_OWNER}&repo=${REPO_NAME}&mode=json`;
 
+    function updateDownloadsUI(count) {
+      if (typeof count !== 'number' || isNaN(count)) return;
+      const formattedK = count >= 1000 ? (count / 1000).toFixed(1).replace('.0', '') + 'k+' : count.toLocaleString();
+      const countComma = count.toLocaleString();
+
+      const statEl = document.getElementById('stat-downloads-val');
+      if (statEl) statEl.textContent = formattedK;
+
+      const heroEl = document.getElementById('hero-downloads-count');
+      if (heroEl) heroEl.textContent = `${countComma} Downloads`;
+
+      const tableEl = document.getElementById('table-downloads');
+      if (tableEl) tableEl.textContent = `${countComma} downloads`;
+    }
+
     async function fetchDownloadsCount() {
+      // 1. Immediately display cached count if available
+      try {
+        const cached = localStorage.getItem('fpsmeter_downloads_count');
+        if (cached) {
+          updateDownloadsUI(parseInt(cached, 10));
+        }
+      } catch (_) {}
+
+      // 2. Fetch live count from API
       try {
         const response = await fetch(DOWNLOADS_API_URL);
         if (!response.ok) return;
         const data = await response.json();
         if (data && typeof data.downloads === 'number') {
           const count = data.downloads;
-          const formattedK = count >= 1000 ? (count / 1000).toFixed(1).replace('.0', '') + 'k+' : count.toLocaleString();
-          const countComma = count.toLocaleString();
-
-          const statEl = document.getElementById('stat-downloads-val');
-          if (statEl) statEl.textContent = formattedK;
-
-          const heroEl = document.getElementById('hero-downloads-count');
-          if (heroEl) heroEl.textContent = `${countComma} Downloads`;
-
-          const tableEl = document.getElementById('table-downloads');
-          if (tableEl) tableEl.textContent = `${countComma} downloads`;
+          try {
+            localStorage.setItem('fpsmeter_downloads_count', count);
+          } catch (_) {}
+          updateDownloadsUI(count);
         }
       } catch (err) {
         console.log('Unable to fetch live download count:', err);
