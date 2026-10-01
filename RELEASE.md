@@ -1,18 +1,11 @@
-# FPS Meter Android v2.2
+# FPS Meter Android v2.3
 
-### What's New in v2.2
-- **Independent Overlay Background Opacity**: Configure the HUD background pill opacity (from 0% glass/transparent to 100% solid dark) independently from text and metrics ([#9](https://github.com/rdevz-ph/FPS-Meter-Android/issues/9)). Text remains 100% sharp, opaque, and legible regardless of background opacity level.
-- **Dual Opacity Sliders**: Added separate "Opacity" (overall text transparency) and "Bg Opacity" (background pill transparency) controls directly in the Overlay Settings panel.
-- **Games Screen Shimmer Skeleton Loading**: Integrated smooth animated shimmer skeleton placeholders that display while the installed launcher applications list is being loaded.
-- **Lazy-Loaded App List**: Deferred querying installed launcher applications until the user switches to the Games tab, improving initial app startup performance.
-- **Benchmark Scorecard Template Sharing**: Generate and share custom performance scorecard card images directly from individual History session cards via the Android Sharesheet, highlighting game icon, Average/Peak/Lowest FPS, session duration, device model, and performance tier.
+### What's New in v2.3
+- **Internationalization (i18n) & Simplified Chinese Localization**: Extracted all user-facing strings into resource files and added comprehensive Simplified Chinese (`values-zh`) translations ([#12](https://github.com/rdevz-ph/FPS-Meter-Android/pull/12)). Special thanks to [@CH-Hu-Bill](https://github.com/CH-Hu-Bill).
+- **In-App Language Switcher**: Added a dedicated Language section to the Settings screen with options for System Default, English, and Simplified Chinese (简体中文). Changing the language dynamically applies to the application and background service contexts (`attachBaseContext`) immediately.
+- **Text Overflow & Layout Fixes**: Added single-line limits and ellipsis truncation across title bars and status labels, plus horizontal scrolling for session card chips in the History screen to prevent text clipping across languages.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
-
-### Update Highlights Preview
-| Benchmark Scorecard Sample 1 | Benchmark Scorecard Sample 2 |
-|:----------------------------:|:----------------------------:|
-| ![Benchmark Scorecard Sample 1](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/benchmark-sample-1.jpg) | ![Benchmark Scorecard Sample 2](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/benchmark-sample-2.png) |
 
 ### Features
 - Choice between Choreographer and SurfaceFlinger FPS measurement providers
@@ -25,6 +18,7 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Interactive floating assistive bubble with in-game quick control menu
 - Six preset positions (top/bottom left/center/right) with manual drag support
 - Light and dark mode themes
+- Multi-language support (English and Simplified Chinese) with in-app language switcher
 - Adjustable text size and overlay opacity
 - Optional Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and hardware thermal monitoring
 - Quick Settings status bar tile and automated game detection via Accessibility Service

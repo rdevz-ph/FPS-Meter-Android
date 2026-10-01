@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.3] - 2026-10-01
+
+### Added
+- **Internationalization (i18n) & Simplified Chinese Localization**: Extracted all user-facing strings into resource files and added comprehensive Simplified Chinese (`values-zh`) translations ([#12](https://github.com/rdevz-ph/FPS-Meter-Android/pull/12)). Special thanks to [@CH-Hu-Bill](https://github.com/CH-Hu-Bill).
+- **In-App Language Switcher**: Added a dedicated Language section to the Settings screen with options for System Default, English, and Simplified Chinese (简体中文). Changing the language dynamically applies to the application and background service contexts (`attachBaseContext`) immediately.
+- **Text Overflow & Layout Fixes**: Added single-line limits and ellipsis truncation across title bars and status labels, plus horizontal scrolling for session card chips in the History screen to prevent text clipping across languages.
+
+---
+
 ## [v2.2] - 2026-09-22
 
 ### Added

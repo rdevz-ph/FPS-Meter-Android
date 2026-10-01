@@ -7,7 +7,7 @@
   [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
-  [![Version](https://img.shields.io/badge/version-2.2-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
+  [![Version](https://img.shields.io/badge/version-2.3-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
   [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmy-release-badge-api.netlify.app%2Fapi%2Fbadge%3Fowner%3Drdevz-ph%26repo%3DFPS-Meter-Android%26mode%3Djson&query=%24.downloads&label=downloads&color=2563eb&style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases)
   [![Website](https://img.shields.io/badge/Website-Live%20Showcase-00e676?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rdevz-ph.github.io/FPS-Meter-Android/)
 
@@ -78,6 +78,7 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 - **Hardware & Battery Telemetry**: Live multi-sensor thermal monitoring across CPU, GPU, SoC, and Battery with independent metric toggles to track heat and thermal throttling, plus an on-screen **Battery Percentage** indicator. Automatically merges battery temperature and charge level into a compact unified readout (`BAT <temp> (<level>)`) when both metrics are enabled.
 - **Samsung Perf Z HUD Styling**: Compact semi-transparent pill overlay with cyan labels, white digits, dynamic green-yellow-orange-red FPS performance color coding, adjustable text size, opacity, and drag-and-drop repositioning.
 - **Dark AMOLED Theme & Dedicated Settings**: Pure pitch-black theme (#000000) tailored for OLED and AMOLED displays to maximize contrast and battery efficiency, paired with a full-page Settings screen for theme modes, Dynamic Colors, and developer links.
+- **Multi-Language Support**: Built-in English and Simplified Chinese (简体中文) localization with an in-app language switcher in Settings ([#12](https://github.com/rdevz-ph/FPS-Meter-Android/pull/12)).
 - **Zero-Friction Setup**: Optional Shizuku integration to auto-grant overlay permissions with 1 tap and a Quick Settings status bar tile for quick toggling from any screen.
 
 ## Requirements

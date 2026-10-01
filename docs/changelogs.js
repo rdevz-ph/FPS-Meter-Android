@@ -1,5 +1,10 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 2.2 | Latest Release | September 22, 2026
+window.CHANGELOGS_TEXT = `## Version 2.3 | Latest Release | October 1, 2026
+- Internationalization (i18n) & Simplified Chinese Localization: Added comprehensive Simplified Chinese (values-zh) translation and extracted hardcoded UI strings into resources (PR #12 by @CH-Hu-Bill).
+- In-App Language Switcher: Added language selector in Settings (System Default, English, and 简体中文) with instant UI and service context recreation.
+- Text Overflow & Layout Fixes: Added single-line ellipsis handling and horizontal scrolling on History session card chips to prevent text clipping across languages.
+
+## Version 2.2 | September 22, 2026
 - Independent Overlay Background Opacity: Configure HUD pill opacity (0-100%) independently from text and numbers. Text stays 100% sharp and solid.
 - Dual Opacity Controls: Added dedicated "Opacity" and "Bg Opacity" sliders to the Overlay Settings panel.
 - Games Screen Shimmer Skeleton Loading: Added animated loading placeholders to the Games screen while apps load in the background.

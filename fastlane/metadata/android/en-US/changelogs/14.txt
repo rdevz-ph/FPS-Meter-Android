@@ -1,0 +1,3 @@
+- Internationalization: Added full Simplified Chinese (values-zh) localization (#12).
+- In-App Language Switcher: Added language selector in Settings (System, English, Chinese).
+- Layout Fixes: Text overflow protection and scrollable chips for multi-language display.
