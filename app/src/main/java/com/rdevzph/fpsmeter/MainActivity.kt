@@ -2,6 +2,7 @@ package com.rdevzph.fpsmeter
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -18,12 +19,17 @@ import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.ui.screen.MainScreen
 import com.rdevzph.fpsmeter.ui.theme.AppThemeMode
 import com.rdevzph.fpsmeter.ui.theme.FpsMeterTheme
+import com.rdevzph.fpsmeter.util.LocaleHelper
 import com.rdevzph.fpsmeter.viewmodel.FpsViewModel
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: FpsViewModel
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -77,6 +83,11 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     viewModel = viewModel,
                     showSplash = showSplash,
+                    currentLanguage = LocaleHelper.getLanguage(this@MainActivity),
+                    onLanguageChange = { language ->
+                        LocaleHelper.setLanguage(this@MainActivity, language)
+                        recreate()
+                    },
                     onStartOverlay = { startOverlayService() },
                     onStopOverlay = { stopOverlayService() }
                 )
@@ -87,10 +98,10 @@ class MainActivity : ComponentActivity() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             FpsOverlayService.CHANNEL_ID,
-            "FPS Overlay",
+            getString(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Live FPS counter overlay"
+            description = getString(R.string.notif_channel_desc)
             setShowBadge(false)
         }
         val nm = getSystemService(NotificationManager::class.java)

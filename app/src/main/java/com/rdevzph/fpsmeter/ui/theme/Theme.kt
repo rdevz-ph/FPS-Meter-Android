@@ -1,5 +1,7 @@
 package com.rdevzph.fpsmeter.ui.theme
 
+import com.rdevzph.fpsmeter.R
+
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -12,10 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-enum class AppThemeMode(val title: String) {
-    SYSTEM("Follow System"),
-    DARK("Dark"),
-    LIGHT("Light")
+enum class AppThemeMode(val titleRes: Int) {
+    SYSTEM(R.string.theme_follow_system),
+    DARK(R.string.theme_dark),
+    LIGHT(R.string.theme_light)
 }
 
 data class AppThemeSettings(

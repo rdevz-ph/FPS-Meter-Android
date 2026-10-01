@@ -1,11 +1,13 @@
 package com.rdevzph.fpsmeter.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.content.ContextCompat
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
+import com.rdevzph.fpsmeter.util.LocaleHelper
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
 
 /**
@@ -26,6 +28,10 @@ class FpsAccessibilityService : AccessibilityService() {
         "com.touchtype.swiftkey",
         "com.android.settings"
     )
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
     override fun onServiceConnected() {
         super.onServiceConnected()

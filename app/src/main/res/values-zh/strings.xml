@@ -1,0 +1,282 @@
+<resources>
+    <string name="app_name">FPS Meter</string>
+    <string name="quick_settings_tile_label">FPS Meter</string>
+    <string name="accessibility_service_desc">当指定的应用和游戏启动或关闭时，自动启用或停用帧率悬浮窗。</string>
+
+    <!-- Common -->
+    <string name="common_cancel">取消</string>
+    <string name="common_settings">设置</string>
+    <string name="common_reset">重置</string>
+    <string name="common_delete">删除</string>
+    <string name="common_close">关闭</string>
+    <string name="common_enable">启用</string>
+    <string name="common_grant">授权</string>
+    <string name="common_refresh">刷新</string>
+    <string name="common_back">返回</string>
+    <string name="common_share">分享</string>
+    <string name="common_dismiss">关闭</string>
+    <string name="common_active">已启用</string>
+    <string name="common_details">详情</string>
+    <string name="common_confirm_enable">确认并启用</string>
+    <string name="common_requires_shizuku">需要 Shizuku</string>
+    <string name="common_more_options">更多选项</string>
+    <string name="common_donate">捐赠</string>
+    <string name="common_about">关于</string>
+    <string name="unable_to_open_browser">无法打开浏览器</string>
+
+    <!-- Navigation tabs -->
+    <string name="tab_meter">帧率</string>
+    <string name="tab_games">游戏</string>
+    <string name="tab_history">历史</string>
+    <string name="subtitle_meter">实时悬浮帧率</string>
+    <string name="subtitle_games">自动启动与游戏记录</string>
+    <string name="subtitle_history">性能会话记录</string>
+
+    <!-- Splash -->
+    <string name="app_by_author">作者 rdevz-ph</string>
+
+    <!-- Shizuku card -->
+    <string name="shizuku_optional">Shizuku（可选）</string>
+    <string name="shizuku_desc">用于在不打开设置的情况下自动授予悬浮窗权限，并启用特权 SurfaceFlinger 监控以获取真实游戏帧率。</string>
+    <string name="shizuku_service">服务</string>
+    <string name="shizuku_permission">权限</string>
+
+    <!-- Overlay permission card -->
+    <string name="overlay_permission">悬浮窗权限</string>
+    <string name="overlay_granted_desc">已授予 SYSTEM_ALERT_WINDOW —— 悬浮窗可显示在任意应用之上。</string>
+    <string name="overlay_required_desc">要在游戏上显示帧率计数器，必须授予此权限。可通过 Shizuku（无需 root）或手动授予。</string>
+    <string name="overlay_via_shizuku">通过 Shizuku</string>
+
+    <!-- Overlay control card -->
+    <string name="fps_overlay">帧率悬浮窗</string>
+    <string name="start_overlay">启动悬浮窗</string>
+    <string name="stop_overlay">停止悬浮窗</string>
+    <string name="grant_overlay_first">⚠ 请先授予悬浮窗权限</string>
+    <string name="overlay_settings">悬浮窗设置</string>
+
+    <!-- Overlay settings panel -->
+    <string name="reset_settings_title">重置设置？</string>
+    <string name="reset_settings_msg">确定要将所有帧率悬浮窗设置恢复为默认值吗？此操作无法撤销。</string>
+    <string name="fps_measurement_provider">帧率测量方式</string>
+    <string name="provider_choreographer">Choreographer</string>
+    <string name="provider_choreographer_desc">显示节奏（默认）</string>
+    <string name="provider_surfaceflinger">SurfaceFlinger</string>
+    <string name="provider_surfaceflinger_real">真实游戏帧率</string>
+    <string name="show_api_badge">显示图形 API 标识</string>
+    <string name="show_api_badge_desc">自动检测 Vulkan [VK] 或 OpenGL [GL]</string>
+    <string name="text_size">文字大小</string>
+    <string name="opacity">不透明度</string>
+    <string name="bg_opacity">背景不透明度</string>
+    <string name="color_label">颜色</string>
+    <string name="show_ms">显示 ms</string>
+    <string name="battery_temp">电池温度</string>
+    <string name="cpu_temp">CPU 温度</string>
+    <string name="gpu_temp">GPU 温度</string>
+    <string name="soc_temp">SoC 温度</string>
+    <string name="battery_level">电池电量</string>
+    <string name="position_presets">位置预设</string>
+    <string name="pos_top_left">左上</string>
+    <string name="pos_top_center">顶部居中</string>
+    <string name="pos_top_right">右上</string>
+    <string name="pos_bottom_left">左下</string>
+    <string name="pos_bottom_center">底部居中</string>
+    <string name="pos_bottom_right">右下</string>
+    <string name="reset_settings_btn">重置设置</string>
+
+    <!-- Info card -->
+    <string name="how_it_works">工作原理</string>
+    <string name="how_it_works_body">FPS 可通过两种不同的方式测量：\n\n• Choreographer（默认）：以极低开销采样驱动显示刷新的 Android vsync 信号。\n• SurfaceFlinger（Shizuku）：直接从 Android 合成器采样真实帧呈现缓冲区。自动检测运行中的游戏使用 Vulkan 还是 OpenGL ES（例如原神、鸣潮）以测量真实游戏帧率。\n\n• 温度监控：通过标准系统广播显示电池温度，并通过 Shizuku 特权 Thermal HAL 访问查询实时 SoC（CPU/GPU）温度。\n• 位置：拖动计数器或使用快捷预设将其吸附到任意角落。\n• 自动颜色：数值根据性能（60/45/30 FPS）动态改变颜色。\n• 权限：手动或通过 Shizuku 授予悬浮窗权限，实现无缝设置。</string>
+
+    <!-- Developer card -->
+    <string name="developer_role">rdevz-ph • 首席开发者</string>
+    <string name="developer_role_short">rdevz-ph（首席开发者）</string>
+    <string name="button_website">官网</string>
+    <string name="button_github_profile">GitHub 主页</string>
+    <string name="built_with_passion">用心为玩家打造</string>
+    <string name="content_desc_portfolio">作品集</string>
+
+    <!-- Website & updates -->
+    <string name="official_website">官方网站</string>
+    <string name="official_website_desc">安装教程、指南与功能预览</string>
+    <string name="check_for_updates">检查更新</string>
+
+    <!-- Quick access card -->
+    <string name="quick_access">快捷访问与开关</string>
+    <string name="floating_bubble">悬浮辅助球</string>
+    <string name="floating_bubble_desc">可在任意应用上拖动的悬浮球，通过快捷菜单启动/停止游戏帧率记录并切换 HUD 显示。</string>
+    <string name="quick_settings_tile">快捷设置面板磁贴</string>
+    <string name="quick_settings_tile_desc">在任意游戏中从状态栏下滑，点按“FPS Meter”磁贴即可切换，无需打开本应用。</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">设置</string>
+    <string name="section_app_theme">应用主题</string>
+    <string name="theme_follow_system">跟随系统</string>
+    <string name="theme_dark">深色</string>
+    <string name="theme_light">浅色</string>
+    <string name="dark_amoled">深色 AMOLED</string>
+    <string name="dark_amoled_desc">纯黑（#000000），适合 OLED 屏幕</string>
+    <string name="dynamic_colors">动态取色</string>
+    <string name="dynamic_colors_desc">使用系统壁纸配色</string>
+    <string name="section_developer">开发者</string>
+    <string name="section_github">GitHub 与社区</string>
+    <string name="github_repository">仓库</string>
+    <string name="github_star">在 GitHub 上加星</string>
+    <string name="github_star_desc">用一颗星支持本项目</string>
+    <string name="github_report_issue">反馈问题</string>
+    <string name="github_report_issue_desc">提交错误报告或功能建议</string>
+    <string name="section_support">支持开发</string>
+    <string name="support_body">如果你喜欢使用 FPS Meter，欢迎支持后续开发。</string>
+    <string name="donate_support">捐赠 / 支持作者</string>
+
+    <!-- Language -->
+    <string name="section_language">语言</string>
+    <string name="language_title">应用语言</string>
+    <string name="language_system">跟随系统</string>
+    <string name="language_english">English</string>
+    <string name="language_chinese">简体中文</string>
+
+    <!-- Games screen -->
+    <string name="accessibility_required">需要无障碍服务</string>
+    <string name="accessibility_required_desc">请在无障碍中启用 FPS Meter，以便检测前台游戏。</string>
+    <string name="auto_start_target">在目标应用上自动启动</string>
+    <string name="auto_start_target_desc">目标应用打开时自动启动悬浮窗，退出时停止。</string>
+    <string name="auto_record_all">自动记录所有游戏</string>
+    <string name="auto_record_all_desc">无需逐个配置，自动为任意活跃游戏记录帧率会话。</string>
+    <string name="search_apps">搜索应用或游戏...</string>
+    <string name="filter_all">全部</string>
+    <string name="filter_user_apps">用户应用</string>
+    <string name="filter_auto">自动（%d）</string>
+    <string name="filter_rec_all">记录（全部）</string>
+    <string name="filter_rec">记录（%d）</string>
+    <string name="target_apps">目标应用（%d）</string>
+    <string name="target_apps_hint_auto">复选框 = 自动启动</string>
+    <string name="target_apps_hint_rec">复选框 = 自动 • 圆点 = 记录</string>
+    <string name="no_apps_match">没有符合搜索或筛选条件的应用</string>
+    <string name="badge_user">用户</string>
+    <string name="no_launcher_activity">%s 没有可启动的入口</string>
+    <string name="content_desc_launch">启动 %s</string>
+    <string name="content_desc_rec_enabled">已为 %s 启用帧率记录</string>
+    <string name="content_desc_rec_disabled">为 %s 启用帧率记录</string>
+    <string name="confirm_enable_recording_title">启用帧率记录？</string>
+    <string name="confirm_enable_recording_msg">为“%s”启用帧率记录后，将在游戏运行时跟踪性能指标。</string>
+    <string name="notice_monitor">注意：持续的后台监控可能会在游戏过程中略微增加 CPU、内存、电量和存储的占用。</string>
+    <string name="rec_aggregate_desc">为将开销降至最低，FPS Meter 在内存中聚合数据（平均、峰值和最低帧率），并尽量减少磁盘写入。</string>
+    <string name="confirm_auto_record_title">为所有游戏启用自动记录？</string>
+    <string name="confirm_auto_record_msg">启用此选项后，将自动为任意活跃游戏或已启动的应用记录帧率性能会话。</string>
+    <string name="notice_auto_record">注意：持续的后台监控将为所有应用记录会话指标，无需逐个开启。</string>
+    <string name="per_game_hidden">此选项启用时，逐游戏记录圆点按钮将被隐藏。轻量级内存聚合可将设备开销保持在最低水平。</string>
+
+    <!-- History screen -->
+    <string name="delete_session_title">删除会话记录？</string>
+    <string name="delete_session_msg">要删除“%s”的性能记录吗？此操作无法撤销。</string>
+    <string name="clear_all_title">清空所有会话历史？</string>
+    <string name="clear_all_msg">确定要删除所有已记录的 FPS 游戏会话日志吗？此操作无法撤销。</string>
+    <string name="clear_all">清空全部</string>
+    <string name="performance_overview">性能概览</string>
+    <string name="summary_sessions">会话数</string>
+    <string name="summary_avg_fps">平均 FPS</string>
+    <string name="summary_peak_fps">峰值 FPS</string>
+    <string name="search_recorded">搜索已记录的游戏...</string>
+    <string name="no_session_logs">暂无会话记录</string>
+    <string name="no_session_logs_desc">在“游戏”标签页中为任意目标游戏或应用启用逐游戏记录。你的会话将以零延迟记录平均、峰值和最低帧率。</string>
+    <string name="configure_games">配置游戏</string>
+    <string name="no_games_match">没有匹配“%s”的游戏</string>
+    <string name="share_benchmark_card">分享跑分卡片</string>
+    <string name="delete_session">删除会话</string>
+    <string name="avg_prefix">平均: </string>
+    <string name="peak_low">峰值: %1$d | 最低: %2$d</string>
+
+    <!-- About dialog -->
+    <string name="about_subtitle">游戏性能监控</string>
+    <string name="about_desc">FPS Meter 是一款专为 Android 打造的轻量级、免 root 的游戏性能悬浮窗与会话记录工具。</string>
+    <string name="about_core_capabilities">核心功能</string>
+    <string name="about_feature1_title">实时帧率与帧时间</string>
+    <string name="about_feature1_desc">精准的帧率（FPS）与帧渲染时间（ms），支持自定义 HUD 样式。</string>
+    <string name="about_feature2_title">双重测量引擎</string>
+    <string name="about_feature2_desc">标准 Android Choreographer 与通过 Shizuku 的特权 SurfaceFlinger 监控。</string>
+    <string name="about_feature3_title">图形 API 检测</string>
+    <string name="about_feature3_desc">实时识别当前运行的 Vulkan 与 OpenGL ES 渲染管线。</string>
+    <string name="about_feature4_title">全面温度指标</string>
+    <string name="about_feature4_desc">实时读取 SoC 热点、CPU、GPU 与电池温度。</string>
+    <string name="about_feature5_title">电量指示</string>
+    <string name="about_feature5_desc">全屏游戏时在悬浮窗上实时显示剩余电量百分比。</string>
+    <string name="about_feature6_title">游戏性能记录</string>
+    <string name="about_feature6_desc">按游戏自动记录会话，保留平均、峰值与最低帧率历史日志。</string>
+    <string name="about_feature7_title">开源且注重隐私</string>
+    <string name="about_feature7_desc">免费开源。无广告、无遥测、无网络跟踪。</string>
+
+    <!-- Donation dialog -->
+    <string name="donation_title">支持开发</string>
+    <string name="donation_body1">本应用将始终免费且开源。我开发它既是为了个人乐趣，也是为了帮助社区中的其他人。</string>
+    <string name="donation_body2">捐赠完全出于自愿，非常感谢！</string>
+    <string name="donation_choose">选择你偏好的捐赠平台：</string>
+
+    <!-- Crash screen -->
+    <string name="crash_warning_desc">崩溃警告</string>
+    <string name="crash_title">FPS Meter 已崩溃</string>
+    <string name="crash_desc">发生了意外错误。你可以在 GitHub 上反馈此问题，或分享日志以帮助修复。</string>
+    <string name="label_exception">异常</string>
+    <string name="label_version">版本</string>
+    <string name="label_android">ANDROID</string>
+    <string name="file_issue_github">在 GitHub 上反馈</string>
+    <string name="copy_report">复制报告</string>
+    <string name="restart_app">重启应用</string>
+    <string name="diagnostic_log">诊断日志与堆栈跟踪</string>
+    <string name="copy_log">复制日志</string>
+    <string name="crash_report_copied">崩溃报告已复制到剪贴板</string>
+    <string name="share_crash_report">分享崩溃报告</string>
+    <string name="report_copied_opening">报告已复制到剪贴板！正在打开 GitHub...</string>
+    <string name="could_not_open_browser_issue">无法打开浏览器。问题链接已复制到剪贴板。</string>
+    <string name="github_issue_link_copied">GitHub 问题链接已复制到剪贴板</string>
+    <string name="clipboard_crash_label">FPS Meter 崩溃报告</string>
+    <string name="default_unexpected_exception">意外异常</string>
+    <string name="default_no_message">无更多信息。</string>
+
+    <!-- Overlay service / floating bubble / tile -->
+    <string name="no_active_game">无活跃游戏</string>
+    <string name="no_active_game_to_record">未检测到可记录的游戏</string>
+    <string name="recording_not_enabled_for">未在游戏列表中为 %s 启用记录</string>
+    <string name="recording_fps_for">正在记录 %s 的帧率</string>
+    <string name="saved_recording">已保存：%1$s（平均: %2$d FPS，最高: %3$d）</string>
+    <string name="recording_stopped">帧率记录已停止</string>
+    <string name="overlay_permission_required_tile">需要悬浮窗权限。请打开 FPS Meter。</string>
+    <string name="tile_tap_to_start">点按启动</string>
+    <string name="floating_rec_off">记录关闭</string>
+    <string name="floating_ready">就绪</string>
+    <string name="floating_stop_recording">停止记录</string>
+    <string name="floating_start_recording">开始记录</string>
+    <string name="floating_recording_not_enabled">未启用记录</string>
+    <string name="floating_hide_overlay">隐藏悬浮窗</string>
+    <string name="floating_show_overlay">显示悬浮窗</string>
+    <string name="floating_enable_rec_first">请先在游戏列表中为此游戏启用记录</string>
+    <string name="notif_status_visible">悬浮窗可见并正在测量</string>
+    <string name="notif_status_hidden">悬浮窗已隐藏（最小化）</string>
+    <string name="notif_action_hide">隐藏</string>
+    <string name="notif_action_show">显示</string>
+    <string name="notif_action_stop">停止</string>
+    <string name="notif_channel_name">帧率悬浮窗</string>
+    <string name="notif_channel_desc">实时帧率计数器悬浮窗</string>
+
+    <!-- Benchmark card -->
+    <string name="bench_badge">FPS METER • 跑分</string>
+    <string name="bench_average">平均帧率</string>
+    <string name="bench_peak">峰值帧率</string>
+    <string name="bench_lowest">最低帧率</string>
+    <string name="bench_duration">时长</string>
+    <string name="bench_ultra_smooth">极致流畅</string>
+    <string name="bench_playable">流畅可玩</string>
+    <string name="bench_acceptable">性能尚可</string>
+    <string name="bench_throttling">严重降频</string>
+    <string name="bench_device_prefix">设备: %s</string>
+    <string name="bench_footer">FPS Meter for Android • rdevz-ph</string>
+    <string name="share_benchmark_scorecard">分享跑分卡片</string>
+    <string name="bench_share_text">使用 FPS Meter Android 记录的 %1$s 跑分：平均 %2$d FPS，峰值 %3$d FPS，最低 %4$d FPS\nhttps://github.com/rdevz-ph/FPS-Meter-Android</string>
+    <string name="bench_card_failed">生成跑分卡片失败: %s</string>
+
+    <!-- ViewModel status -->
+    <string name="shizuku_not_ready">Shizuku 未就绪</string>
+    <string name="overlay_permission_granted">悬浮窗权限已授予！</string>
+    <string name="overlay_granted_recheck_failed">已通过 shell 授予，但重新检查失败</string>
+    <string name="shell_command_failed">Shell 命令失败（退出码 %d）</string>
+    <string name="shizuku_error">Shizuku 错误: %s</string>
+</resources>

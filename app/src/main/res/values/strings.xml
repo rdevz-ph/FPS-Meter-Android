@@ -2,4 +2,281 @@
     <string name="app_name">FPS Meter</string>
     <string name="quick_settings_tile_label">FPS Meter</string>
     <string name="accessibility_service_desc">Automatically activates or deactivates the FPS overlay when designated apps and games are launched or closed.</string>
+
+    <!-- Common -->
+    <string name="common_cancel">Cancel</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_reset">Reset</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_close">Close</string>
+    <string name="common_enable">Enable</string>
+    <string name="common_grant">Grant</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_back">Back</string>
+    <string name="common_share">Share</string>
+    <string name="common_dismiss">Dismiss</string>
+    <string name="common_active">Active</string>
+    <string name="common_details">Details</string>
+    <string name="common_confirm_enable">Confirm &amp; Enable</string>
+    <string name="common_requires_shizuku">Requires Shizuku</string>
+    <string name="common_more_options">More Options</string>
+    <string name="common_donate">Donate</string>
+    <string name="common_about">About</string>
+    <string name="unable_to_open_browser">Unable to open browser</string>
+
+    <!-- Navigation tabs -->
+    <string name="tab_meter">Meter</string>
+    <string name="tab_games">Games</string>
+    <string name="tab_history">History</string>
+    <string name="subtitle_meter">Live overlay counter</string>
+    <string name="subtitle_games">Auto-start &amp; game recording</string>
+    <string name="subtitle_history">Performance session logs</string>
+
+    <!-- Splash -->
+    <string name="app_by_author">by rdevz-ph</string>
+
+    <!-- Shizuku card -->
+    <string name="shizuku_optional">Shizuku (Optional)</string>
+    <string name="shizuku_desc">Used to auto-grant overlay permission without opening settings and enable privileged SurfaceFlinger monitoring for real game FPS.</string>
+    <string name="shizuku_service">Service</string>
+    <string name="shizuku_permission">Permission</string>
+
+    <!-- Overlay permission card -->
+    <string name="overlay_permission">Overlay Permission</string>
+    <string name="overlay_granted_desc">SYSTEM_ALERT_WINDOW is granted — overlay can appear over any app.</string>
+    <string name="overlay_required_desc">Required to show the FPS counter over games. Grant via Shizuku (no root needed) or manually.</string>
+    <string name="overlay_via_shizuku">Via Shizuku</string>
+
+    <!-- Overlay control card -->
+    <string name="fps_overlay">FPS Overlay</string>
+    <string name="start_overlay">START OVERLAY</string>
+    <string name="stop_overlay">STOP OVERLAY</string>
+    <string name="grant_overlay_first">⚠ Grant overlay permission first</string>
+    <string name="overlay_settings">Overlay Settings</string>
+
+    <!-- Overlay settings panel -->
+    <string name="reset_settings_title">Reset Settings?</string>
+    <string name="reset_settings_msg">Are you sure you want to reset all FPS overlay settings to their defaults? This cannot be undone.</string>
+    <string name="fps_measurement_provider">FPS Measurement Provider</string>
+    <string name="provider_choreographer">Choreographer</string>
+    <string name="provider_choreographer_desc">Display pace (Default)</string>
+    <string name="provider_surfaceflinger">SurfaceFlinger</string>
+    <string name="provider_surfaceflinger_real">Real Game FPS</string>
+    <string name="show_api_badge">Show Graphics API Badge</string>
+    <string name="show_api_badge_desc">Auto-detects Vulkan [VK] or OpenGL [GL]</string>
+    <string name="text_size">Text Size</string>
+    <string name="opacity">Opacity</string>
+    <string name="bg_opacity">Bg Opacity</string>
+    <string name="color_label">Color</string>
+    <string name="show_ms">Show ms</string>
+    <string name="battery_temp">Battery Temp</string>
+    <string name="cpu_temp">CPU Temp</string>
+    <string name="gpu_temp">GPU Temp</string>
+    <string name="soc_temp">SoC Temp</string>
+    <string name="battery_level">Battery Level</string>
+    <string name="position_presets">Position Presets</string>
+    <string name="pos_top_left">Top Left</string>
+    <string name="pos_top_center">Top Center</string>
+    <string name="pos_top_right">Top Right</string>
+    <string name="pos_bottom_left">Bottom Left</string>
+    <string name="pos_bottom_center">Bottom Center</string>
+    <string name="pos_bottom_right">Bottom Right</string>
+    <string name="reset_settings_btn">Reset Settings</string>
+
+    <!-- Info card -->
+    <string name="how_it_works">How it works</string>
+    <string name="how_it_works_body">FPS can be measured using two distinct providers:\n\n• Choreographer (Default): Samples the Android vsync signal driving display refreshes with minimal overhead.\n• SurfaceFlinger (Shizuku): Samples real frame presentation buffers directly from Android\'s compositor. Automatically detects whether the running game uses Vulkan or OpenGL ES (e.g. Genshin Impact, Wuthering Waves) to measure true game FPS.\n\n• Temperature Monitoring: Displays Battery Temp via standard system broadcasts and real-time SoC (CPU/GPU) Temp queried via Shizuku privileged Thermal HAL access.\n• Position: Drag the counter or use quick presets to snap it to any corner.\n• Auto Color: Values change color dynamically based on performance (60/45/30 FPS).\n• Permissions: Grant overlay access manually or via Shizuku for a seamless setup.</string>
+
+    <!-- Developer card -->
+    <string name="developer_role">rdevz-ph • Lead Developer</string>
+    <string name="developer_role_short">rdevz-ph (Lead Developer)</string>
+    <string name="button_website">Website</string>
+    <string name="button_github_profile">GitHub Profile</string>
+    <string name="built_with_passion">Built with passion for gamers</string>
+    <string name="content_desc_portfolio">Portfolio</string>
+
+    <!-- Website & updates -->
+    <string name="official_website">Official Website</string>
+    <string name="official_website_desc">Setup tutorials, guides &amp; feature previews</string>
+    <string name="check_for_updates">Check for Updates</string>
+
+    <!-- Quick access card -->
+    <string name="quick_access">Quick Access &amp; Toggles</string>
+    <string name="floating_bubble">Floating Assistive Bubble</string>
+    <string name="floating_bubble_desc">Draggable on-screen bubble with a quick menu to start/stop game FPS recording and toggle HUD visibility from any app.</string>
+    <string name="quick_settings_tile">Quick Settings Panel Tile</string>
+    <string name="quick_settings_tile_desc">Swipe down from your status bar in any game and tap the \'FPS Meter\' tile to toggle without opening this app.</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="section_app_theme">App Theme</string>
+    <string name="theme_follow_system">Follow System</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="dark_amoled">Dark AMOLED</string>
+    <string name="dark_amoled_desc">Pure pitch black (#000000) for OLED screens</string>
+    <string name="dynamic_colors">Dynamic Colors</string>
+    <string name="dynamic_colors_desc">Use system wallpaper palette</string>
+    <string name="section_developer">Developer</string>
+    <string name="section_github">GitHub &amp; Community</string>
+    <string name="github_repository">Repository</string>
+    <string name="github_star">Star on GitHub</string>
+    <string name="github_star_desc">Support the project with a star</string>
+    <string name="github_report_issue">Report an Issue</string>
+    <string name="github_report_issue_desc">Submit bug reports or feature requests</string>
+    <string name="section_support">Support Development</string>
+    <string name="support_body">If you enjoy using FPS Meter, consider supporting ongoing development.</string>
+    <string name="donate_support">Donate / Support Creator</string>
+
+    <!-- Language -->
+    <string name="section_language">Language</string>
+    <string name="language_title">App Language</string>
+    <string name="language_system">Follow System</string>
+    <string name="language_english">English</string>
+    <string name="language_chinese">简体中文</string>
+
+    <!-- Games screen -->
+    <string name="accessibility_required">Accessibility Service Required</string>
+    <string name="accessibility_required_desc">Enable FPS Meter in Accessibility so it can detect foreground games.</string>
+    <string name="auto_start_target">Auto-Start on Target Apps</string>
+    <string name="auto_start_target_desc">Automatically start overlay when target apps open, and stop when exited.</string>
+    <string name="auto_record_all">Auto-Record All Games</string>
+    <string name="auto_record_all_desc">Automatically record FPS sessions for any active game without per-game configuration.</string>
+    <string name="search_apps">Search apps or games...</string>
+    <string name="filter_all">All</string>
+    <string name="filter_user_apps">User Apps</string>
+    <string name="filter_auto">Auto (%d)</string>
+    <string name="filter_rec_all">Rec (All)</string>
+    <string name="filter_rec">Rec (%d)</string>
+    <string name="target_apps">Target Apps (%d)</string>
+    <string name="target_apps_hint_auto">Checkbox = Auto-Start</string>
+    <string name="target_apps_hint_rec">Checkbox = Auto • Dot = Rec</string>
+    <string name="no_apps_match">No apps match your search or filter</string>
+    <string name="badge_user">User</string>
+    <string name="no_launcher_activity">No launcher activity for %s</string>
+    <string name="content_desc_launch">Launch %s</string>
+    <string name="content_desc_rec_enabled">FPS recording enabled for %s</string>
+    <string name="content_desc_rec_disabled">Enable FPS recording for %s</string>
+    <string name="confirm_enable_recording_title">Enable FPS Recording?</string>
+    <string name="confirm_enable_recording_msg">Enabling FPS recording for \"%s\" will track performance metrics while the game is running.</string>
+    <string name="notice_monitor">Notice: Continuous background monitoring may slightly increase CPU, RAM, battery, and storage usage during gameplay.</string>
+    <string name="rec_aggregate_desc">To keep overhead minimal, FPS Meter aggregates data in memory (average, peak, and low FPS) and minimizes disk writes.</string>
+    <string name="confirm_auto_record_title">Enable Auto-Record for All Games?</string>
+    <string name="confirm_auto_record_msg">Enabling this option will automatically record frame rate performance sessions for any active game or launched application.</string>
+    <string name="notice_auto_record">Notice: Continuous background monitoring will record session metrics for all apps without needing to toggle them individually.</string>
+    <string name="per_game_hidden">Per-game recording dot buttons will be hidden while this option is active. Lightweight memory aggregation keeps device overhead minimal.</string>
+
+    <!-- History screen -->
+    <string name="delete_session_title">Delete Session Log?</string>
+    <string name="delete_session_msg">Delete performance log for \"%s\"? This cannot be undone.</string>
+    <string name="clear_all_title">Clear All Session History?</string>
+    <string name="clear_all_msg">Are you sure you want to delete all recorded FPS gameplay session logs? This cannot be undone.</string>
+    <string name="clear_all">Clear All</string>
+    <string name="performance_overview">Performance Overview</string>
+    <string name="summary_sessions">Sessions</string>
+    <string name="summary_avg_fps">Avg FPS</string>
+    <string name="summary_peak_fps">Peak FPS</string>
+    <string name="search_recorded">Search recorded games...</string>
+    <string name="no_session_logs">No Session Logs Yet</string>
+    <string name="no_session_logs_desc">Enable per-game recording on any target game or app in the Games tab. Your sessions will record average, peak, and low FPS with zero lag.</string>
+    <string name="configure_games">Configure Games</string>
+    <string name="no_games_match">No games match \"%s\"</string>
+    <string name="share_benchmark_card">Share benchmark card</string>
+    <string name="delete_session">Delete session</string>
+    <string name="avg_prefix">Avg: </string>
+    <string name="peak_low">Peak: %1$d | Low: %2$d</string>
+
+    <!-- About dialog -->
+    <string name="about_subtitle">Gaming Performance Monitor</string>
+    <string name="about_desc">FPS Meter is a lightweight, rootless gaming performance overlay and session recording tool designed for Android.</string>
+    <string name="about_core_capabilities">Core Capabilities</string>
+    <string name="about_feature1_title">Real-Time FPS &amp; Frame Time</string>
+    <string name="about_feature1_desc">Accurate framerate (FPS) and frame render times (ms) with configurable HUD styles.</string>
+    <string name="about_feature2_title">Dual Measurement Engines</string>
+    <string name="about_feature2_desc">Standard Android Choreographer and privileged SurfaceFlinger monitoring via Shizuku.</string>
+    <string name="about_feature3_title">Graphics API Detection</string>
+    <string name="about_feature3_desc">Live identification of active Vulkan and OpenGL ES rendering pipelines.</string>
+    <string name="about_feature4_title">Comprehensive Thermal Metrics</string>
+    <string name="about_feature4_desc">Real-time temperature readouts for SoC hotspot, CPU, GPU, and Battery.</string>
+    <string name="about_feature5_title">Battery Level Indicator</string>
+    <string name="about_feature5_desc">Live remaining battery percentage directly on the overlay during fullscreen gaming.</string>
+    <string name="about_feature6_title">Game Performance Logging</string>
+    <string name="about_feature6_desc">Automatic session recording per game with average, peak, and minimum FPS history logs.</string>
+    <string name="about_feature7_title">Open Source &amp; Privacy First</string>
+    <string name="about_feature7_desc">Free and open source. No advertisements, no telemetry, and no network tracking.</string>
+
+    <!-- Donation dialog -->
+    <string name="donation_title">Support Development</string>
+    <string name="donation_body1">This app will always be free and open source. I develop this for personal fun and to help others in the community.</string>
+    <string name="donation_body2">Donations are completely optional and much appreciated!</string>
+    <string name="donation_choose">Choose your preferred donation platform:</string>
+
+    <!-- Crash screen -->
+    <string name="crash_warning_desc">Crash Warning</string>
+    <string name="crash_title">FPS Meter Crashed</string>
+    <string name="crash_desc">An unexpected error occurred. You can report this issue on GitHub or share logs to help fix it.</string>
+    <string name="label_exception">EXCEPTION</string>
+    <string name="label_version">VERSION</string>
+    <string name="label_android">ANDROID</string>
+    <string name="file_issue_github">File Issue on GitHub</string>
+    <string name="copy_report">Copy Report</string>
+    <string name="restart_app">Restart App</string>
+    <string name="diagnostic_log">Diagnostic Log &amp; Stack Trace</string>
+    <string name="copy_log">Copy Log</string>
+    <string name="crash_report_copied">Crash report copied to clipboard</string>
+    <string name="share_crash_report">Share Crash Report</string>
+    <string name="report_copied_opening">Report copied to clipboard! Opening GitHub...</string>
+    <string name="could_not_open_browser_issue">Could not open browser. Issue URL copied to clipboard.</string>
+    <string name="github_issue_link_copied">GitHub issue link copied to clipboard</string>
+    <string name="clipboard_crash_label">FPS Meter Crash Report</string>
+    <string name="default_unexpected_exception">Unexpected Exception</string>
+    <string name="default_no_message">No additional message available.</string>
+
+    <!-- Overlay service / floating bubble / tile -->
+    <string name="no_active_game">No Active Game</string>
+    <string name="no_active_game_to_record">No active game detected to record</string>
+    <string name="recording_not_enabled_for">Recording is not enabled for %s in Games list</string>
+    <string name="recording_fps_for">Recording FPS for %s</string>
+    <string name="saved_recording">Saved: %1$s (Avg: %2$d FPS, Max: %3$d)</string>
+    <string name="recording_stopped">FPS recording stopped</string>
+    <string name="overlay_permission_required_tile">Overlay permission required. Please open FPS Meter.</string>
+    <string name="tile_tap_to_start">Tap to start</string>
+    <string name="floating_rec_off">REC OFF</string>
+    <string name="floating_ready">READY</string>
+    <string name="floating_stop_recording">Stop Recording</string>
+    <string name="floating_start_recording">Start Recording</string>
+    <string name="floating_recording_not_enabled">Recording Not Enabled</string>
+    <string name="floating_hide_overlay">Hide Overlay</string>
+    <string name="floating_show_overlay">Show Overlay</string>
+    <string name="floating_enable_rec_first">Enable recording for this game in Games list first</string>
+    <string name="notif_status_visible">Overlay visible &amp; measuring</string>
+    <string name="notif_status_hidden">Overlay hidden (minimized)</string>
+    <string name="notif_action_hide">Hide</string>
+    <string name="notif_action_show">Show</string>
+    <string name="notif_action_stop">Stop</string>
+    <string name="notif_channel_name">FPS Overlay</string>
+    <string name="notif_channel_desc">Live FPS counter overlay</string>
+
+    <!-- Benchmark card -->
+    <string name="bench_badge">FPS METER • BENCHMARK</string>
+    <string name="bench_average">AVERAGE FPS</string>
+    <string name="bench_peak">PEAK FPS</string>
+    <string name="bench_lowest">LOWEST FPS</string>
+    <string name="bench_duration">DURATION</string>
+    <string name="bench_ultra_smooth">Ultra Smooth</string>
+    <string name="bench_playable">Playable &amp; Smooth</string>
+    <string name="bench_acceptable">Acceptable Performance</string>
+    <string name="bench_throttling">Heavy Throttling</string>
+    <string name="bench_device_prefix">Device: %s</string>
+    <string name="bench_footer">FPS Meter for Android • rdevz-ph</string>
+    <string name="share_benchmark_scorecard">Share Benchmark Scorecard</string>
+    <string name="bench_share_text">FPS Benchmark for %1$s: Avg %2$d FPS, Peak %3$d FPS, Min %4$d FPS recorded with FPS Meter Android\nhttps://github.com/rdevz-ph/FPS-Meter-Android</string>
+    <string name="bench_card_failed">Failed to generate benchmark card: %s</string>
+
+    <!-- ViewModel status -->
+    <string name="shizuku_not_ready">Shizuku not ready</string>
+    <string name="overlay_permission_granted">Overlay permission granted!</string>
+    <string name="overlay_granted_recheck_failed">Granted via shell, recheck failed</string>
+    <string name="shell_command_failed">Shell command failed (exit %d)</string>
+    <string name="shizuku_error">Shizuku error: %s</string>
 </resources>

@@ -1,5 +1,8 @@
 package com.rdevzph.fpsmeter.ui.crash
 
+import androidx.compose.ui.res.stringResource
+import com.rdevzph.fpsmeter.R
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -37,9 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rdevzph.fpsmeter.MainActivity
 import com.rdevzph.fpsmeter.ui.theme.FpsMeterTheme
+import com.rdevzph.fpsmeter.util.LocaleHelper
 import java.io.File
 
 class CrashActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
 
     companion object {
         const val EXTRA_CRASH_REPORT_PATH = "extra_crash_report_path"
@@ -54,8 +62,8 @@ class CrashActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val reportPath = intent.getStringExtra(EXTRA_CRASH_REPORT_PATH)
-        val errorName = intent.getStringExtra(EXTRA_ERROR_NAME) ?: "Unexpected Exception"
-        val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE) ?: "No additional message available."
+        val errorName = intent.getStringExtra(EXTRA_ERROR_NAME) ?: getString(R.string.default_unexpected_exception)
+        val errorMessage = intent.getStringExtra(EXTRA_ERROR_MESSAGE) ?: getString(R.string.default_no_message)
         val appVersion = intent.getStringExtra(EXTRA_APP_VERSION) ?: "1.6"
 
         val reportContent = try {
@@ -80,7 +88,7 @@ class CrashActivity : ComponentActivity() {
                         errorMessage = errorMessage,
                         appVersion = appVersion,
                         reportContent = reportContent,
-                        onCopyReport = { copyToClipboard(reportContent, "Crash report copied to clipboard") },
+                        onCopyReport = { copyToClipboard(reportContent, getString(R.string.crash_report_copied)) },
                         onShareReport = { shareCrashReport(errorName, reportContent) },
                         onFileIssue = { openGitHubIssue(errorName, errorMessage, appVersion, reportContent) },
                         onRestartApp = { restartApp() }
@@ -92,7 +100,7 @@ class CrashActivity : ComponentActivity() {
 
     private fun copyToClipboard(text: String, toastMessage: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("FPS Meter Crash Report", text)
+        val clip = ClipData.newPlainText(getString(R.string.clipboard_crash_label), text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show()
     }
@@ -100,10 +108,10 @@ class CrashActivity : ComponentActivity() {
     private fun shareCrashReport(errorName: String, report: String) {
         val sendIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "FPS Meter Crash Report: $errorName")
+            putExtra(Intent.EXTRA_SUBJECT, "${getString(R.string.clipboard_crash_label)}: $errorName")
             putExtra(Intent.EXTRA_TEXT, report)
         }
-        val chooser = Intent.createChooser(sendIntent, "Share Crash Report")
+        val chooser = Intent.createChooser(sendIntent, getString(R.string.share_crash_report))
         startActivity(chooser)
     }
 
@@ -114,7 +122,7 @@ class CrashActivity : ComponentActivity() {
         fullReport: String
     ) {
         // Automatically copy full report to clipboard so user has it ready
-        copyToClipboard(fullReport, "Report copied to clipboard! Opening GitHub...")
+        copyToClipboard(fullReport, getString(R.string.report_copied_opening))
 
         val cleanMsg = errorMessage.replace("\n", " ").trim()
         val titleSnippet = if (cleanMsg.length > 50) cleanMsg.take(50) + "..." else cleanMsg
@@ -151,8 +159,8 @@ class CrashActivity : ComponentActivity() {
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(fullUrl))
             startActivity(browserIntent)
         } catch (e: Exception) {
-            Toast.makeText(this, "Could not open browser. Issue URL copied to clipboard.", Toast.LENGTH_LONG).show()
-            copyToClipboard(fullUrl, "GitHub issue link copied to clipboard")
+            Toast.makeText(this, getString(R.string.could_not_open_browser_issue), Toast.LENGTH_LONG).show()
+            copyToClipboard(fullUrl, getString(R.string.github_issue_link_copied))
         }
     }
 
@@ -204,20 +212,20 @@ fun CrashScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Warning,
-                        contentDescription = "Crash Warning",
+                        contentDescription = stringResource(R.string.crash_warning_desc),
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(36.dp)
                     )
                     Spacer(modifier = Modifier.width(14.dp))
                     Column {
                         Text(
-                            text = "FPS Meter Crashed",
+                            text = stringResource(R.string.crash_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
                         Text(
-                            text = "An unexpected error occurred. You can report this issue on GitHub or share logs to help fix it.",
+                            text = stringResource(R.string.crash_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
                         )
@@ -237,7 +245,7 @@ fun CrashScreen(
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text(
-                            text = "EXCEPTION",
+                            text = stringResource(R.string.label_exception),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -258,7 +266,7 @@ fun CrashScreen(
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text(
-                            text = "VERSION",
+                            text = stringResource(R.string.label_version),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -279,7 +287,7 @@ fun CrashScreen(
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text(
-                            text = "ANDROID",
+                            text = stringResource(R.string.label_android),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -303,7 +311,7 @@ fun CrashScreen(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "Details",
+                            text = stringResource(R.string.common_details),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -335,12 +343,12 @@ fun CrashScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.BugReport,
-                        contentDescription = "File Issue on GitHub",
+                        contentDescription = stringResource(R.string.file_issue_github),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "File Issue on GitHub",
+                        text = stringResource(R.string.file_issue_github),
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -363,11 +371,11 @@ fun CrashScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copy Report",
+                            contentDescription = stringResource(R.string.copy_report),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(text = "Copy Report", maxLines = 1)
+                        Text(text = stringResource(R.string.copy_report), maxLines = 1)
                     }
 
                     OutlinedButton(
@@ -381,7 +389,7 @@ fun CrashScreen(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(text = "Share", maxLines = 1)
+                        Text(text = stringResource(R.string.common_share), maxLines = 1)
                     }
                 }
 
@@ -393,11 +401,11 @@ fun CrashScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.RestartAlt,
-                        contentDescription = "Restart App",
+                        contentDescription = stringResource(R.string.restart_app),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Restart App", fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.restart_app), fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -413,7 +421,7 @@ fun CrashScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Diagnostic Log & Stack Trace",
+                        text = stringResource(R.string.diagnostic_log),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
@@ -424,7 +432,7 @@ fun CrashScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copy Log",
+                            contentDescription = stringResource(R.string.copy_log),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )

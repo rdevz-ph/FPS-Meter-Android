@@ -1,5 +1,8 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.res.stringResource
+import com.rdevzph.fpsmeter.R
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -27,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rdevzph.fpsmeter.ui.theme.AppThemeMode
 import com.rdevzph.fpsmeter.ui.theme.AppThemeSettings
+import com.rdevzph.fpsmeter.util.LocaleHelper
 
 private const val REPO_URL = "https://github.com/rdevz-ph/FPS-Meter-Android"
 private const val ISSUES_URL = "https://github.com/rdevz-ph/FPS-Meter-Android/issues"
@@ -39,7 +43,7 @@ private fun openBrowser(context: Context, url: String) {
         }
         context.startActivity(intent)
     } catch (e: Exception) {
-        Toast.makeText(context, "Unable to open browser", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.unable_to_open_browser), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -47,7 +51,9 @@ private fun openBrowser(context: Context, url: String) {
 @Composable
 fun SettingsScreen(
     themeSettings: AppThemeSettings,
+    currentLanguage: String,
     onThemeChange: (AppThemeSettings) -> Unit,
+    onLanguageChange: (String) -> Unit,
     onOpenDonation: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -62,7 +68,7 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Settings",
+                        stringResource(R.string.common_settings),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -71,7 +77,7 @@ fun SettingsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.common_back)
                         )
                     }
                 },
@@ -90,7 +96,7 @@ fun SettingsScreen(
         ) {
             // Section 1: App Theme Chooser
             SettingsSectionHeader(
-                title = "App Theme",
+                title = stringResource(R.string.section_app_theme),
                 icon = Icons.Default.Palette
             )
 
@@ -118,7 +124,7 @@ fun SettingsScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                mode.title,
+                                stringResource(mode.titleRes),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -141,12 +147,12 @@ fun SettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Dark AMOLED",
+                                stringResource(R.string.dark_amoled),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "Pure pitch black (#000000) for OLED screens",
+                                stringResource(R.string.dark_amoled_desc),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -175,12 +181,12 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Dynamic Colors",
+                                    stringResource(R.string.dynamic_colors),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    "Use system wallpaper palette",
+                                    stringResource(R.string.dynamic_colors_desc),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -198,9 +204,54 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(20.dp))
 
+            // Section: Language
+            SettingsSectionHeader(
+                title = stringResource(R.string.section_language),
+                icon = Icons.Default.Language
+            )
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    val languageOptions = listOf(
+                        LocaleHelper.LANG_SYSTEM to R.string.language_system,
+                        LocaleHelper.LANG_ENGLISH to R.string.language_english,
+                        LocaleHelper.LANG_CHINESE to R.string.language_chinese
+                    )
+                    languageOptions.forEach { (value, labelRes) ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (currentLanguage != value) onLanguageChange(value)
+                                }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            RadioButton(
+                                selected = currentLanguage == value,
+                                onClick = {
+                                    if (currentLanguage != value) onLanguageChange(value)
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                stringResource(labelRes),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
             // Section 2: Developer Infos
             SettingsSectionHeader(
-                title = "Developer",
+                title = stringResource(R.string.section_developer),
                 icon = Icons.Default.Person
             )
 
@@ -238,14 +289,14 @@ fun SettingsScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "rdevz-ph (Lead Developer)",
+                            stringResource(R.string.developer_role_short),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                        contentDescription = "Portfolio",
+                        contentDescription = stringResource(R.string.content_desc_portfolio),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
@@ -256,7 +307,7 @@ fun SettingsScreen(
 
             // Section 3: GitHub, Star & Issue Tracker
             SettingsSectionHeader(
-                title = "GitHub & Community",
+                title = stringResource(R.string.section_github),
                 icon = Icons.Default.Code
             )
 
@@ -268,7 +319,7 @@ fun SettingsScreen(
                 Column {
                     SettingsActionRow(
                         icon = Icons.Default.Code,
-                        title = "Repository",
+                        title = stringResource(R.string.github_repository),
                         subtitle = "github.com/rdevz-ph/FPS-Meter-Android",
                         onClick = { openBrowser(context, REPO_URL) }
                     )
@@ -279,8 +330,8 @@ fun SettingsScreen(
                     SettingsActionRow(
                         icon = Icons.Default.Star,
                         iconTint = Color(0xFFFFB300),
-                        title = "Star on GitHub",
-                        subtitle = "Support the project with a star",
+                        title = stringResource(R.string.github_star),
+                        subtitle = stringResource(R.string.github_star_desc),
                         onClick = { openBrowser(context, REPO_URL) }
                     )
                     HorizontalDivider(
@@ -289,8 +340,8 @@ fun SettingsScreen(
                     )
                     SettingsActionRow(
                         icon = Icons.Default.BugReport,
-                        title = "Report an Issue",
-                        subtitle = "Submit bug reports or feature requests",
+                        title = stringResource(R.string.github_report_issue),
+                        subtitle = stringResource(R.string.github_report_issue_desc),
                         onClick = { openBrowser(context, ISSUES_URL) }
                     )
                 }
@@ -300,7 +351,7 @@ fun SettingsScreen(
 
             // Section 4: Support & Donation
             SettingsSectionHeader(
-                title = "Support Development",
+                title = stringResource(R.string.section_support),
                 icon = Icons.Default.Favorite
             )
 
@@ -311,7 +362,7 @@ fun SettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "If you enjoy using FPS Meter, consider supporting ongoing development.",
+                        stringResource(R.string.support_body),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -328,7 +379,7 @@ fun SettingsScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("Donate / Support Creator", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.donate_support), fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

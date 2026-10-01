@@ -1,5 +1,7 @@
 package com.rdevzph.fpsmeter.overlay
 
+import com.rdevzph.fpsmeter.R
+
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -207,14 +209,14 @@ class FloatingToggleButton(
                     cornerRadius = 8 * dp
                 }
             } else if (isConfigured) {
-                text = "READY"
+                text = context.getString(R.string.floating_ready)
                 setTextColor(Color.parseColor("#4ADE80"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#143220"))
                     cornerRadius = 8 * dp
                 }
             } else {
-                text = "REC OFF"
+                text = context.getString(R.string.floating_rec_off)
                 setTextColor(Color.parseColor("#94A3B8"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#1E293B"))
@@ -225,7 +227,7 @@ class FloatingToggleButton(
 
         menuRecordBtn?.apply {
             if (recording) {
-                text = "Stop Recording"
+                text = context.getString(R.string.floating_stop_recording)
                 setTextColor(Color.parseColor("#FCA5A5"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#3B151E"))
@@ -233,7 +235,7 @@ class FloatingToggleButton(
                     setStroke((1 * dp).toInt(), Color.parseColor("#EF4444"))
                 }
             } else if (isConfigured) {
-                text = "Start Recording"
+                text = context.getString(R.string.floating_start_recording)
                 setTextColor(Color.parseColor("#F87171"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#1E293B"))
@@ -241,7 +243,7 @@ class FloatingToggleButton(
                     setStroke((1 * dp).toInt(), Color.parseColor("#DC2626"))
                 }
             } else {
-                text = "Recording Not Enabled"
+                text = context.getString(R.string.floating_recording_not_enabled)
                 setTextColor(Color.parseColor("#64748B"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#151A24"))
@@ -253,10 +255,10 @@ class FloatingToggleButton(
 
         menuOverlayBtn?.apply {
             if (overlayActive) {
-                text = "Hide Overlay"
+                text = context.getString(R.string.floating_hide_overlay)
                 setTextColor(Color.parseColor("#94A3B8"))
             } else {
-                text = "Show Overlay"
+                text = context.getString(R.string.floating_show_overlay)
                 setTextColor(Color.parseColor("#38BDF8"))
             }
         }
@@ -322,14 +324,14 @@ class FloatingToggleButton(
                     cornerRadius = 8 * dp
                 }
             } else if (isConfigured) {
-                text = "READY"
+                text = context.getString(R.string.floating_ready)
                 setTextColor(Color.parseColor("#4ADE80"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#143220"))
                     cornerRadius = 8 * dp
                 }
             } else {
-                text = "REC OFF"
+                text = context.getString(R.string.floating_rec_off)
                 setTextColor(Color.parseColor("#94A3B8"))
                 background = GradientDrawable().apply {
                     setColor(Color.parseColor("#1E293B"))
@@ -361,7 +363,7 @@ class FloatingToggleButton(
             typeface = Typeface.DEFAULT_BOLD
 
             if (recording) {
-                text = "Stop Recording"
+                text = context.getString(R.string.floating_stop_recording)
                 setTextColor(Color.parseColor("#FCA5A5"))
                 val normalBg = GradientDrawable().apply {
                     setColor(Color.parseColor("#3B151E"))
@@ -370,7 +372,7 @@ class FloatingToggleButton(
                 }
                 background = normalBg
             } else if (isConfigured) {
-                text = "Start Recording"
+                text = context.getString(R.string.floating_start_recording)
                 setTextColor(Color.parseColor("#F87171"))
                 val normalBg = GradientDrawable().apply {
                     setColor(Color.parseColor("#1E293B"))
@@ -379,7 +381,7 @@ class FloatingToggleButton(
                 }
                 background = normalBg
             } else {
-                text = "Recording Not Enabled"
+                text = context.getString(R.string.floating_recording_not_enabled)
                 setTextColor(Color.parseColor("#64748B"))
                 val normalBg = GradientDrawable().apply {
                     setColor(Color.parseColor("#151A24"))
@@ -397,7 +399,7 @@ class FloatingToggleButton(
                     if (!isGameRecordingConfigured()) {
                         android.widget.Toast.makeText(
                             context,
-                            "Enable recording for this game in Games list first",
+                            context.getString(R.string.floating_enable_rec_first),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     } else {
@@ -427,10 +429,10 @@ class FloatingToggleButton(
             typeface = Typeface.DEFAULT_BOLD
 
             if (overlayActive) {
-                text = "Hide Overlay"
+                text = context.getString(R.string.floating_hide_overlay)
                 setTextColor(Color.parseColor("#94A3B8"))
             } else {
-                text = "Show Overlay"
+                text = context.getString(R.string.floating_show_overlay)
                 setTextColor(Color.parseColor("#38BDF8"))
             }
 
@@ -458,7 +460,7 @@ class FloatingToggleButton(
             textSize = 11f
             gravity = Gravity.CENTER
             setTextColor(Color.parseColor("#64748B"))
-            text = "Dismiss"
+            text = context.getString(R.string.common_dismiss)
             setOnClickListener {
                 hideMenu()
             }

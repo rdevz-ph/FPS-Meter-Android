@@ -1,5 +1,8 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.res.stringResource
+import com.rdevzph.fpsmeter.R
+
 import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -82,7 +85,7 @@ fun GamesScreen(
             },
             title = {
                 Text(
-                    text = "Enable FPS Recording?",
+                    text = stringResource(R.string.confirm_enable_recording_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -90,7 +93,7 @@ fun GamesScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Enabling FPS recording for \"${targetApp.appName}\" will track performance metrics while the game is running.",
+                        text = stringResource(R.string.confirm_enable_recording_msg, targetApp.appName),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Surface(
@@ -98,14 +101,14 @@ fun GamesScreen(
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text(
-                            text = "Notice: Continuous background monitoring may slightly increase CPU, RAM, battery, and storage usage during gameplay.",
+                            text = stringResource(R.string.notice_monitor),
                             modifier = Modifier.padding(10.dp),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                     Text(
-                        text = "To keep overhead minimal, FPS Meter aggregates data in memory (average, peak, and low FPS) and minimizes disk writes.",
+                        text = stringResource(R.string.rec_aggregate_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -120,7 +123,7 @@ fun GamesScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Confirm & Enable")
+                    Text(stringResource(R.string.common_confirm_enable))
                 }
             },
             dismissButton = {
@@ -128,7 +131,7 @@ fun GamesScreen(
                     onClick = { appToConfirmRecording = null },
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -148,7 +151,7 @@ fun GamesScreen(
             },
             title = {
                 Text(
-                    text = "Enable Auto-Record for All Games?",
+                    text = stringResource(R.string.confirm_auto_record_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -156,7 +159,7 @@ fun GamesScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Enabling this option will automatically record frame rate performance sessions for any active game or launched application.",
+                        text = stringResource(R.string.confirm_auto_record_msg),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Surface(
@@ -164,14 +167,14 @@ fun GamesScreen(
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text(
-                            text = "Notice: Continuous background monitoring will record session metrics for all apps without needing to toggle them individually.",
+                            text = stringResource(R.string.notice_auto_record),
                             modifier = Modifier.padding(10.dp),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                     Text(
-                        text = "Per-game recording dot buttons will be hidden while this option is active. Lightweight memory aggregation keeps device overhead minimal.",
+                        text = stringResource(R.string.per_game_hidden),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -186,7 +189,7 @@ fun GamesScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Confirm & Enable")
+                    Text(stringResource(R.string.common_confirm_enable))
                 }
             },
             dismissButton = {
@@ -194,7 +197,7 @@ fun GamesScreen(
                     onClick = { showAutoRecordAllDialog = false },
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -236,13 +239,13 @@ fun GamesScreen(
                             Spacer(Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Accessibility Service Required",
+                                    stringResource(R.string.accessibility_required),
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.error
                                 )
                                 Text(
-                                    "Enable FPS Meter in Accessibility so it can detect foreground games.",
+                                    stringResource(R.string.accessibility_required_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -253,7 +256,7 @@ fun GamesScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("Enable", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.common_enable), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }
@@ -267,12 +270,12 @@ fun GamesScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Auto-Start on Target Apps",
+                            stringResource(R.string.auto_start_target),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Automatically start overlay when target apps open, and stop when exited.",
+                            stringResource(R.string.auto_start_target_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -294,12 +297,12 @@ fun GamesScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Auto-Record All Games",
+                            stringResource(R.string.auto_record_all),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Automatically record FPS sessions for any active game without per-game configuration.",
+                            stringResource(R.string.auto_record_all_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -323,7 +326,7 @@ fun GamesScreen(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Search apps or games...") },
+            placeholder = { Text(stringResource(R.string.search_apps)) },
             singleLine = true,
             leadingIcon = {
                 Icon(Icons.Default.Search, contentDescription = null)
@@ -347,24 +350,24 @@ fun GamesScreen(
             FilterChip(
                 selected = filterMode == 0,
                 onClick = { filterMode = 0 },
-                label = { Text("All", style = MaterialTheme.typography.labelSmall) }
+                label = { Text(stringResource(R.string.filter_all), style = MaterialTheme.typography.labelSmall) }
             )
             FilterChip(
                 selected = filterMode == 1,
                 onClick = { filterMode = 1 },
-                label = { Text("User Apps", style = MaterialTheme.typography.labelSmall) }
+                label = { Text(stringResource(R.string.filter_user_apps), style = MaterialTheme.typography.labelSmall) }
             )
             FilterChip(
                 selected = filterMode == 2,
                 onClick = { filterMode = 2 },
-                label = { Text("Auto (${settings.autoStartPackages.size})", style = MaterialTheme.typography.labelSmall) }
+                label = { Text(stringResource(R.string.filter_auto, settings.autoStartPackages.size), style = MaterialTheme.typography.labelSmall) }
             )
             FilterChip(
                 selected = filterMode == 3,
                 onClick = { filterMode = 3 },
                 label = {
                     Text(
-                        if (settings.autoRecordAll) "Rec (All)" else "Rec (${settings.recordingPackages.size})",
+                        if (settings.autoRecordAll) stringResource(R.string.filter_rec_all) else stringResource(R.string.filter_rec, settings.recordingPackages.size),
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -378,13 +381,13 @@ fun GamesScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Target Apps (${filteredApps.size})",
+                text = stringResource(R.string.target_apps, filteredApps.size),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = if (settings.autoRecordAll) "Checkbox = Auto-Start" else "Checkbox = Auto • Dot = Rec",
+                text = if (settings.autoRecordAll) stringResource(R.string.target_apps_hint_auto) else stringResource(R.string.target_apps_hint_rec),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -411,7 +414,7 @@ fun GamesScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "No apps match your search or filter",
+                    stringResource(R.string.no_apps_match),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -471,7 +474,7 @@ fun GamesScreen(
                                             shape = RoundedCornerShape(4.dp)
                                         ) {
                                             Text(
-                                                "User",
+                                                stringResource(R.string.badge_user),
                                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontSize = 9.sp,
@@ -498,14 +501,14 @@ fun GamesScreen(
                                     if (launchIntent != null) {
                                         context.startActivity(launchIntent)
                                     } else {
-                                        Toast.makeText(context, "No launcher activity for ${app.appName}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.no_launcher_activity, app.appName), Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 modifier = Modifier.size(38.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = "Launch ${app.appName}",
+                                    contentDescription = stringResource(R.string.content_desc_launch, app.appName),
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(22.dp)
                                 )
@@ -529,7 +532,7 @@ fun GamesScreen(
                                 ) {
                                     Icon(
                                         imageVector = if (isRecording) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                        contentDescription = if (isRecording) "FPS recording enabled for ${app.appName}" else "Enable FPS recording for ${app.appName}",
+                                        contentDescription = if (isRecording) stringResource(R.string.content_desc_rec_enabled, app.appName) else stringResource(R.string.content_desc_rec_disabled, app.appName),
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }

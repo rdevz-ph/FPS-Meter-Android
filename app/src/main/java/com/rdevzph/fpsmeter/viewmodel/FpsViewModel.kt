@@ -1,5 +1,7 @@
 package com.rdevzph.fpsmeter.viewmodel
 
+import com.rdevzph.fpsmeter.R
+
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ComponentName
 import android.content.Context
@@ -187,7 +189,7 @@ class FpsViewModel(
      */
     fun grantOverlayViaShizuku(context: Context) {
         if (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value) {
-            _statusMessage.value = "Shizuku not ready"
+            _statusMessage.value = context.getString(R.string.shizuku_not_ready)
             return
         }
         viewModelScope.launch {
@@ -201,12 +203,12 @@ class FpsViewModel(
                 if (exit == 0) {
                     _overlayPermissionGranted.value = Settings.canDrawOverlays(context)
                     _statusMessage.value = if (_overlayPermissionGranted.value)
-                        "Overlay permission granted!" else "Granted via shell, recheck failed"
+                        context.getString(R.string.overlay_permission_granted) else context.getString(R.string.overlay_granted_recheck_failed)
                 } else {
-                    _statusMessage.value = "Shell command failed (exit $exit)"
+                    _statusMessage.value = context.getString(R.string.shell_command_failed, exit)
                 }
             } catch (e: Exception) {
-                _statusMessage.value = "Shizuku error: ${e.message}"
+                _statusMessage.value = context.getString(R.string.shizuku_error, e.message)
             }
         }
     }

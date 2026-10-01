@@ -1,5 +1,8 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.res.stringResource
+import com.rdevzph.fpsmeter.R
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -43,7 +46,7 @@ private fun openBrowser(context: Context, url: String) {
         }
         context.startActivity(intent)
     } catch (e: Exception) {
-        Toast.makeText(context, "Unable to open browser", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.unable_to_open_browser), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -77,7 +80,7 @@ fun AboutDialog(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "FPS Meter",
+                            stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -96,7 +99,7 @@ fun AboutDialog(
                         }
                     }
                     Text(
-                        "Gaming Performance Monitor",
+                        stringResource(R.string.about_subtitle),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -110,14 +113,14 @@ fun AboutDialog(
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    "FPS Meter is a lightweight, rootless gaming performance overlay and session recording tool designed for Android.",
+                    stringResource(R.string.about_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(Modifier.height(14.dp))
                 Text(
-                    "Core Capabilities",
+                    stringResource(R.string.about_core_capabilities),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -125,38 +128,38 @@ fun AboutDialog(
                 Spacer(Modifier.height(8.dp))
 
                 AboutFeatureItem(
-                    title = "Real-Time FPS & Frame Time",
-                    desc = "Accurate framerate (FPS) and frame render times (ms) with configurable HUD styles."
+                    title = stringResource(R.string.about_feature1_title),
+                    desc = stringResource(R.string.about_feature1_desc)
                 )
                 AboutFeatureItem(
-                    title = "Dual Measurement Engines",
-                    desc = "Standard Android Choreographer and privileged SurfaceFlinger monitoring via Shizuku."
+                    title = stringResource(R.string.about_feature2_title),
+                    desc = stringResource(R.string.about_feature2_desc)
                 )
                 AboutFeatureItem(
-                    title = "Graphics API Detection",
-                    desc = "Live identification of active Vulkan and OpenGL ES rendering pipelines."
+                    title = stringResource(R.string.about_feature3_title),
+                    desc = stringResource(R.string.about_feature3_desc)
                 )
                 AboutFeatureItem(
-                    title = "Comprehensive Thermal Metrics",
-                    desc = "Real-time temperature readouts for SoC hotspot, CPU, GPU, and Battery."
+                    title = stringResource(R.string.about_feature4_title),
+                    desc = stringResource(R.string.about_feature4_desc)
                 )
                 AboutFeatureItem(
-                    title = "Battery Level Indicator",
-                    desc = "Live remaining battery percentage directly on the overlay during fullscreen gaming."
+                    title = stringResource(R.string.about_feature5_title),
+                    desc = stringResource(R.string.about_feature5_desc)
                 )
                 AboutFeatureItem(
-                    title = "Game Performance Logging",
-                    desc = "Automatic session recording per game with average, peak, and minimum FPS history logs."
+                    title = stringResource(R.string.about_feature6_title),
+                    desc = stringResource(R.string.about_feature6_desc)
                 )
                 AboutFeatureItem(
-                    title = "Open Source & Privacy First",
-                    desc = "Free and open source. No advertisements, no telemetry, and no network tracking."
+                    title = stringResource(R.string.about_feature7_title),
+                    desc = stringResource(R.string.about_feature7_desc)
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.common_close))
             }
         },
         shape = RoundedCornerShape(20.dp)
@@ -210,7 +213,7 @@ fun DonationChooserDialog(
                 )
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "Support Development",
+                    stringResource(R.string.donation_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -225,13 +228,13 @@ fun DonationChooserDialog(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            "This app will always be free and open source. I develop this for personal fun and to help others in the community.",
+                            stringResource(R.string.donation_body1),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "Donations are completely optional and much appreciated!",
+                            stringResource(R.string.donation_body2),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary
@@ -242,7 +245,7 @@ fun DonationChooserDialog(
                 Spacer(Modifier.height(14.dp))
 
                 Text(
-                    "Choose your preferred donation platform:",
+                    stringResource(R.string.donation_choose),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -358,7 +361,7 @@ fun DonationChooserDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.common_cancel))
             }
         },
         shape = RoundedCornerShape(20.dp)

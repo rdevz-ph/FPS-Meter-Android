@@ -1,5 +1,7 @@
 package com.rdevzph.fpsmeter.util
 
+import com.rdevzph.fpsmeter.R
+
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
@@ -35,18 +37,18 @@ object BenchmarkCardGenerator {
                     putExtra(Intent.EXTRA_STREAM, uri)
                     putExtra(
                         Intent.EXTRA_TEXT,
-                        "FPS Benchmark for ${session.appName}: Avg ${session.avgFps} FPS, Peak ${session.maxFps} FPS, Min ${session.minFps} FPS recorded with FPS Meter Android\nhttps://github.com/rdevz-ph/FPS-Meter-Android"
+                        context.getString(R.string.bench_share_text, session.appName, session.avgFps, session.maxFps, session.minFps)
                     )
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
-                val chooser = Intent.createChooser(shareIntent, "Share Benchmark Scorecard").apply {
+                val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share_benchmark_scorecard)).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(chooser)
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Failed to generate benchmark card: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.bench_card_failed, e.message), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -100,7 +102,7 @@ object BenchmarkCardGenerator {
         }
 
         // Top-Right Branding Badge
-        val badgeText = "FPS METER • BENCHMARK"
+        val badgeText = context.getString(R.string.bench_badge)
         paint.textSize = 22f
         paint.typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
         val badgeTextWidth = paint.measureText(badgeText)
@@ -180,7 +182,7 @@ object BenchmarkCardGenerator {
         paint.color = Color.parseColor("#9EAAB8")
         paint.textSize = 24f
         paint.typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
-        canvas.drawText("AVERAGE FPS", avgRect.left + 28f, avgRect.top + 52f, paint)
+        canvas.drawText(context.getString(R.string.bench_average), avgRect.left + 28f, avgRect.top + 52f, paint)
 
         paint.color = avgColor
         paint.textSize = 100f
@@ -193,10 +195,10 @@ object BenchmarkCardGenerator {
         canvas.drawText("FPS", avgRect.left + 28f + avgFpsNumWidth + 14f, avgRect.top + 155f, paint)
 
         val perfTag = when {
-            session.avgFps >= 60 -> "Ultra Smooth"
-            session.avgFps >= 45 -> "Playable & Smooth"
-            session.avgFps >= 30 -> "Acceptable Performance"
-            else -> "Heavy Throttling"
+            session.avgFps >= 60 -> context.getString(R.string.bench_ultra_smooth)
+            session.avgFps >= 45 -> context.getString(R.string.bench_playable)
+            session.avgFps >= 30 -> context.getString(R.string.bench_acceptable)
+            else -> context.getString(R.string.bench_throttling)
         }
         paint.textSize = 22f
         paint.color = avgColor
@@ -238,16 +240,16 @@ object BenchmarkCardGenerator {
         }
 
         val tile2Left = 48f + avgTileWidth + spacing
-        drawStatTile(tile2Left, "PEAK FPS", "${session.maxFps}", "FPS")
+        drawStatTile(tile2Left, context.getString(R.string.bench_peak), "${session.maxFps}", "FPS")
 
         val tile3Left = tile2Left + colWidth + spacing
-        drawStatTile(tile3Left, "LOWEST FPS", "${session.minFps}", "FPS")
+        drawStatTile(tile3Left, context.getString(R.string.bench_lowest), "${session.minFps}", "FPS")
 
         val tile4Left = tile3Left + colWidth + spacing
         val durationMin = session.durationSeconds / 60
         val durationSec = session.durationSeconds % 60
         val durationStr = if (durationMin > 0) "${durationMin}m ${durationSec}s" else "${durationSec}s"
-        drawStatTile(tile4Left, "DURATION", durationStr)
+        drawStatTile(tile4Left, context.getString(R.string.bench_duration), durationStr)
 
         // 5. Footer Section (Device Hardware Info & Attribution)
         val footerY = height - 42f
@@ -258,9 +260,9 @@ object BenchmarkCardGenerator {
 
         val manufacturer = Build.MANUFACTURER.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
         val deviceModel = "$manufacturer ${Build.MODEL}"
-        canvas.drawText("Device: $deviceModel", 48f, footerY, paint)
+        canvas.drawText(context.getString(R.string.bench_device_prefix, deviceModel), 48f, footerY, paint)
 
-        val projectUrl = "FPS Meter for Android • rdevz-ph"
+        val projectUrl = context.getString(R.string.bench_footer)
         paint.color = Color.parseColor("#00E5FF")
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         val projectUrlWidth = paint.measureText(projectUrl)

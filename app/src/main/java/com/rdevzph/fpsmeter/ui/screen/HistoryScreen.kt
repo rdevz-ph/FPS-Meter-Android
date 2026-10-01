@@ -1,5 +1,8 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.res.stringResource
+import com.rdevzph.fpsmeter.R
+
 import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -74,10 +77,10 @@ fun HistoryScreen(
                 )
             },
             title = {
-                Text("Delete Session Log?", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.delete_session_title), fontWeight = FontWeight.Bold)
             },
             text = {
-                Text("Delete performance log for \"${session.appName}\"? This cannot be undone.")
+                Text(stringResource(R.string.delete_session_msg, session.appName))
             },
             confirmButton = {
                 Button(
@@ -88,7 +91,7 @@ fun HistoryScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
@@ -96,7 +99,7 @@ fun HistoryScreen(
                     onClick = { sessionToDelete = null },
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -114,10 +117,10 @@ fun HistoryScreen(
                 )
             },
             title = {
-                Text("Clear All Session History?", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.clear_all_title), fontWeight = FontWeight.Bold)
             },
             text = {
-                Text("Are you sure you want to delete all recorded FPS gameplay session logs? This cannot be undone.")
+                Text(stringResource(R.string.clear_all_msg))
             },
             confirmButton = {
                 Button(
@@ -128,7 +131,7 @@ fun HistoryScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Clear All")
+                    Text(stringResource(R.string.clear_all))
                 }
             },
             dismissButton = {
@@ -136,7 +139,7 @@ fun HistoryScreen(
                     onClick = { confirmClearAll = false },
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -179,7 +182,7 @@ fun HistoryScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                "Performance Overview",
+                                stringResource(R.string.performance_overview),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -192,7 +195,7 @@ fun HistoryScreen(
                                 contentColor = MaterialTheme.colorScheme.error
                             )
                         ) {
-                            Text("Clear All", style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.clear_all), style = MaterialTheme.typography.labelMedium)
                         }
                     }
 
@@ -202,9 +205,9 @@ fun HistoryScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        SummaryStatItem(label = "Sessions", value = "$totalSessions")
-                        SummaryStatItem(label = "Avg FPS", value = "$overallAvgFps")
-                        SummaryStatItem(label = "Peak FPS", value = "$peakFpsOverall")
+                        SummaryStatItem(label = stringResource(R.string.summary_sessions), value = "$totalSessions")
+                        SummaryStatItem(label = stringResource(R.string.summary_avg_fps), value = "$overallAvgFps")
+                        SummaryStatItem(label = stringResource(R.string.summary_peak_fps), value = "$peakFpsOverall")
                     }
                 }
             }
@@ -213,7 +216,7 @@ fun HistoryScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search recorded games...") },
+                placeholder = { Text(stringResource(R.string.search_recorded)) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = null)
@@ -258,12 +261,12 @@ fun HistoryScreen(
                         }
                     }
                     Text(
-                        "No Session Logs Yet",
+                        stringResource(R.string.no_session_logs),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        "Enable per-game recording on any target game or app in the Games tab. Your sessions will record average, peak, and low FPS with zero lag.",
+                        stringResource(R.string.no_session_logs_desc),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -279,7 +282,7 @@ fun HistoryScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("Configure Games")
+                        Text(stringResource(R.string.configure_games))
                     }
                 }
             }
@@ -291,7 +294,7 @@ fun HistoryScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "No games match \"$searchQuery\"",
+                    stringResource(R.string.no_games_match, searchQuery),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -447,7 +450,7 @@ private fun SessionCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Share,
-                        contentDescription = "Share benchmark card",
+                        contentDescription = stringResource(R.string.share_benchmark_card),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
@@ -459,7 +462,7 @@ private fun SessionCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.DeleteOutline,
-                        contentDescription = "Delete session",
+                        contentDescription = stringResource(R.string.delete_session),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
@@ -519,7 +522,7 @@ private fun SessionCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Avg: ",
+                            stringResource(R.string.avg_prefix),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -538,7 +541,7 @@ private fun SessionCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        "Peak: ${session.maxFps} | Low: ${session.minFps}",
+                        stringResource(R.string.peak_low, session.maxFps, session.minFps),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,

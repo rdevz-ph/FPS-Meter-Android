@@ -33,6 +33,7 @@ import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.GraphicsApi
 import com.rdevzph.fpsmeter.recording.FpsRecordingManager
+import com.rdevzph.fpsmeter.util.LocaleHelper
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
 import kotlinx.coroutines.*
 import rikka.shizuku.Shizuku
@@ -188,6 +189,10 @@ class FpsOverlayService : Service() {
         }
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
+
     override fun onCreate() {
         super.onCreate()
         isRunning = true
@@ -281,7 +286,7 @@ class FpsOverlayService : Service() {
         if (recordedName.isNotEmpty()) return recordedName
         val lastRecName = FpsRecordingManager.getLastRecordedAppName()
         if (lastRecName.isNotEmpty()) return lastRecName
-        val pkg = getActiveGamePackage() ?: return "No Active Game"
+        val pkg = getActiveGamePackage() ?: return getString(R.string.no_active_game)
         return getAppNameForPackage(pkg)
     }
 
@@ -295,19 +300,19 @@ class FpsOverlayService : Service() {
     private fun startRecordingActiveGame(): Boolean {
         val pkg = getActiveGamePackage()
         if (pkg == null) {
-            Toast.makeText(this, "No active game detected to record", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_active_game_to_record), Toast.LENGTH_SHORT).show()
             return false
         }
         val settings = OverlaySettings.load(this)
         val appName = getAppNameForPackage(pkg)
         if (!settings.autoRecordAll && !settings.recordingPackages.contains(pkg)) {
-            Toast.makeText(this, "Recording is not enabled for $appName in Games list", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.recording_not_enabled_for, appName), Toast.LENGTH_SHORT).show()
             return false
         }
         lastDetectedPackage = pkg
         val started = FpsRecordingManager.startRecording(this, pkg, appName)
         if (started) {
-            Toast.makeText(this, "Recording FPS for $appName", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.recording_fps_for, appName), Toast.LENGTH_SHORT).show()
             floatingToggleButton?.updateState()
             return true
         }
@@ -319,11 +324,11 @@ class FpsOverlayService : Service() {
         if (record != null) {
             Toast.makeText(
                 this,
-                "Saved: ${record.appName} (Avg: ${record.avgFps} FPS, Max: ${record.maxFps})",
+                getString(R.string.saved_recording, record.appName, record.avgFps, record.maxFps),
                 Toast.LENGTH_LONG
             ).show()
         } else {
-            Toast.makeText(this, "FPS recording stopped", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.recording_stopped), Toast.LENGTH_SHORT).show()
         }
         floatingToggleButton?.updateState()
     }
@@ -821,16 +826,16 @@ class FpsOverlayService : Service() {
         val stopIntent = PendingIntent.getService(this, 1, Intent(this, FpsOverlayService::class.java).apply { action = ACTION_STOP }, PendingIntent.FLAG_IMMUTABLE)
         val toggleIntent = PendingIntent.getService(this, 2, Intent(this, FpsOverlayService::class.java).apply { action = ACTION_TOGGLE_VISIBILITY }, PendingIntent.FLAG_IMMUTABLE)
 
-        val toggleLabel = if (isOverlayVisible) "Hide" else "Show"
-        val statusText = if (isOverlayVisible) "Overlay visible & measuring" else "Overlay hidden (minimized)"
+        val toggleLabel = if (isOverlayVisible) getString(R.string.notif_action_hide) else getString(R.string.notif_action_show)
+        val statusText = if (isOverlayVisible) getString(R.string.notif_status_visible) else getString(R.string.notif_status_hidden)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("FPS Meter")
+            .setContentTitle(getString(R.string.app_name))
             .setContentText(statusText)
             .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentIntent(tapIntent)
             .addAction(0, toggleLabel, toggleIntent)
-            .addAction(0, "Stop", stopIntent)
+            .addAction(0, getString(R.string.notif_action_stop), stopIntent)
             .setOngoing(true)
             .setSilent(true)
             .build()

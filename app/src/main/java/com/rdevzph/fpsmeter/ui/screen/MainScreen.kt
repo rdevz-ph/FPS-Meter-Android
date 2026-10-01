@@ -1,5 +1,8 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.res.stringResource
+import com.rdevzph.fpsmeter.R
+
 import android.content.Intent
 import android.graphics.Color as AColor
 import android.net.Uri
@@ -47,10 +50,10 @@ import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.viewmodel.FpsViewModel
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
 
-enum class MainNavTab(val title: String, val icon: ImageVector) {
-    METER("Meter", Icons.Default.Speed),
-    GAMES("Games", Icons.Default.SportsEsports),
-    HISTORY("History", Icons.Default.QueryStats)
+enum class MainNavTab(val titleRes: Int, val icon: ImageVector) {
+    METER(R.string.tab_meter, Icons.Default.Speed),
+    GAMES(R.string.tab_games, Icons.Default.SportsEsports),
+    HISTORY(R.string.tab_history, Icons.Default.QueryStats)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +61,8 @@ enum class MainNavTab(val title: String, val icon: ImageVector) {
 fun MainScreen(
     viewModel: FpsViewModel,
     showSplash: Boolean,
+    currentLanguage: String,
+    onLanguageChange: (String) -> Unit,
     onStartOverlay: () -> Unit,
     onStopOverlay: () -> Unit
 ) {
@@ -132,7 +137,9 @@ fun MainScreen(
         if (isSettingsOpen) {
             SettingsScreen(
                 themeSettings = themeSettings,
+                currentLanguage = currentLanguage,
                 onThemeChange = { viewModel.updateThemeSettings(it) },
+                onLanguageChange = onLanguageChange,
                 onOpenDonation = { showDonationDialog = true },
                 onBack = { isSettingsOpen = false }
             )
@@ -152,15 +159,15 @@ fun MainScreen(
                                 Spacer(Modifier.width(10.dp))
                                 Column {
                                     Text(
-                                        "FPS Meter",
+                                        stringResource(R.string.app_name),
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
                                         when (currentTab) {
-                                            MainNavTab.METER -> "Live overlay counter"
-                                            MainNavTab.GAMES -> "Auto-start & game recording"
-                                            MainNavTab.HISTORY -> "Performance session logs"
+                                            MainNavTab.METER -> stringResource(R.string.subtitle_meter)
+                                            MainNavTab.GAMES -> stringResource(R.string.subtitle_games)
+                                            MainNavTab.HISTORY -> stringResource(R.string.subtitle_history)
                                         },
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -173,7 +180,7 @@ fun MainScreen(
                                 IconButton(onClick = { showOverflowMenu = true }) {
                                     Icon(
                                         imageVector = Icons.Default.MoreVert,
-                                        contentDescription = "More Options"
+                                        contentDescription = stringResource(R.string.common_more_options)
                                     )
                                 }
                                 DropdownMenu(
@@ -181,7 +188,7 @@ fun MainScreen(
                                     onDismissRequest = { showOverflowMenu = false }
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text("About") },
+                                        text = { Text(stringResource(R.string.common_about)) },
                                         leadingIcon = {
                                             Icon(Icons.Default.Info, contentDescription = null)
                                         },
@@ -191,7 +198,7 @@ fun MainScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Settings") },
+                                        text = { Text(stringResource(R.string.common_settings)) },
                                         leadingIcon = {
                                             Icon(Icons.Default.Settings, contentDescription = null)
                                         },
@@ -201,7 +208,7 @@ fun MainScreen(
                                         }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Donate") },
+                                        text = { Text(stringResource(R.string.common_donate)) },
                                         leadingIcon = {
                                             Icon(Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFE91E63))
                                         },
@@ -227,10 +234,10 @@ fun MainScreen(
                             selected = currentTab == tab,
                             onClick = { currentTab = tab },
                             icon = {
-                                Icon(tab.icon, contentDescription = tab.title)
+                                Icon(tab.icon, contentDescription = stringResource(tab.titleRes))
                             },
                             label = {
-                                Text(tab.title)
+                                Text(stringResource(tab.titleRes))
                             }
                         )
                     }
@@ -392,14 +399,14 @@ fun MainScreen(
                             Spacer(Modifier.width(14.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Official Website",
+                                    text = stringResource(R.string.official_website),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
-                                    text = "Setup tutorials, guides & feature previews",
+                                    text = stringResource(R.string.official_website_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -451,7 +458,7 @@ fun MainScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "Check for Updates",
+                                        text = stringResource(R.string.check_for_updates),
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -562,13 +569,13 @@ fun SplashOverlay() {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                "FPS Meter",
+                stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                "by rdevz-ph",
+                stringResource(R.string.app_by_author),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -609,7 +616,7 @@ fun ShizukuCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Shizuku (Optional)",
+                    stringResource(R.string.shizuku_optional),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -626,14 +633,14 @@ fun ShizukuCard(
             if (expanded) {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "Used to auto-grant overlay permission without opening settings and enable privileged SurfaceFlinger monitoring for real game FPS.",
+                    stringResource(R.string.shizuku_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    StatusChip("Service", available, Modifier.weight(1f))
-                    StatusChip("Permission", granted, Modifier.weight(1f))
+                    StatusChip(stringResource(R.string.shizuku_service), available, Modifier.weight(1f))
+                    StatusChip(stringResource(R.string.shizuku_permission), granted, Modifier.weight(1f))
                 }
                 if (!isReady) {
                     Spacer(Modifier.height(10.dp))
@@ -643,13 +650,13 @@ fun ShizukuCard(
                                 onClick = onRequestPermission,
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp)
-                            ) { Text("Grant") }
+                            ) { Text(stringResource(R.string.common_grant)) }
                         }
                         OutlinedButton(
                             onClick = onRefresh,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp)
-                        ) { Text("Refresh") }
+                        ) { Text(stringResource(R.string.common_refresh)) }
                     }
                 }
             }
@@ -710,7 +717,7 @@ fun OverlayPermissionCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Overlay Permission",
+                    stringResource(R.string.overlay_permission),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -727,8 +734,8 @@ fun OverlayPermissionCard(
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                if (granted) "SYSTEM_ALERT_WINDOW is granted — overlay can appear over any app."
-                else "Required to show the FPS counter over games. Grant via Shizuku (no root needed) or manually.",
+                if (granted) stringResource(R.string.overlay_granted_desc)
+                else stringResource(R.string.overlay_required_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -740,13 +747,13 @@ fun OverlayPermissionCard(
                             onClick = onGrantViaShizuku,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp)
-                        ) { Text("Via Shizuku") }
+                        ) { Text(stringResource(R.string.overlay_via_shizuku)) }
                     }
                     OutlinedButton(
                         onClick = onOpenSettings,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
-                    ) { Text("Settings") }
+                    ) { Text(stringResource(R.string.common_settings)) }
                 }
             }
         }
@@ -783,7 +790,7 @@ fun OverlayControlCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "FPS Overlay",
+                    stringResource(R.string.fps_overlay),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -824,7 +831,7 @@ fun OverlayControlCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    if (running) "STOP OVERLAY" else "START OVERLAY",
+                    if (running) stringResource(R.string.stop_overlay) else stringResource(R.string.start_overlay),
                     fontWeight = FontWeight.ExtraBold
                 )
             }
@@ -832,7 +839,7 @@ fun OverlayControlCard(
             if (!permissionReady && !running) {
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "⚠ Grant overlay permission first",
+                    stringResource(R.string.grant_overlay_first),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -858,7 +865,7 @@ fun OverlayControlCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Overlay Settings",
+                    stringResource(R.string.overlay_settings),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -894,8 +901,8 @@ fun OverlaySettingsPanel(
     if (showResetConfirm) {
         AlertDialog(
             onDismissRequest = { showResetConfirm = false },
-            title = { Text("Reset Settings?") },
-            text = { Text("Are you sure you want to reset all FPS overlay settings to their defaults? This cannot be undone.") },
+            title = { Text(stringResource(R.string.reset_settings_title)) },
+            text = { Text(stringResource(R.string.reset_settings_msg)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -903,12 +910,12 @@ fun OverlaySettingsPanel(
                         showResetConfirm = false
                     }
                 ) {
-                    Text("Reset", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.common_reset), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirm = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -916,7 +923,7 @@ fun OverlaySettingsPanel(
 
     // FPS Provider Selection Section
     Text(
-        "FPS Measurement Provider",
+        stringResource(R.string.fps_measurement_provider),
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary
@@ -958,14 +965,14 @@ fun OverlaySettingsPanel(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Choreographer",
+                        stringResource(R.string.provider_choreographer),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Display pace (Default)",
+                    stringResource(R.string.provider_choreographer_desc),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1012,7 +1019,7 @@ fun OverlaySettingsPanel(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "SurfaceFlinger",
+                        stringResource(R.string.provider_surfaceflinger),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (shizukuReady) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
@@ -1020,7 +1027,7 @@ fun OverlaySettingsPanel(
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    if (shizukuReady) "Real Game FPS" else "Requires Shizuku",
+                    if (shizukuReady) stringResource(R.string.provider_surfaceflinger_real) else stringResource(R.string.common_requires_shizuku),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (shizukuReady) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
                     fontWeight = if (!shizukuReady) FontWeight.SemiBold else FontWeight.Normal
@@ -1038,9 +1045,9 @@ fun OverlaySettingsPanel(
                 .padding(horizontal = 4.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Show Graphics API Badge", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.show_api_badge), style = MaterialTheme.typography.labelMedium)
                 Text(
-                    "Auto-detects Vulkan [VK] or OpenGL [GL]",
+                    stringResource(R.string.show_api_badge_desc),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1060,7 +1067,7 @@ fun OverlaySettingsPanel(
     // Text size
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Text Size", style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.text_size), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
             Slider(
                 value = settings.textSizeSp,
                 onValueChange = { onChange(settings.copy(textSizeSp = it)) },
@@ -1078,7 +1085,7 @@ fun OverlaySettingsPanel(
 
         // Overall Opacity
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Opacity", style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.opacity), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
             Slider(
                 value = settings.alpha,
                 onValueChange = { onChange(settings.copy(alpha = it)) },
@@ -1095,7 +1102,7 @@ fun OverlaySettingsPanel(
 
         // Background Opacity
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Bg Opacity", style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.bg_opacity), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
             Slider(
                 value = settings.backgroundAlpha,
                 onValueChange = { onChange(settings.copy(backgroundAlpha = it)) },
@@ -1113,7 +1120,7 @@ fun OverlaySettingsPanel(
         // Color picker row
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Color", style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.color_label), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Auto option first
                 Box(
@@ -1171,7 +1178,7 @@ fun OverlaySettingsPanel(
             // Show ms toggle
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Show ms", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.show_ms), style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.weight(1f))
                     Switch(
                         checked = settings.showMs,
@@ -1186,7 +1193,7 @@ fun OverlaySettingsPanel(
             // Battery temp toggle
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Battery Temp", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.battery_temp), style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.weight(1f))
                     Switch(
                         checked = settings.showTemp,
@@ -1208,10 +1215,10 @@ fun OverlaySettingsPanel(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column {
-                        Text("CPU Temp", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.cpu_temp), style = MaterialTheme.typography.labelMedium)
                         if (!shizukuReady) {
                             Text(
-                                "Requires Shizuku",
+                                stringResource(R.string.common_requires_shizuku),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
                             )
@@ -1232,10 +1239,10 @@ fun OverlaySettingsPanel(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column {
-                        Text("GPU Temp", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.gpu_temp), style = MaterialTheme.typography.labelMedium)
                         if (!shizukuReady) {
                             Text(
-                                "Requires Shizuku",
+                                stringResource(R.string.common_requires_shizuku),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
                             )
@@ -1263,10 +1270,10 @@ fun OverlaySettingsPanel(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column {
-                        Text("SoC Temp", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.soc_temp), style = MaterialTheme.typography.labelMedium)
                         if (!shizukuReady) {
                             Text(
-                                "Requires Shizuku",
+                                stringResource(R.string.common_requires_shizuku),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
                             )
@@ -1286,7 +1293,7 @@ fun OverlaySettingsPanel(
             // Battery level toggle
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Battery Level", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.battery_level), style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.weight(1f))
                     Switch(
                         checked = settings.showBatteryLevel,
@@ -1300,16 +1307,16 @@ fun OverlaySettingsPanel(
         Spacer(Modifier.height(12.dp))
 
         // Position presets
-        Text("Position Presets", style = MaterialTheme.typography.labelMedium)
+        Text(stringResource(R.string.position_presets), style = MaterialTheme.typography.labelMedium)
         Spacer(Modifier.height(8.dp))
         
         val presets = listOf(
-            "Top Left" to (Gravity.TOP or Gravity.START),
-            "Top Center" to (Gravity.TOP or Gravity.CENTER_HORIZONTAL),
-            "Top Right" to (Gravity.TOP or Gravity.END),
-            "Bottom Left" to (Gravity.BOTTOM or Gravity.START),
-            "Bottom Center" to (Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL),
-            "Bottom Right" to (Gravity.BOTTOM or Gravity.END)
+            stringResource(R.string.pos_top_left) to (Gravity.TOP or Gravity.START),
+            stringResource(R.string.pos_top_center) to (Gravity.TOP or Gravity.CENTER_HORIZONTAL),
+            stringResource(R.string.pos_top_right) to (Gravity.TOP or Gravity.END),
+            stringResource(R.string.pos_bottom_left) to (Gravity.BOTTOM or Gravity.START),
+            stringResource(R.string.pos_bottom_center) to (Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL),
+            stringResource(R.string.pos_bottom_right) to (Gravity.BOTTOM or Gravity.END)
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1470,7 +1477,7 @@ fun OverlaySettingsPanel(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                "Reset Settings",
+                stringResource(R.string.reset_settings_btn),
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.labelLarge
             )
@@ -1497,7 +1504,7 @@ fun InfoCard() {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "How it works",
+                    stringResource(R.string.how_it_works),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.secondary
@@ -1505,13 +1512,7 @@ fun InfoCard() {
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "FPS can be measured using two distinct providers:\n\n" +
-                "• Choreographer (Default): Samples the Android vsync signal driving display refreshes with minimal overhead.\n" +
-                "• SurfaceFlinger (Shizuku): Samples real frame presentation buffers directly from Android's compositor. Automatically detects whether the running game uses Vulkan or OpenGL ES (e.g. Genshin Impact, Wuthering Waves) to measure true game FPS.\n\n" +
-                "• Temperature Monitoring: Displays Battery Temp via standard system broadcasts and real-time SoC (CPU/GPU) Temp queried via Shizuku privileged Thermal HAL access.\n" +
-                "• Position: Drag the counter or use quick presets to snap it to any corner.\n" +
-                "• Auto Color: Values change color dynamically based on performance (60/45/30 FPS).\n" +
-                "• Permissions: Grant overlay access manually or via Shizuku for a seamless setup.",
+                stringResource(R.string.how_it_works_body),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 18.sp
@@ -1577,14 +1578,14 @@ fun DeveloperCard() {
                 Spacer(Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                    contentDescription = "Portfolio",
+                    contentDescription = stringResource(R.string.content_desc_portfolio),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
             }
             
             Text(
-                text = "rdevz-ph • Lead Developer",
+                text = stringResource(R.string.developer_role),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1610,7 +1611,7 @@ fun DeveloperCard() {
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text("Website", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.button_website), fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(Modifier.width(12.dp))
@@ -1633,14 +1634,14 @@ fun DeveloperCard() {
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text("GitHub Profile", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.button_github_profile), fontWeight = FontWeight.Bold)
                 }
             }
             
             Spacer(Modifier.height(8.dp))
             
             Text(
-                text = "Built with passion for gamers",
+                text = stringResource(R.string.built_with_passion),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -1671,7 +1672,7 @@ fun QuickAccessCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Quick Access & Toggles",
+                    stringResource(R.string.quick_access),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -1687,12 +1688,12 @@ fun QuickAccessCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Floating Assistive Bubble",
+                        stringResource(R.string.floating_bubble),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        "Draggable on-screen bubble with a quick menu to start/stop game FPS recording and toggle HUD visibility from any app.",
+                        stringResource(R.string.floating_bubble_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1727,13 +1728,13 @@ fun QuickAccessCard(
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Quick Settings Panel Tile",
+                        stringResource(R.string.quick_settings_tile),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        "Swipe down from your status bar in any game and tap the 'FPS Meter' tile to toggle without opening this app.",
+                        stringResource(R.string.quick_settings_tile_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

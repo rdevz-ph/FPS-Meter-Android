@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.rdevzph.fpsmeter.MainActivity
 import com.rdevzph.fpsmeter.R
+import com.rdevzph.fpsmeter.util.LocaleHelper
 
 /**
  * Quick Settings Panel Tile service that allows users to toggle the FPS overlay
@@ -29,6 +30,10 @@ class FpsTileService : TileService() {
         }
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
+
     override fun onStartListening() {
         super.onStartListening()
         updateTileState()
@@ -38,7 +43,7 @@ class FpsTileService : TileService() {
         super.onClick()
 
         if (!Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, "Overlay permission required. Please open FPS Meter.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.overlay_permission_required_tile), Toast.LENGTH_LONG).show()
             val appIntent = Intent(this, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -74,7 +79,7 @@ class FpsTileService : TileService() {
         tile.icon = Icon.createWithResource(this, R.mipmap.ic_launcher_foreground)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.subtitle = if (isRunning) "Active" else "Tap to start"
+            tile.subtitle = if (isRunning) getString(R.string.common_active) else getString(R.string.tile_tap_to_start)
         }
 
         tile.updateTile()
