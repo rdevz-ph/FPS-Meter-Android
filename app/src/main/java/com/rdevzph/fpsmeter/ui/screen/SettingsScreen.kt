@@ -379,7 +379,12 @@ fun SettingsScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.donate_support), fontWeight = FontWeight.SemiBold)
+                        Text(
+                            stringResource(R.string.donate_support),
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
             }
@@ -442,7 +447,9 @@ private fun SettingsActionRow(
             Text(
                 title,
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 subtitle,

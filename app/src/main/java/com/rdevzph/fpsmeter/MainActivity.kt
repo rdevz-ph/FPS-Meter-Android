@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     viewModel = viewModel,
                     showSplash = showSplash,
-                    currentLanguage = LocaleHelper.getLanguage(this@MainActivity),
+                    currentLanguage = remember { LocaleHelper.getLanguage(this@MainActivity) },
                     onLanguageChange = { language ->
                         LocaleHelper.setLanguage(this@MainActivity, language)
                         recreate()

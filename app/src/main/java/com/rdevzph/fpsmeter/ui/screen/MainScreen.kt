@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -157,11 +158,13 @@ fun MainScreen(
                                     modifier = Modifier.size(28.dp)
                                 )
                                 Spacer(Modifier.width(10.dp))
-                                Column {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         stringResource(R.string.app_name),
                                         style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         when (currentTab) {
@@ -170,7 +173,9 @@ fun MainScreen(
                                             MainNavTab.HISTORY -> stringResource(R.string.subtitle_history)
                                         },
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -685,7 +690,12 @@ fun StatusChip(label: String, active: Boolean, modifier: Modifier = Modifier) {
         ) {
             Icon(icon, null, modifier = Modifier.size(15.dp), tint = iconColor)
             Spacer(Modifier.width(6.dp))
-            Text(label, style = MaterialTheme.typography.labelMedium)
+            Text(
+                label,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -832,7 +842,9 @@ fun OverlayControlCard(
                 Spacer(Modifier.width(8.dp))
                 Text(
                     if (running) stringResource(R.string.stop_overlay) else stringResource(R.string.start_overlay),
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -1344,6 +1356,7 @@ fun OverlaySettingsPanel(
                                 label, 
                                 style = MaterialTheme.typography.labelSmall, 
                                 maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -1611,7 +1624,12 @@ fun DeveloperCard() {
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.button_website), fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.button_website),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
 
                 Spacer(Modifier.width(12.dp))
@@ -1634,7 +1652,12 @@ fun DeveloperCard() {
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.button_github_profile), fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.button_github_profile),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
             
