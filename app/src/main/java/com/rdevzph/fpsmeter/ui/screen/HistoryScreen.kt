@@ -245,7 +245,8 @@ fun HistoryScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f)
+                    .padding(bottom = 96.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -297,7 +298,8 @@ fun HistoryScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f)
+                    .padding(bottom = 96.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -312,6 +314,7 @@ fun HistoryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
+                contentPadding = PaddingValues(bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(filteredSessions, key = { it.id }) { session ->

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.4] - 2026-10-03
+
+### Added
+- **Material 3 Expressive Floating Toolbar**: Modernized bottom navigation with a floating toolbar that sits directly above scrollable screen content with natural elevation and shadow effects.
+- **Vibrant Floating Action Button**: Integrated an expressive action button with the floating toolbar to start and stop the overlay service directly from any tab.
+- **R8 and ProGuard App Optimization**: Added minification, resource shrinking, and ProGuard optimization rules for the release build, reducing the release APK size from 11.1 MB to approximately 1.6 MB.
+- **Debug Build Advisory Dialog**: Added an alert dialog when opening a debug build, informing users about the advantages of the optimized release build and linking directly to GitHub Releases.
+
+### Changed
+- **Full-Screen Scrolling**: Removed docked bottom bar constraints so lists and cards flow smoothly behind the floating toolbar.
+- **Material 3 Library Upgrade**: Upgraded to Material 3 Expressive component APIs.
+
+---
+
 ## [v2.3] - 2026-10-01
 
 ### Added

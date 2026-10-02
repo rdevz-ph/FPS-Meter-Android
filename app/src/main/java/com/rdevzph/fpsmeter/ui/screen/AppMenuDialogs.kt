@@ -38,6 +38,7 @@ private const val REPO_URL = "https://github.com/rdevz-ph/FPS-Meter-Android"
 private const val ISSUES_URL = "https://github.com/rdevz-ph/FPS-Meter-Android/issues"
 private const val KOFI_URL = "https://ko-fi.com/romelbrosas"
 private const val BUYMEACOFFEE_URL = "https://buymeacoffee.com/rdevzph"
+private const val RELEASES_URL = "https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest"
 
 private fun openBrowser(context: Context, url: String) {
     try {
@@ -52,14 +53,18 @@ private fun openBrowser(context: Context, url: String) {
 
 @Composable
 fun AboutDialog(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onShowDebugWarning: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val isDebug = remember(context) {
+        (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    }
     val versionName = remember(context) {
         try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "2.3"
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "2.4"
         } catch (e: Exception) {
-            "2.3"
+            "2.4"
         }
     }
 
@@ -87,13 +92,21 @@ fun AboutDialog(
                         Spacer(Modifier.width(8.dp))
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer
+                            color = if (isDebug) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                            modifier = if (isDebug && onShowDebugWarning != null) {
+                                Modifier.clickable {
+                                    onDismiss()
+                                    onShowDebugWarning()
+                                }
+                            } else {
+                                Modifier
+                            }
                         ) {
                             Text(
-                                "v$versionName",
+                                if (isDebug) "v$versionName (Debug)" else "v$versionName",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                color = if (isDebug) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -112,6 +125,47 @@ fun AboutDialog(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
+                if (isDebug && onShowDebugWarning != null) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                onDismiss()
+                                onShowDebugWarning()
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                stringResource(R.string.debug_warning_title),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
+                }
+
                 Text(
                     stringResource(R.string.about_desc),
                     style = MaterialTheme.typography.bodyMedium,
@@ -362,6 +416,154 @@ fun DonationChooserDialog(
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.common_cancel))
+            }
+        },
+        shape = RoundedCornerShape(20.dp)
+    )
+}
+
+@Composable
+fun DebugBuildWarningDialog(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(32.dp)
+            )
+        },
+        title = {
+            Text(
+                stringResource(R.string.debug_warning_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.debug_warning_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                val isDark = isSystemInDarkTheme()
+                val greenContainer = if (isDark) Color(0xFF13321B) else Color(0xFFE8F5E9)
+                val greenTitle = if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
+                val greenBody = if (isDark) Color(0xFFC8E6C9) else Color(0xFF2E7D32)
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = greenContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = greenTitle,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                stringResource(R.string.debug_warning_reasons_title),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = greenTitle
+                            )
+                        }
+                        Text(
+                            stringResource(R.string.debug_warning_reason_size),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = greenBody
+                        )
+                        Text(
+                            stringResource(R.string.debug_warning_reason_perf),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = greenBody
+                        )
+                    }
+                }
+
+                Text(
+                    stringResource(R.string.debug_warning_recommendation),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            openBrowser(context, RELEASES_URL)
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.debug_warning_latest_release),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "github.com/rdevz-ph/FPS-Meter-Android/releases",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    openBrowser(context, RELEASES_URL)
+                    onDismiss()
+                },
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(stringResource(R.string.debug_warning_get_release))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.debug_warning_continue))
             }
         },
         shape = RoundedCornerShape(20.dp)

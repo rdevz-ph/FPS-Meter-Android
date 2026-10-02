@@ -1,9 +1,9 @@
-# FPS Meter Android v2.3
+# FPS Meter Android v2.4
 
-### What's New in v2.3
-- **Internationalization (i18n) & Simplified Chinese Localization**: Extracted all user-facing strings into resource files and added comprehensive Simplified Chinese (`values-zh`) translations ([#12](https://github.com/rdevz-ph/FPS-Meter-Android/pull/12)). Special thanks to [@CH-Hu-Bill](https://github.com/CH-Hu-Bill).
-- **In-App Language Switcher**: Added a dedicated Language section to the Settings screen with options for System Default, English, and Simplified Chinese (简体中文). Changing the language dynamically applies to the application and background service contexts (`attachBaseContext`) immediately.
-- **Text Overflow & Layout Fixes**: Added single-line limits and ellipsis truncation across title bars and status labels, plus horizontal scrolling for session card chips in the History screen to prevent text clipping across languages.
+### What's New in v2.4
+- **Material 3 Expressive Floating Toolbar**: Upgraded navigation to a floating toolbar that sits directly above scrollable content with natural shadow elevation. Includes a vibrant floating action button to quickly start or stop the overlay.
+- **R8 and ProGuard App Optimization**: Configured release shrinking and optimization rules to reduce the release APK size to around 1.6 MB (down from 11.1 MB in v2.3), improving startup time and reducing storage use.
+- **Debug Build Notice Dialog**: Added a warning dialog on debug builds explaining the advantages of using the optimized release build, with a direct link to GitHub Releases.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 

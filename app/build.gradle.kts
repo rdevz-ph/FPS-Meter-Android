@@ -14,8 +14,8 @@ android {
         applicationId = "com.rdevzph.fpsmeter"
         minSdk = 26
         targetSdk = 36
-        versionCode = 14
-        versionName = "2.3"
+        versionCode = 15
+        versionName = "2.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,7 +48,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfigs.findByName("release")?.let { releaseSigning ->
                 if (releaseSigning.storeFile != null) {
                     signingConfig = releaseSigning

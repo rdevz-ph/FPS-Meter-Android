@@ -279,4 +279,15 @@
     <string name="overlay_granted_recheck_failed">Granted via shell, recheck failed</string>
     <string name="shell_command_failed">Shell command failed (exit %d)</string>
     <string name="shizuku_error">Shizuku error: %s</string>
+
+    <!-- Debug build warning dialog -->
+    <string name="debug_warning_title">Debug Build Detected</string>
+    <string name="debug_warning_desc">You are running a debug build of FPS Meter. Debug builds are designed for development and testing only.</string>
+    <string name="debug_warning_reasons_title">Why use the release build?</string>
+    <string name="debug_warning_reason_size">• Smaller app size: Release builds are optimized and shrunk to around 1.6 MB, compared to over 10 MB for debug builds.</string>
+    <string name="debug_warning_reason_perf">• Better performance: Release builds remove debug overhead, improving FPS overlay speed and battery efficiency.</string>
+    <string name="debug_warning_recommendation">For the best experience, please download the official optimized release from GitHub Releases.</string>
+    <string name="debug_warning_latest_release">Latest GitHub Release</string>
+    <string name="debug_warning_get_release">Get Release Build</string>
+    <string name="debug_warning_continue">Continue Anyway</string>
 </resources>

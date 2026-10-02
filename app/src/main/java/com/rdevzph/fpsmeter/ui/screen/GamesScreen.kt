@@ -410,6 +410,7 @@ fun GamesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
+                contentPadding = PaddingValues(bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(7) {
@@ -420,7 +421,8 @@ fun GamesScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f)
+                    .padding(bottom = 96.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -434,6 +436,7 @@ fun GamesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
+                contentPadding = PaddingValues(bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(filteredApps, key = { it.packageName }) { app ->

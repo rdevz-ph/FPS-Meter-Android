@@ -279,4 +279,15 @@
     <string name="overlay_granted_recheck_failed">已通过 shell 授予，但重新检查失败</string>
     <string name="shell_command_failed">Shell 命令失败（退出码 %d）</string>
     <string name="shizuku_error">Shizuku 错误: %s</string>
+
+    <!-- Debug build warning dialog -->
+    <string name="debug_warning_title">检测到调试版本</string>
+    <string name="debug_warning_desc">您当前运行的是 FPS Meter 的调试版本。调试版本仅用于开发和测试。</string>
+    <string name="debug_warning_reasons_title">为什么使用正式版本？</string>
+    <string name="debug_warning_reason_size">• 更小的安装包体积：正式版经过优化和混淆，体积仅约 1.6 MB，而调试版超过 10 MB。</string>
+    <string name="debug_warning_reason_perf">• 更好的性能表现：正式版去除了调试开销，提升悬浮窗刷新流畅度并减少耗电。</string>
+    <string name="debug_warning_recommendation">为获得最佳体验，请从 GitHub Releases 下载官方优化的正式版本。</string>
+    <string name="debug_warning_latest_release">最新 GitHub 发布版本</string>
+    <string name="debug_warning_get_release">获取正式版本</string>
+    <string name="debug_warning_continue">继续使用</string>
 </resources>

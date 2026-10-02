@@ -57,7 +57,7 @@ enum class MainNavTab(val titleRes: Int, val icon: ImageVector) {
     HISTORY(R.string.tab_history, Icons.Default.QueryStats)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainScreen(
     viewModel: FpsViewModel,
@@ -71,9 +71,9 @@ fun MainScreen(
     val versionName = remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageInfo.versionName ?: "2.3"
+            packageInfo.versionName ?: "2.4"
         } catch (e: Exception) {
-            "2.3"
+            "2.4"
         }
     }
 
@@ -133,6 +133,46 @@ fun MainScreen(
     var isSettingsOpen by rememberSaveable { mutableStateOf(false) }
     var showDonationDialog by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
+
+    val isDebugBuild = remember(context) {
+        (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    }
+    var showDebugWarningDialog by rememberSaveable { mutableStateOf(isDebugBuild) }
+
+    val toggleOverlay: () -> Unit = {
+        if (overlayRunning) {
+            onStopOverlay()
+            viewModel.setOverlayRunning(false)
+        } else if (overlayGranted) {
+            val intent = Intent(context, FpsOverlayService::class.java).apply {
+                putExtra(FpsOverlayService.EXTRA_COLOR, settings.color)
+                putExtra(FpsOverlayService.EXTRA_SIZE, settings.textSizeSp)
+                putExtra(FpsOverlayService.EXTRA_ALPHA, settings.alpha)
+                putExtra(FpsOverlayService.EXTRA_BACKGROUND_ALPHA, settings.backgroundAlpha)
+                putExtra(FpsOverlayService.EXTRA_POSITION_X, settings.posX)
+                putExtra(FpsOverlayService.EXTRA_POSITION_Y, settings.posY)
+                putExtra(FpsOverlayService.EXTRA_SHOW_MS, settings.showMs)
+                putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, settings.showTemp)
+                putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
+                putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, settings.showCpuTemp)
+                putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
+                putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
+                putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
+                putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
+                putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
+            }
+            context.startForegroundService(intent)
+            viewModel.setOverlayRunning(true)
+        } else {
+            context.startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:${context.packageName}")
+                )
+            )
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (isSettingsOpen) {
@@ -229,36 +269,22 @@ fun MainScreen(
                         containerColor = MaterialTheme.colorScheme.surface
                     )
                 )
-            },
-            bottomBar = {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) {
-                    MainNavTab.values().forEach { tab ->
-                        NavigationBarItem(
-                            selected = currentTab == tab,
-                            onClick = { currentTab = tab },
-                            icon = {
-                                Icon(tab.icon, contentDescription = stringResource(tab.titleRes))
-                            },
-                            label = {
-                                Text(stringResource(tab.titleRes))
-                            }
-                        )
-                    }
-                }
             }
         ) { padding ->
-            when (currentTab) {
-                MainNavTab.METER -> {
-                    Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                    .padding(top = padding.calculateTopPadding())
             ) {
+                when (currentTab) {
+                    MainNavTab.METER -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
                 // === Shizuku Status ===
                 ShizukuCard(
                     available = shizukuAvailable,
@@ -491,7 +517,7 @@ fun MainScreen(
                         }
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.navigationBarsPadding().height(100.dp))
             }
         }
         MainNavTab.GAMES -> {
@@ -515,7 +541,7 @@ fun MainScreen(
                 onSetRecordingPackage = { pkg, enabled ->
                     viewModel.setRecordingPackage(pkg, enabled)
                 },
-                modifier = Modifier.padding(padding)
+                modifier = Modifier.fillMaxSize()
             )
         }
         MainNavTab.HISTORY -> {
@@ -530,12 +556,75 @@ fun MainScreen(
                 onNavigateToGames = {
                     currentTab = MainNavTab.GAMES
                 },
-                modifier = Modifier.padding(padding)
+                modifier = Modifier.fillMaxSize()
             )
+        }
+    }
+
+    // Floating Toolbar anchored over screen content
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .navigationBarsPadding()
+            .padding(bottom = 16.dp)
+    ) {
+        HorizontalFloatingToolbar(
+            expanded = true,
+            floatingActionButton = {
+                FloatingToolbarDefaults.VibrantFloatingActionButton(
+                    onClick = toggleOverlay,
+                    containerColor = if (overlayRunning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = if (overlayRunning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = if (overlayRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
+                        contentDescription = stringResource(if (overlayRunning) R.string.stop_overlay else R.string.start_overlay)
+                    )
+                }
+            },
+            colors = FloatingToolbarDefaults.standardFloatingToolbarColors(),
+        ) {
+            MainNavTab.values().forEach { tab ->
+                val selected = currentTab == tab
+                Surface(
+                    selected = selected,
+                    onClick = { currentTab = tab },
+                    shape = RoundedCornerShape(24.dp),
+                    color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                    contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(
+                            horizontal = if (selected) 14.dp else 10.dp,
+                            vertical = 8.dp
+                        ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = tab.icon,
+                            contentDescription = stringResource(tab.titleRes),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        AnimatedVisibility(visible = selected) {
+                            Row {
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(tab.titleRes),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
         }
+    }
 
         // Splash overlay
         AnimatedVisibility(
@@ -546,11 +635,18 @@ fun MainScreen(
         }
 
         if (showAboutDialog) {
-            AboutDialog(onDismiss = { showAboutDialog = false })
+            AboutDialog(
+                onDismiss = { showAboutDialog = false },
+                onShowDebugWarning = { showDebugWarningDialog = true }
+            )
         }
 
         if (showDonationDialog) {
             DonationChooserDialog(onDismiss = { showDonationDialog = false })
+        }
+
+        if (showDebugWarningDialog && !showSplash) {
+            DebugBuildWarningDialog(onDismiss = { showDebugWarningDialog = false })
         }
     }
 }

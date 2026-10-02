@@ -1,4 +1,10 @@
-## Version 2.3 | Latest Release | October 1, 2026
+## Version 2.4 | Latest Release | October 3, 2026
+- Material 3 Expressive Floating Toolbar: Modernized bottom navigation with a floating toolbar and vibrant action button that sits directly above scrollable content with natural shadow elevation.
+- R8 and ProGuard App Optimization: Added minification and resource shrinking, reducing the release APK size from 11.1 MB to approximately 1.6 MB.
+- Debug Build Advisory Dialog: Added a warning alert on debug builds explaining the benefits of the optimized release build with direct links to GitHub Releases.
+- Full-Screen Content Scrolling: Removed bottom bar constraints so screen content flows smoothly behind the floating toolbar.
+
+## Version 2.3 | October 1, 2026
 - Internationalization (i18n) & Simplified Chinese Localization: Added comprehensive Simplified Chinese (values-zh) translation and extracted hardcoded UI strings into resources (PR #12 by @CH-Hu-Bill).
 - In-App Language Switcher: Added language selector in Settings (System Default, English, and 简体中文) with instant UI and service context recreation.
 - Text Overflow & Layout Fixes: Added single-line ellipsis handling and horizontal scrolling on History session card chips to prevent text clipping across languages.
