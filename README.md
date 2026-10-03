@@ -90,6 +90,12 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 Built by **rdevz-ph**
 [GitHub Profile](https://github.com/rdevz-ph)
 
+## Contributing
+
+Contributions are always welcome. Check out our [Contributing Guide](CONTRIBUTING.md) to get started.
+
+If you are interested in translating FPS Meter to your language, take a look at our [Translation Guide and Template](TRANSLATION_TEMPLATE.md).
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
