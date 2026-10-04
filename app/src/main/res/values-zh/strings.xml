@@ -248,6 +248,7 @@
     <string name="floating_recording_not_enabled">未启用记录</string>
     <string name="floating_hide_overlay">隐藏悬浮窗</string>
     <string name="floating_show_overlay">显示悬浮窗</string>
+    <string name="floating_return_to_app">返回应用</string>
     <string name="floating_enable_rec_first">请先在游戏列表中为此游戏启用记录</string>
     <string name="notif_status_visible">悬浮窗可见并正在测量</string>
     <string name="notif_status_hidden">悬浮窗已隐藏（最小化）</string>

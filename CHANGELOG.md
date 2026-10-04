@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.6] - 2026-10-04
+
+### Added
+- **Scorecard Live Preview Dialog**: Added an interactive live preview dialog in History before sharing benchmark cards, displaying the generated dark-themed scorecard image with a one-tap Share button.
+- **Floating Overlay Return to App**: Added a Return to App button on the floating assistive overlay quick menu, allowing users to quickly return to the main application with one tap while gaming.
+- **GitHub Brand Icons**: Added official GitHub vector icon across the app, replacing placeholder icons in the Check for Updates card, Settings screen (GitHub & Community section header and Repository action row), and Developer card.
+- **CI Status Badge**: Added live GitHub Actions Android CI workflow status badge to the README.
+
+### Changed
+- **Accessibility Service Configuration**: Set `android:canRetrieveWindowContent="false"` in the accessibility service configuration to avoid unnecessary window content retrieval permissions while keeping automatic foreground game detection intact.
+- **Documentation**: Streamlined project features overview in README to avoid redundant sections.
+
+---
+
 ## [v2.5] - 2026-10-04
 
 ### Added

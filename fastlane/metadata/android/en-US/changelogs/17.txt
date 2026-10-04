@@ -1,0 +1,5 @@
+- Added live benchmark scorecard preview dialog with one-tap sharing in History.
+- Added Return to App button on the floating assistive overlay menu.
+- Updated GitHub branding icons across Settings, Updates, and Developer cards.
+- Enhanced accessibility service privacy configuration.
+- Added live Android CI status badge and streamlined documentation.

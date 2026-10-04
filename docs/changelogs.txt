@@ -1,4 +1,11 @@
-## Version 2.5 | Latest Release | October 4, 2026
+## Version 2.6 | Latest Release | October 4, 2026
+- Scorecard Live Preview Dialog: Added an interactive live preview dialog in History displaying the generated scorecard before opening the system share sheet, complete with a one-tap Share button.
+- Floating Overlay Return to App: Added a Return to App button on the floating assistive overlay quick menu, allowing users to return to the main app with one tap while gaming.
+- GitHub Brand Icons: Added official GitHub vector icon across the app, replacing placeholder icons in the Check for Updates card, Settings screen, and Developer card.
+- Accessibility Service Privacy Configuration: Set android:canRetrieveWindowContent to false in the accessibility service configuration to avoid unnecessary window content retrieval permissions while keeping automatic foreground game detection intact.
+- Documentation and CI Status: Added live GitHub Actions Android CI workflow status badge to the README and streamlined feature documentation.
+
+## Version 2.5 | October 4, 2026
 - Splash Screen Version Indicator: Added real-time version name and build number display (v2.5) anchored at the bottom of the startup splash screen with system navigation bar insets.
 - Shizuku Provider Configuration: Updated ShizukuProvider declaration in AndroidManifest.xml to follow current Shizuku API documentation.
 

@@ -344,7 +344,8 @@ class FpsOverlayService : Service() {
                     isRecordingActive = { FpsRecordingManager.isRecordingActive() },
                     isOverlayVisible = { isOverlayVisible },
                     getActiveGameName = { getActiveGameName() },
-                    isGameRecordingConfigured = { isGameRecordingConfigured() }
+                    isGameRecordingConfigured = { isGameRecordingConfigured() },
+                    onReturnToApp = { returnToApp() }
                 )
             }
             floatingToggleButton?.updateState()
@@ -352,6 +353,17 @@ class FpsOverlayService : Service() {
         } else {
             floatingToggleButton?.hide()
             floatingToggleButton = null
+        }
+    }
+
+    private fun returnToApp() {
+        try {
+            val intent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Ignore
         }
     }
 

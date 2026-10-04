@@ -6,6 +6,7 @@ import com.rdevzph.fpsmeter.R
 import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -54,6 +55,7 @@ fun HistoryScreen(
     var searchQuery by remember { mutableStateOf("") }
     var confirmClearAll by remember { mutableStateOf(false) }
     var sessionToDelete by remember { mutableStateOf<FpsSessionRecord?>(null) }
+    var sessionToPreview by remember { mutableStateOf<FpsSessionRecord?>(null) }
 
     val filteredSessions = remember(searchQuery, sessions) {
         if (searchQuery.isBlank()) {
@@ -99,6 +101,95 @@ fun HistoryScreen(
             dismissButton = {
                 OutlinedButton(
                     onClick = { sessionToDelete = null },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            }
+        )
+    }
+
+    // Live benchmark scorecard preview dialog with Share action
+    sessionToPreview?.let { session ->
+        AlertDialog(
+            onDismissRequest = { sessionToPreview = null },
+            title = {
+                Text(
+                    text = stringResource(R.string.share_benchmark_scorecard),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    var previewBitmap by remember(session.id) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+                    var isGenerating by remember(session.id) { mutableStateOf(true) }
+
+                    LaunchedEffect(session.id) {
+                        isGenerating = true
+                        withContext(Dispatchers.IO) {
+                            try {
+                                val bmp = BenchmarkCardGenerator.generateCardBitmap(context, session)
+                                previewBitmap = bmp.asImageBitmap()
+                            } catch (e: Exception) {
+                                // Ignore
+                            } finally {
+                                isGenerating = false
+                            }
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1080f / 620f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF12151B)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (previewBitmap != null) {
+                            Image(
+                                bitmap = previewBitmap!!,
+                                contentDescription = session.appName,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else if (isGenerating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp),
+                                strokeWidth = 2.5.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val current = sessionToPreview
+                        sessionToPreview = null
+                        if (current != null) {
+                            coroutineScope.launch {
+                                BenchmarkCardGenerator.shareSessionCard(context, current)
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.common_share))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { sessionToPreview = null },
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(stringResource(R.string.common_cancel))
@@ -322,9 +413,7 @@ fun HistoryScreen(
                         session = session,
                         formattedDate = dateFormat.format(Date(session.startTime)),
                         onShare = {
-                            coroutineScope.launch {
-                                BenchmarkCardGenerator.shareSessionCard(context, session)
-                            }
+                            sessionToPreview = session
                         },
                         onDelete = { sessionToDelete = session }
                     )
@@ -418,7 +507,9 @@ private fun SessionCard(
     onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onShare),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface

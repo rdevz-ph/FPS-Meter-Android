@@ -248,6 +248,7 @@
     <string name="floating_recording_not_enabled">Recording Not Enabled</string>
     <string name="floating_hide_overlay">Hide Overlay</string>
     <string name="floating_show_overlay">Show Overlay</string>
+    <string name="floating_return_to_app">Return to App</string>
     <string name="floating_enable_rec_first">Enable recording for this game in Games list first</string>
     <string name="notif_status_visible">Overlay visible &amp; measuring</string>
     <string name="notif_status_hidden">Overlay hidden (minimized)</string>

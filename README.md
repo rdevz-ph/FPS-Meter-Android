@@ -8,7 +8,7 @@
   [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
-  [![Version](https://img.shields.io/badge/version-2.5-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
+  [![Version](https://img.shields.io/badge/version-2.6-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
   [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmy-release-badge-api.netlify.app%2Fapi%2Fbadge%3Fowner%3Drdevz-ph%26repo%3DFPS-Meter-Android%26mode%3Djson&query=%24.downloads&label=downloads&color=2563eb&style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases)
   [![Website](https://img.shields.io/badge/Website-Live%20Showcase-00e676?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rdevz-ph.github.io/FPS-Meter-Android/)
 
@@ -20,7 +20,7 @@
 
 </div>
 
-## How It Works
+## How It Works and Its Features
 
 > [!NOTE]
 > Here is a high-level overview of how the application operates:
@@ -34,7 +34,7 @@
 > - **Adaptive Dynamic Layout**: Automatically presents a clean single-line pill when 1 to 3 metrics are enabled, and organizes into a structured two-line layout (Line 1: Performance metrics, Line 2: Temperatures) when 4 or more metrics are active.
 > - **Material 3 Navigation & Dedicated Screens**: Modern navigation featuring Overlay settings, Games manager with 1-tap game launching, and dedicated FPS session History with per-app launcher icons.
 > - **Universal Auto-Record & Per-Game Recording**: Choose between universal automated session recording for all active games or per-app configuration, aggregating average, min, and max FPS and duration with zero sample-by-sample disk overhead.
-> - **Floating Assistive Bubble & Quick Menu**: Provides an optional draggable floating on-screen bubble (`FloatingToggleButton`) that expands into a quick HUD menu to start/stop game FPS recording and toggle overlay visibility from inside any active game.
+> - **Floating Assistive Bubble & Quick Menu**: Provides an optional draggable floating on-screen bubble (`FloatingToggleButton`) that expands into a quick HUD menu to start/stop game FPS recording, toggle overlay visibility, and return to the app from inside any active game.
 > - **Quick Settings Panel Tile**: Exposes an Android `TileService` (`FpsTileService`) that allows 1-tap toggling of the FPS overlay directly from the notification pull-down shade without opening the main app.
 > - **Auto On/Off Game Detection**: An optional `AccessibilityService` (`FpsAccessibilityService`) monitors foreground window state changes to automatically activate the overlay when designated target games/apps launch and stop when exited.
 > - **Interaction & Dragging**: Tracks touch gestures using an `OnTouchListener` to support real-time dragging. The updated layout coordinates are saved in `SharedPreferences` on gesture completion to persist the custom location.
@@ -68,19 +68,6 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 
 > [!TIP]
 > This app theme follows system colors (Material You Dynamic Color), so UI accents and theme colors will adapt to your device's active wallpaper and system palette.
-
-## Features
-
-- **Dual FPS Measurement Providers**: Choose between lightweight **Choreographer** (vsync display rate) and privileged **SurfaceFlinger** (true game rendering frame rates hooked directly into compositor presentation buffers via Shizuku).
-- **Automatic Graphics API Detection**: Dynamically inspects the foreground game pipeline to display real-time **Vulkan `[VK]`** or **OpenGL ES `[GL]`** on-screen badges.
-- **In-Memory FPS Recording & History Logs**: Lightweight per-game session recorder capturing Average FPS, Peak FPS, Min FPS, and duration in memory without disk I/O lag or battery drain, paired with a dedicated **History** screen to review historical benchmarks.
-- **Floating Assistive Quick Menu**: An interactive on-screen bubble expanding into an in-game HUD menu to start/stop FPS recording and toggle HUD visibility without leaving your game, with outside-touch protection and auto-dismiss.
-- **Direct Game Launcher & Auto-Start**: Built-in Games screen with direct 1-tap game launching, search filters, and automated overlay start/stop upon entering or exiting designated games via Accessibility Service.
-- **Hardware & Battery Telemetry**: Live multi-sensor thermal monitoring across CPU, GPU, SoC, and Battery with independent metric toggles to track heat and thermal throttling, plus an on-screen **Battery Percentage** indicator. Automatically merges battery temperature and charge level into a compact unified readout (`BAT <temp> (<level>)`) when both metrics are enabled.
-- **Samsung Perf Z HUD Styling**: Compact semi-transparent pill overlay with cyan labels, white digits, dynamic green-yellow-orange-red FPS performance color coding, adjustable text size, opacity, and drag-and-drop repositioning.
-- **Dark AMOLED Theme & Dedicated Settings**: Pure pitch-black theme (#000000) tailored for OLED and AMOLED displays to maximize contrast and battery efficiency, paired with a full-page Settings screen for theme modes, Dynamic Colors, and developer links.
-- **Multi-Language Support**: Built-in English and Simplified Chinese (简体中文) localization with an in-app language switcher in Settings ([#12](https://github.com/rdevz-ph/FPS-Meter-Android/pull/12)).
-- **Zero-Friction Setup**: Optional Shizuku integration to auto-grant overlay permissions with 1 tap and a Quick Settings status bar tile for quick toggling from any screen.
 
 ## Requirements
 - Android 8.0+ (API 26)

@@ -1,10 +1,12 @@
 package com.rdevzph.fpsmeter.overlay
 
+import com.rdevzph.fpsmeter.MainActivity
 import com.rdevzph.fpsmeter.R
 
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Canvas
 import android.graphics.Color
@@ -38,7 +40,17 @@ class FloatingToggleButton(
     private val isRecordingActive: () -> Boolean,
     private val isOverlayVisible: () -> Boolean,
     private val getActiveGameName: () -> String,
-    private val isGameRecordingConfigured: () -> Boolean
+    private val isGameRecordingConfigured: () -> Boolean,
+    private val onReturnToApp: () -> Unit = {
+        try {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            // Ignore
+        }
+    }
 ) {
 
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -146,7 +158,7 @@ class FloatingToggleButton(
         }
 
         val menuY = (wmLayoutParams.y - (20 * displayMetrics.density).toInt())
-            .coerceIn((40 * displayMetrics.density).toInt(), screenHeight - (280 * displayMetrics.density).toInt())
+            .coerceIn((40 * displayMetrics.density).toInt(), screenHeight - (320 * displayMetrics.density).toInt())
 
         val menuLayoutParams = WindowManager.LayoutParams(
             menuWidth,
@@ -450,7 +462,35 @@ class FloatingToggleButton(
         menuOverlayBtn = overlayBtn
         root.addView(overlayBtn)
 
-        // 4. Close Row
+        // 4. Return to App Button
+        val returnAppBtn = TextView(context).apply {
+            val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            lp.topMargin = (8 * dp).toInt()
+            layoutParams = lp
+
+            val padH = (12 * dp).toInt()
+            val padV = (9 * dp).toInt()
+            setPadding(padH, padV, padH, padV)
+            textSize = 12f
+            gravity = Gravity.CENTER
+            typeface = Typeface.DEFAULT_BOLD
+            text = context.getString(R.string.floating_return_to_app)
+            setTextColor(Color.parseColor("#94A3B8"))
+
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#1E293B"))
+                cornerRadius = 10 * dp
+                setStroke((1 * dp).toInt(), Color.parseColor("#334155"))
+            }
+
+            setOnClickListener {
+                hideMenu()
+                onReturnToApp()
+            }
+        }
+        root.addView(returnAppBtn)
+
+        // 5. Close Row
         val closeBtn = TextView(context).apply {
             val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             lp.topMargin = (6 * dp).toInt()

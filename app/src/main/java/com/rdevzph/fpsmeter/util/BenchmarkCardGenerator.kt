@@ -54,7 +54,7 @@ object BenchmarkCardGenerator {
         }
     }
 
-    private fun generateCardBitmapFile(context: Context, session: FpsSessionRecord): File {
+    fun generateCardBitmap(context: Context, session: FpsSessionRecord): Bitmap {
         val width = 1080
         val height = 620
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -268,7 +268,11 @@ object BenchmarkCardGenerator {
         val projectUrlWidth = paint.measureText(projectUrl)
         canvas.drawText(projectUrl, (width - 48 - projectUrlWidth), footerY, paint)
 
-        // 6. Save bitmap to cache directory
+        return bitmap
+    }
+
+    private fun generateCardBitmapFile(context: Context, session: FpsSessionRecord): File {
+        val bitmap = generateCardBitmap(context, session)
         val cacheFolder = File(context.cacheDir, "shared_cards").apply { mkdirs() }
         val outputFile = File(cacheFolder, "benchmark_${session.id}.png")
         FileOutputStream(outputFile).use { out ->

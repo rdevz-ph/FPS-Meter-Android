@@ -1,5 +1,7 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.rdevzph.fpsmeter.R
 
@@ -308,7 +310,7 @@ fun SettingsScreen(
             // Section 3: GitHub, Star & Issue Tracker
             SettingsSectionHeader(
                 title = stringResource(R.string.section_github),
-                icon = Icons.Default.Code
+                iconPainter = painterResource(R.drawable.ic_github)
             )
 
             Surface(
@@ -318,7 +320,7 @@ fun SettingsScreen(
             ) {
                 Column {
                     SettingsActionRow(
-                        icon = Icons.Default.Code,
+                        iconPainter = painterResource(R.drawable.ic_github),
                         title = stringResource(R.string.github_repository),
                         subtitle = "github.com/rdevz-ph/FPS-Meter-Android",
                         onClick = { openBrowser(context, REPO_URL) }
@@ -397,7 +399,8 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSectionHeader(
     title: String,
-    icon: ImageVector
+    icon: ImageVector? = null,
+    iconPainter: Painter? = null
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -405,12 +408,21 @@ private fun SettingsSectionHeader(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
+        if (iconPainter != null) {
+            Icon(
+                painter = iconPainter,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        } else if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         Spacer(Modifier.width(8.dp))
         Text(
             title,
@@ -423,7 +435,8 @@ private fun SettingsSectionHeader(
 
 @Composable
 private fun SettingsActionRow(
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    iconPainter: Painter? = null,
     iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     title: String,
     subtitle: String,
@@ -436,12 +449,21 @@ private fun SettingsActionRow(
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconTint,
-            modifier = Modifier.size(22.dp)
-        )
+        if (iconPainter != null) {
+            Icon(
+                painter = iconPainter,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp)
+            )
+        } else if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp)
+            )
+        }
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

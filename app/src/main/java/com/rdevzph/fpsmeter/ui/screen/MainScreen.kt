@@ -1,5 +1,6 @@
 package com.rdevzph.fpsmeter.ui.screen
 
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.rdevzph.fpsmeter.R
 
@@ -71,7 +72,7 @@ fun MainScreen(
     val (versionName, buildNumber) = remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            val vName = packageInfo.versionName ?: "2.5"
+            val vName = packageInfo.versionName ?: "2.6"
             val vCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode.toString()
             } else {
@@ -80,7 +81,7 @@ fun MainScreen(
             }
             Pair(vName, vCode)
         } catch (e: Exception) {
-            Pair("2.5", "16")
+            Pair("2.6", "17")
         }
     }
 
@@ -486,7 +487,7 @@ fun MainScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Info,
+                                    painter = painterResource(R.drawable.ic_github),
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
@@ -1775,7 +1776,7 @@ fun DeveloperCard() {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Launch,
+                        painter = painterResource(R.drawable.ic_github),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )

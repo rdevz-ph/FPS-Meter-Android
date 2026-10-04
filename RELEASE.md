@@ -1,8 +1,11 @@
-# FPS Meter Android v2.5
+# FPS Meter Android v2.6
 
-### What's New in v2.5
-- **Custom Splash Screen Version Indicator**: Added real-time version name and build number display (v2.5) anchored at the bottom of the startup splash screen with system navigation bar insets.
-- **Shizuku Provider Configuration**: Updated `ShizukuProvider` declaration in `AndroidManifest.xml` to follow current Shizuku API documentation.
+### What's New in v2.6
+- **Scorecard Live Preview Dialog**: Added a live preview dialog in History displaying the generated scorecard before opening the system share sheet, complete with a one-tap Share button.
+- **Floating Overlay Return to App**: Added a Return to App button on the floating assistive overlay quick menu, allowing users to return to the main app with one tap while gaming.
+- **GitHub Brand Icons**: Added official GitHub vector icon across the app, replacing placeholder icons in the Check for Updates card, Settings screen, and Developer card.
+- **Accessibility Service Privacy Configuration**: Set `android:canRetrieveWindowContent="false"` in the accessibility service configuration to avoid unnecessary window content retrieval permissions while keeping automatic foreground game detection intact.
+- **Documentation and CI Status**: Added live GitHub Actions Android CI workflow status badge to the README and streamlined feature documentation.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 
