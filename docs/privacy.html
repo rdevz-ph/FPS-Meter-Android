@@ -38,10 +38,20 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
     .policy-container {
       max-width: 860px;
       margin: 0 auto;
-      padding: 2.5rem 1.5rem 5rem;
+      padding: 2rem 1.5rem 5rem;
+      width: 100%;
     }
 
     .policy-card {
@@ -50,18 +60,13 @@
       border-radius: var(--md-sys-shape-corner-extra-large);
       padding: 2.5rem;
       margin-bottom: 2rem;
-    }
-
-    @media (max-width: 640px) {
-      .policy-card {
-        padding: 1.5rem;
-      }
+      width: 100%;
     }
 
     .policy-header {
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
       border-bottom: 1px solid var(--md-sys-color-outline-variant);
-      padding-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
     }
 
     .policy-title {
@@ -70,62 +75,122 @@
       color: var(--md-sys-color-on-surface);
       margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
+      line-height: 1.2;
     }
 
     .policy-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
-      font-size: 0.875rem;
+      align-items: center;
+      gap: 0.75rem 1.75rem;
+      font-size: 0.85rem;
       color: var(--md-sys-color-on-surface-variant);
     }
 
-    .policy-meta span {
+    .policy-meta-item {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.45rem;
+      min-width: 0;
     }
 
+    .policy-meta-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: var(--md-sys-color-on-surface-variant);
+      display: inline-block;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .policy-meta-text {
+      line-height: 1.25;
+      font-size: 0.85rem;
+      overflow-wrap: anywhere;
+    }
+
+    /* Responsive Developer Information Box */
     .dev-box {
       background-color: var(--md-sys-color-surface-container-high);
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: var(--md-sys-shape-corner-large);
-      padding: 1.25rem 1.5rem;
+      padding: 1.25rem;
       margin: 1.5rem 0 2rem;
     }
 
     .dev-box h3 {
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-weight: 600;
       color: var(--md-sys-color-primary);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .dev-box-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      font-size: 0.925rem;
+    .dev-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.75rem;
     }
 
-    .dev-box-list li {
+    .dev-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: var(--md-sys-color-on-surface);
+      gap: 0.75rem;
+      padding: 0.75rem 0.85rem;
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-medium);
+      min-width: 0;
     }
 
-    .dev-box-list a {
+    .dev-icon {
+      color: var(--md-sys-color-primary);
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .dev-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dev-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .dev-value {
+      font-size: 0.9rem;
+      color: var(--md-sys-color-on-surface);
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .dev-link {
+      font-size: 0.875rem;
       color: var(--md-sys-color-primary);
       text-decoration: underline;
       font-weight: 500;
+      overflow-wrap: anywhere;
+      word-break: break-all;
       transition: opacity 0.2s ease;
     }
 
-    .dev-box-list a:hover {
+    .dev-link:hover {
       opacity: 0.8;
     }
 
@@ -145,11 +210,13 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      line-height: 1.3;
     }
 
     .policy-section h2 .material-symbols-outlined {
       color: var(--md-sys-color-primary);
       font-size: 1.4rem;
+      flex-shrink: 0;
     }
 
     .policy-section p {
@@ -157,6 +224,14 @@
       color: var(--md-sys-color-on-surface-variant);
       line-height: 1.65;
       margin-bottom: 0.85rem;
+      overflow-wrap: anywhere;
+    }
+
+    .policy-section a {
+      color: var(--md-sys-color-primary);
+      text-decoration: underline;
+      overflow-wrap: anywhere;
+      word-break: break-all;
     }
 
     .policy-section ul {
@@ -174,6 +249,7 @@
       font-size: 0.95rem;
       color: var(--md-sys-color-on-surface-variant);
       line-height: 1.55;
+      overflow-wrap: anywhere;
     }
 
     .policy-section ul li::before {
@@ -202,6 +278,13 @@
       margin-bottom: 0.75rem;
     }
 
+    /* Navigation Action Buttons */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .nav-btn-link {
       display: inline-flex;
       align-items: center;
@@ -215,11 +298,128 @@
       background-color: var(--md-sys-color-surface-container-high);
       border: 1px solid var(--md-sys-color-outline-variant);
       transition: background-color 0.2s ease, color 0.2s ease;
+      white-space: nowrap;
     }
 
     .nav-btn-link:hover {
       background-color: var(--md-sys-color-surface-container-highest);
       color: var(--md-sys-color-primary);
+    }
+
+    .theme-btn-round {
+      background: transparent;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      cursor: pointer;
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      background-color: var(--md-sys-color-surface-container-high);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .theme-btn-round:hover {
+      background-color: var(--md-sys-color-surface-container-highest);
+      color: var(--md-sys-color-primary);
+    }
+
+    /* Media Queries for Small Screens */
+    @media (max-width: 768px) {
+      .policy-container {
+        padding: 1.25rem 1rem 3.5rem;
+      }
+
+      .policy-card {
+        padding: 1.75rem 1.25rem;
+        border-radius: var(--md-sys-shape-corner-large);
+      }
+
+      .policy-title {
+        font-size: 1.85rem;
+      }
+
+      .dev-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-btn-text {
+        display: none;
+      }
+
+      .nav-btn-link {
+        padding: 0;
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 50%;
+        justify-content: center;
+      }
+
+      .header-content {
+        padding: 0 0.75rem;
+      }
+
+      .brand-title {
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .policy-container {
+        padding: 0.75rem 0.5rem 2.5rem;
+      }
+
+      .policy-card {
+        padding: 1.25rem 0.85rem;
+        border-radius: var(--md-sys-shape-corner-large);
+      }
+
+      .policy-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.15rem;
+      }
+
+      .policy-title {
+        font-size: 1.55rem;
+      }
+
+      .policy-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.45rem;
+      }
+
+      .dev-box {
+        padding: 0.95rem 0.75rem;
+        margin: 1.25rem 0 1.5rem;
+      }
+
+      .dev-item {
+        padding: 0.65rem 0.75rem;
+      }
+
+      .policy-section h2 {
+        font-size: 1.15rem;
+      }
+
+      .policy-section p,
+      .policy-section ul li {
+        font-size: 0.9rem;
+      }
+
+      .nav-actions {
+        gap: 0.35rem;
+      }
+
+      .nav-btn-link,
+      .theme-btn-round {
+        width: 2.15rem;
+        height: 2.15rem;
+      }
     }
   </style>
 </head>
@@ -239,22 +439,21 @@
 
       <!-- Quick Action Buttons -->
       <div class="nav-actions">
-        <a href="index.html" class="nav-btn-link">
+        <a href="index.html" class="nav-btn-link" title="Back to Home">
           <span class="material-symbols-outlined" style="font-size: 1.15rem;">arrow_back</span>
-          <span>Back to Home</span>
+          <span class="nav-btn-text">Back to Home</span>
         </a>
 
         <!-- Theme Switcher -->
-        <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Theme" title="Theme (Dark / AMOLED / Light)"
-          style="background: transparent; border: none; cursor: pointer; color: var(--md-sys-color-on-surface); display: flex; align-items: center; padding: 0.5rem; border-radius: 50%;">
-          <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        <button id="theme-toggle-btn" class="theme-btn-round" aria-label="Toggle Theme" title="Theme (Dark / AMOLED / Light)">
+          <span class="material-symbols-outlined" id="theme-icon" style="font-size: 1.15rem;">dark_mode</span>
         </button>
 
-        <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="nav-btn-link">
+        <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="nav-btn-link" title="GitHub Repository">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
           </svg>
-          <span>GitHub</span>
+          <span class="nav-btn-text">GitHub</span>
         </a>
       </div>
     </div>
@@ -267,42 +466,58 @@
         <span class="policy-badge">Offline Application</span>
         <h1 class="policy-title">Privacy Policy</h1>
         <div class="policy-meta">
-          <span>
-            <span class="material-symbols-outlined" style="font-size: 1rem;">calendar_today</span>
-            Effective Date: October 5, 2026
-          </span>
-          <span>
-            <span class="material-symbols-outlined" style="font-size: 1rem;">apps</span>
-            Application: FPS Meter Android (com.rdevzph.fpsmeter)
-          </span>
+          <div class="policy-meta-item">
+            <svg class="policy-meta-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+            </svg>
+            <span class="policy-meta-text">Effective Date: October 5, 2026</span>
+          </div>
+          <div class="policy-meta-item">
+            <svg class="policy-meta-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+            </svg>
+            <span class="policy-meta-text">Application: FPS Meter Android (com.rdevzph.fpsmeter)</span>
+          </div>
         </div>
       </div>
 
       <!-- Developer Information Box -->
       <div class="dev-box">
         <h3>Developer Information</h3>
-        <ul class="dev-box-list">
-          <li>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--md-sys-color-primary);">person</span>
-            Developer: <strong>Romel</strong> (rdevz-ph)
-          </li>
-          <li>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--md-sys-color-primary);">language</span>
-            Portfolio: <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer">https://romel-portfolio.vercel.app/</a>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="color: var(--md-sys-color-primary); flex-shrink: 0;">
+        <div class="dev-grid">
+          <div class="dev-item">
+            <span class="material-symbols-outlined dev-icon">person</span>
+            <div class="dev-info">
+              <span class="dev-label">Developer</span>
+              <span class="dev-value"><strong>Romel</strong> (rdevz-ph)</span>
+            </div>
+          </div>
+          <div class="dev-item">
+            <span class="material-symbols-outlined dev-icon">language</span>
+            <div class="dev-info">
+              <span class="dev-label">Portfolio</span>
+              <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" class="dev-link">https://romel-portfolio.vercel.app/</a>
+            </div>
+          </div>
+          <div class="dev-item">
+            <svg class="dev-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
             </svg>
-            GitHub Profile: <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer">https://github.com/rdevz-ph</a>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="color: var(--md-sys-color-primary); flex-shrink: 0;">
+            <div class="dev-info">
+              <span class="dev-label">GitHub Profile</span>
+              <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer" class="dev-link">https://github.com/rdevz-ph</a>
+            </div>
+          </div>
+          <div class="dev-item">
+            <svg class="dev-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
             </svg>
-            Source Code Repository: <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer">https://github.com/rdevz-ph/FPS-Meter-Android</a>
-          </li>
-        </ul>
+            <div class="dev-info">
+              <span class="dev-label">Source Code Repository</span>
+              <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="dev-link">https://github.com/rdevz-ph/FPS-Meter-Android</a>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Section 1: Overview -->
@@ -450,9 +665,9 @@
         </p>
         <ul>
           <li>Developer: <strong>Romel</strong></li>
-          <li>Portfolio: <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary); text-decoration: underline;">https://romel-portfolio.vercel.app/</a></li>
-          <li>GitHub Profile: <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary); text-decoration: underline;">https://github.com/rdevz-ph</a></li>
-          <li>Issue Tracker: <a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary); text-decoration: underline;">https://github.com/rdevz-ph/FPS-Meter-Android/issues</a></li>
+          <li>Portfolio: <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer">https://romel-portfolio.vercel.app/</a></li>
+          <li>GitHub Profile: <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer">https://github.com/rdevz-ph</a></li>
+          <li>Issue Tracker: <a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer">https://github.com/rdevz-ph/FPS-Meter-Android/issues</a></li>
         </ul>
       </section>
     </article>
