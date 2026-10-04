@@ -68,12 +68,19 @@ fun MainScreen(
     onStopOverlay: () -> Unit
 ) {
     val context = LocalContext.current
-    val versionName = remember(context) {
+    val (versionName, buildNumber) = remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageInfo.versionName ?: "2.4"
+            val vName = packageInfo.versionName ?: "2.5"
+            val vCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode.toString()
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode.toString()
+            }
+            Pair(vName, vCode)
         } catch (e: Exception) {
-            "2.4"
+            Pair("2.5", "16")
         }
     }
 
@@ -631,7 +638,7 @@ fun MainScreen(
             visible = showSplash,
             exit = fadeOut(animationSpec = tween(500))
         ) {
-            SplashOverlay()
+            SplashOverlay(versionName = versionName, buildNumber = buildNumber)
         }
 
         if (showAboutDialog) {
@@ -652,34 +659,59 @@ fun MainScreen(
 }
 
 @Composable
-fun SplashOverlay() {
+fun SplashOverlay(
+    versionName: String = "",
+    buildNumber: String = ""
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Speed,
-                contentDescription = null,
-                modifier = Modifier.size(96.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                stringResource(R.string.app_by_author),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = null,
+                    modifier = Modifier.size(96.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    stringResource(R.string.app_by_author),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            val versionDisplay = remember(versionName, buildNumber) {
+                when {
+                    versionName.isNotBlank() && buildNumber.isNotBlank() -> "v$versionName ($buildNumber)"
+                    versionName.isNotBlank() -> "v$versionName"
+                    else -> ""
+                }
+            }
+
+            if (versionDisplay.isNotBlank()) {
+                Text(
+                    text = versionDisplay,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                        .padding(bottom = 28.dp)
+                )
+            }
         }
     }
 }

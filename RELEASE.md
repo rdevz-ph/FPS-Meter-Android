@@ -1,9 +1,8 @@
-# FPS Meter Android v2.4
+# FPS Meter Android v2.5
 
-### What's New in v2.4
-- **Material 3 Expressive Floating Toolbar**: Upgraded navigation to a floating toolbar that sits directly above scrollable content with natural shadow elevation. Includes a vibrant floating action button to quickly start or stop the overlay.
-- **R8 and ProGuard App Optimization**: Configured release shrinking and optimization rules to reduce the release APK size to around 1.6 MB (down from 11.1 MB in v2.3), improving startup time and reducing storage use.
-- **Debug Build Notice Dialog**: Added a warning dialog on debug builds explaining the advantages of using the optimized release build, with a direct link to GitHub Releases.
+### What's New in v2.5
+- **Custom Splash Screen Version Indicator**: Added real-time version name and build number display (v2.5) anchored at the bottom of the startup splash screen with system navigation bar insets.
+- **Shizuku Provider Configuration**: Updated `ShizukuProvider` declaration in `AndroidManifest.xml` to follow current Shizuku API documentation.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md).
 

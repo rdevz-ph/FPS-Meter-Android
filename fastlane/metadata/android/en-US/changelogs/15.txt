@@ -1,0 +1,3 @@
+- Material 3 Expressive Floating Toolbar and vibrant action button.
+- Enabled R8 minification and resource shrinking, reducing APK size to 1.6 MB.
+- Added debug build advisory dialog linking to official GitHub releases.

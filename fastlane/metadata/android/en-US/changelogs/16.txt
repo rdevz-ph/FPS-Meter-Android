@@ -1,0 +1,2 @@
+- Added real-time app version and build number indicator to the startup splash screen.
+- Updated ShizukuProvider declaration to follow current Shizuku API documentation.

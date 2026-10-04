@@ -62,9 +62,9 @@ fun AboutDialog(
     }
     val versionName = remember(context) {
         try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "2.4"
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "2.5"
         } catch (e: Exception) {
-            "2.4"
+            "2.5"
         }
     }
 

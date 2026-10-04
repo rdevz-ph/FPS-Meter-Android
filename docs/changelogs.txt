@@ -1,4 +1,8 @@
-## Version 2.4 | Latest Release | October 3, 2026
+## Version 2.5 | Latest Release | October 4, 2026
+- Splash Screen Version Indicator: Added real-time version name and build number display (v2.5) anchored at the bottom of the startup splash screen with system navigation bar insets.
+- Shizuku Provider Configuration: Updated ShizukuProvider declaration in AndroidManifest.xml to follow current Shizuku API documentation.
+
+## Version 2.4 | October 3, 2026
 - Material 3 Expressive Floating Toolbar: Modernized bottom navigation with a floating toolbar and vibrant action button that sits directly above scrollable content with natural shadow elevation.
 - R8 and ProGuard App Optimization: Added minification and resource shrinking, reducing the release APK size from 11.1 MB to approximately 1.6 MB.
 - Debug Build Advisory Dialog: Added a warning alert on debug builds explaining the benefits of the optimized release build with direct links to GitHub Releases.

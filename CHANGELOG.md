@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.5] - 2026-10-04
+
+### Added
+- **Splash Screen Version & Build Indicator**: Added real-time version name and build number display (v2.5) anchored at the bottom of the startup splash screen with system navigation bar insets.
+
+### Changed
+- **Shizuku Provider Configuration**: Updated `ShizukuProvider` declaration in `AndroidManifest.xml` to follow current Shizuku API documentation.
+
+---
+
 ## [v2.4] - 2026-10-03
 
 ### Added
