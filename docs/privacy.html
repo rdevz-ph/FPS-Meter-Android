@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - FPS Meter for Android</title>
+
+  <!-- SEO & Social Meta -->
+  <meta name="description"
+    content="Privacy Policy for FPS Meter Android. 100% offline, zero data collection, zero analytics, and zero tracking.">
+  <meta name="keywords"
+    content="FPS Meter, Android, Privacy Policy, Offline, Open Source, Shizuku">
+  <meta name="author" content="Romel (rdevz-ph)">
+
+  <meta property="og:title" content="Privacy Policy - FPS Meter for Android">
+  <meta property="og:description"
+    content="Privacy Policy for FPS Meter Android. 100% offline, zero data collection, zero analytics, and zero tracking.">
+  <meta property="og:image" content="assets/icon.png">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+
+  <!-- Google Fonts: Roboto & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Material Symbols Outlined -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .policy-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    .policy-card {
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-extra-large);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      .policy-card {
+        padding: 1.5rem;
+      }
+    }
+
+    .policy-header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      padding-bottom: 1.75rem;
+    }
+
+    .policy-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .policy-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .policy-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .dev-box {
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-large);
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0 2rem;
+    }
+
+    .dev-box h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--md-sys-color-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .dev-box-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.925rem;
+    }
+
+    .dev-box-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .dev-box-list a {
+      color: var(--md-sys-color-primary);
+      text-decoration: underline;
+      font-weight: 500;
+      transition: opacity 0.2s ease;
+    }
+
+    .dev-box-list a:hover {
+      opacity: 0.8;
+    }
+
+    .policy-section {
+      margin-bottom: 2rem;
+    }
+
+    .policy-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .policy-section h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .policy-section h2 .material-symbols-outlined {
+      color: var(--md-sys-color-primary);
+      font-size: 1.4rem;
+    }
+
+    .policy-section p {
+      font-size: 0.975rem;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.65;
+      margin-bottom: 0.85rem;
+    }
+
+    .policy-section ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0.75rem 0 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .policy-section ul li {
+      position: relative;
+      padding-left: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.55;
+    }
+
+    .policy-section ul li::before {
+      content: "";
+      position: absolute;
+      left: 0.35rem;
+      top: 0.55rem;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--md-sys-color-primary);
+    }
+
+    .policy-section strong {
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .policy-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--md-sys-shape-corner-small);
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      margin-bottom: 0.75rem;
+    }
+
+    .nav-btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--md-sys-color-on-surface);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 0.5rem 0.85rem;
+      border-radius: var(--md-sys-shape-corner-full);
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-btn-link:hover {
+      background-color: var(--md-sys-color-surface-container-highest);
+      color: var(--md-sys-color-primary);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top App Bar -->
+  <header class="m3-top-app-bar">
+    <div class="container header-content">
+      <a href="index.html" class="brand-link">
+        <img src="assets/icon.png" alt="FPS Meter Icon" class="brand-icon">
+        <div class="brand-title">
+          FPS Meter
+          <span class="brand-badge">Android</span>
+        </div>
+      </a>
+
+      <!-- Quick Action Buttons -->
+      <div class="nav-actions">
+        <a href="index.html" class="nav-btn-link">
+          <span class="material-symbols-outlined" style="font-size: 1.15rem;">arrow_back</span>
+          <span>Back to Home</span>
+        </a>
+
+        <!-- Theme Switcher -->
+        <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Theme" title="Theme (Dark / AMOLED / Light)"
+          style="background: transparent; border: none; cursor: pointer; color: var(--md-sys-color-on-surface); display: flex; align-items: center; padding: 0.5rem; border-radius: 50%;">
+          <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        </button>
+
+        <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="nav-btn-link">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="policy-container">
+    <article class="policy-card">
+      <div class="policy-header">
+        <span class="policy-badge">Offline Application</span>
+        <h1 class="policy-title">Privacy Policy</h1>
+        <div class="policy-meta">
+          <span>
+            <span class="material-symbols-outlined" style="font-size: 1rem;">calendar_today</span>
+            Effective Date: October 5, 2026
+          </span>
+          <span>
+            <span class="material-symbols-outlined" style="font-size: 1rem;">apps</span>
+            Application: FPS Meter Android (com.rdevzph.fpsmeter)
+          </span>
+        </div>
+      </div>
+
+      <!-- Developer Information Box -->
+      <div class="dev-box">
+        <h3>Developer Information</h3>
+        <ul class="dev-box-list">
+          <li>
+            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--md-sys-color-primary);">person</span>
+            Developer: <strong>Romel</strong> (rdevz-ph)
+          </li>
+          <li>
+            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--md-sys-color-primary);">language</span>
+            Portfolio: <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer">https://romel-portfolio.vercel.app/</a>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="color: var(--md-sys-color-primary); flex-shrink: 0;">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub Profile: <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer">https://github.com/rdevz-ph</a>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="color: var(--md-sys-color-primary); flex-shrink: 0;">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            Source Code Repository: <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer">https://github.com/rdevz-ph/FPS-Meter-Android</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Section 1: Overview -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">shield</span>
+          Overview
+        </h2>
+        <p>
+          FPS Meter Android is an open-source performance and telemetry monitoring utility for Android devices. This privacy policy explains how the application treats your data.
+        </p>
+        <p>
+          The application is built with a strict privacy-first principle: it operates entirely offline on your device. The app does not collect, record, track, transmit, or sell any personal information.
+        </p>
+      </section>
+
+      <!-- Section 2: Zero Data Collection -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">visibility_off</span>
+          Information We Do Not Collect
+        </h2>
+        <p>
+          FPS Meter Android does not gather any information about you or your device. Specifically:
+        </p>
+        <ul>
+          <li><strong>No Personal Identifiers:</strong> We do not collect names, email addresses, phone numbers, contacts, or account credentials. There is no account registration or login required.</li>
+          <li><strong>No Device Identifiers:</strong> We do not collect advertising IDs, IMEI numbers, MAC addresses, or Android hardware IDs.</li>
+          <li><strong>No Analytics or Tracking:</strong> The app contains no third-party analytics SDKs, trackers, or telemetry endpoints.</li>
+          <li><strong>No Crash Reporting Services:</strong> No automatic crash dumps or device logs are sent to external servers.</li>
+          <li><strong>No Internet Communication:</strong> The app does not transmit any performance metrics or usage patterns over the internet.</li>
+        </ul>
+      </section>
+
+      <!-- Section 3: Telemetry Processing -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">speed</span>
+          How Performance Data Is Handled
+        </h2>
+        <p>
+          All metrics calculated by FPS Meter Android are generated locally in real time:
+        </p>
+        <ul>
+          <li><strong>Frames Per Second (FPS) and Frame Times:</strong> Measured using local frame callbacks (Android Choreographer API) or compositor buffer queries (SurfaceFlinger via Shizuku).</li>
+          <li><strong>Battery Information:</strong> Read directly from Android's standard local battery change broadcasts to show current battery temperature and battery level.</li>
+          <li><strong>Hardware Temperatures:</strong> Read locally from device thermal sensors and Linux thermal zones via Shizuku shell commands.</li>
+        </ul>
+        <p>
+          These readings exist only in active device memory to render the on-screen overlay and are never transmitted outside your device.
+        </p>
+      </section>
+
+      <!-- Section 4: Permissions -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">lock_open</span>
+          Device Permissions and Their Purposes
+        </h2>
+        <p>
+          The application requests specific Android permissions strictly to deliver its core monitoring features:
+        </p>
+        <ul>
+          <li>
+            <strong>Display Over Other Apps (<code>SYSTEM_ALERT_WINDOW</code>):</strong>
+            Required to draw the floating FPS monitor overlay and the assistive floating bubble on top of active games and apps.
+          </li>
+          <li>
+            <strong>Foreground Service (<code>FOREGROUND_SERVICE_SPECIAL_USE</code>):</strong>
+            Allows the overlay service to run in the background while you play games, showing a persistent system notification so you are always aware the monitor is running.
+          </li>
+          <li>
+            <strong>Accessibility Service (<code>FpsAccessibilityService</code>):</strong>
+            This is an optional feature. When enabled by the user, it detects when user-selected games launch or close, allowing the overlay to start and stop automatically. The service does not read, inspect, log, or record screen text, personal messages, keystrokes, or user input. Screen content retrieval is explicitly disabled in the service configuration (<code>canRetrieveWindowContent="false"</code>).
+          </li>
+          <li>
+            <strong>Shizuku Privileged Shell (Optional):</strong>
+            When granted by the user, Shizuku allows the app to query SurfaceFlinger for actual game frame presentation timestamps and read system thermal sensors. All shell commands are executed locally on the device; no shell outputs leave your phone.
+          </li>
+        </ul>
+      </section>
+
+      <!-- Section 5: Local Storage -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">save</span>
+          Local Storage and User Control
+        </h2>
+        <p>
+          Any data created while using FPS Meter Android is stored locally in the application's private storage directory on your device:
+        </p>
+        <ul>
+          <li><strong>Benchmark History:</strong> If you use the session recording feature, summary statistics (average FPS, peak FPS, minimum FPS, duration, and timestamp) are stored in the local SQLite database.</li>
+          <li><strong>App Preferences:</strong> Your overlay settings, active metrics, layout positions, and target games list are stored locally using Android SharedPreferences.</li>
+        </ul>
+        <p>
+          You have full control over this data. You can delete individual session records or wipe all history from within the History screen at any time. Clearing the app's storage or uninstalling the app permanently removes all local data.
+        </p>
+      </section>
+
+      <!-- Section 6: Sharing Scorecards -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">share</span>
+          Scorecard Sharing
+        </h2>
+        <p>
+          When you choose to share a benchmark scorecard, the app generates an image file in the local cache directory of the app.
+        </p>
+        <p>
+          The generated scorecard is passed directly to Android's native system share sheet. The app never uploads the image to any remote server. The file is sent only to the destination app you choose (such as a messaging app or email client).
+        </p>
+      </section>
+
+      <!-- Section 7: Third-Party Services -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">extension_off</span>
+          Third-Party Services
+        </h2>
+        <p>
+          FPS Meter Android does not use third-party software development kits (SDKs) for advertising, behavior tracking, user profiling, or remote telemetry.
+        </p>
+      </section>
+
+      <!-- Section 8: Open Source Transparency -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">code</span>
+          Open Source Transparency
+        </h2>
+        <p>
+          FPS Meter Android is free and open-source software distributed under the MIT License. Anyone can review, audit, and inspect the complete source code on GitHub to verify our privacy practices.
+        </p>
+      </section>
+
+      <!-- Section 9: Contact -->
+      <section class="policy-section">
+        <h2>
+          <span class="material-symbols-outlined">mail</span>
+          Contact and Inquiries
+        </h2>
+        <p>
+          If you have questions, feedback, or concerns regarding this privacy policy or the application, please reach out through the following channels:
+        </p>
+        <ul>
+          <li>Developer: <strong>Romel</strong></li>
+          <li>Portfolio: <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary); text-decoration: underline;">https://romel-portfolio.vercel.app/</a></li>
+          <li>GitHub Profile: <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary); text-decoration: underline;">https://github.com/rdevz-ph</a></li>
+          <li>Issue Tracker: <a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary); text-decoration: underline;">https://github.com/rdevz-ph/FPS-Meter-Android/issues</a></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <ul class="footer-links">
+        <li><a href="index.html" class="footer-link">Home</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases" target="_blank" rel="noopener noreferrer" class="footer-link">Releases</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issue Tracker</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">MIT License</a></li>
+        <li><a href="privacy.html" class="footer-link" style="color: var(--md-sys-color-primary); font-weight: 500;">Privacy Policy</a></li>
+      </ul>
+
+      <p class="footer-meta">
+        FPS Meter for Android • Developed by <strong>Romel</strong> (<a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">rdevz-ph</a>) • <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Portfolio</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Theme Script -->
+  <script>
+    const THEMES = ['dark', 'amoled', 'light'];
+    const THEME_ICONS = {
+      'dark': 'dark_mode',
+      'amoled': 'contrast',
+      'light': 'light_mode'
+    };
+    const THEME_TITLES = {
+      'dark': 'Theme: Dark (Default) - Click to switch to AMOLED Black',
+      'amoled': 'Theme: AMOLED Black - Click to switch to Light',
+      'light': 'Theme: Light - Click to switch to Dark'
+    };
+
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function applyTheme(themeName) {
+      if (!THEMES.includes(themeName)) themeName = 'dark';
+      document.documentElement.setAttribute('data-theme', themeName);
+      if (themeIcon) themeIcon.textContent = THEME_ICONS[themeName] || 'dark_mode';
+      if (themeToggleBtn) themeToggleBtn.title = THEME_TITLES[themeName] || 'Toggle Theme';
+      try {
+        localStorage.setItem('fpsmeter_theme', themeName);
+      } catch (_) {}
+    }
+
+    const savedTheme = (() => {
+      try {
+        return localStorage.getItem('fpsmeter_theme');
+      } catch (_) {
+        return null;
+      }
+    })();
+
+    if (savedTheme && THEMES.includes(savedTheme)) {
+      applyTheme(savedTheme);
+    } else {
+      applyTheme('dark');
+    }
+
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const nextIdx = (THEMES.indexOf(current) + 1) % THEMES.length;
+        applyTheme(THEMES[nextIdx]);
+      });
+    }
+  </script>
+</body>
+
+</html>

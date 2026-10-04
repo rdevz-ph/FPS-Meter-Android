@@ -11,6 +11,7 @@
   [![Version](https://img.shields.io/badge/version-2.6-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
   [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmy-release-badge-api.netlify.app%2Fapi%2Fbadge%3Fowner%3Drdevz-ph%26repo%3DFPS-Meter-Android%26mode%3Djson&query=%24.downloads&label=downloads&color=2563eb&style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases)
   [![Website](https://img.shields.io/badge/Website-Live%20Showcase-00e676?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rdevz-ph.github.io/FPS-Meter-Android/)
+  [![Privacy Policy](https://img.shields.io/badge/Privacy-Offline%20First-00e5ff?style=for-the-badge)](https://rdevz-ph.github.io/FPS-Meter-Android/privacy.html)
 
   <p align="center">
     A high-performance, lightweight FPS monitoring tool for Android. This application provides a real-time frame rate overlay inspired by the Samsung Perf Z aesthetic, offering a professional monitoring experience for mobile gaming and performance testing.
@@ -75,8 +76,12 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 - Shizuku (optional, required for SurfaceFlinger real game FPS mode)
 
 ## Developer
-Built by **rdevz-ph**
-[GitHub Profile](https://github.com/rdevz-ph)
+Built by **Romel** ([@rdevz-ph](https://github.com/rdevz-ph))
+- Portfolio: [https://romel-portfolio.vercel.app/](https://romel-portfolio.vercel.app/)
+- GitHub: [https://github.com/rdevz-ph](https://github.com/rdevz-ph)
+
+## Privacy Policy
+FPS Meter Android operates completely offline. It does not collect, monitor, or transmit any personal data. You can read the full policy at [Privacy Policy](https://rdevz-ph.github.io/FPS-Meter-Android/privacy.html).
 
 ## Contributing
 
