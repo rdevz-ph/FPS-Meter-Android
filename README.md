@@ -4,6 +4,7 @@
 
   # FPS Meter Android
 
+  [![Android CI](https://img.shields.io/github/actions/workflow/status/rdevz-ph/FPS-Meter-Android/android.yml?branch=main&label=Android%20CI&style=for-the-badge&logo=github&logoColor=white)](https://github.com/rdevz-ph/FPS-Meter-Android/actions/workflows/android.yml)
   [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
