@@ -1,0 +1,151 @@
+name: Pre-Release Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the pre-release (e.g. v2.7-beta - leave blank to auto-detect from build.gradle.kts)'
+        required: false
+        default: ''
+      build_type:
+        description: 'Build type to assemble'
+        required: false
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+          - both
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Determine Version and Tag
+        id: determine_tag
+        run: |
+          VERSION=$(grep 'versionName\s*=' app/build.gradle.kts | sed -E 's/.*"([^"]+)".*/\1/' | tr -d ' ')
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            TAG="v${VERSION}-beta"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "Determined Version: $VERSION"
+          echo "Determined Tag: $TAG"
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            mkdir -p app/keystore
+            echo "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.jks
+          fi
+
+      - name: Build APK
+        env:
+          KEYSTORE_FILE: ${{ github.workspace }}/app/keystore/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          BUILD_TYPE="${{ github.event.inputs.build_type || 'release' }}"
+          if [ "$BUILD_TYPE" = "debug" ]; then
+            bash ./gradlew assembleDebug
+          elif [ "$BUILD_TYPE" = "both" ]; then
+            bash ./gradlew assembleRelease assembleDebug
+          else
+            bash ./gradlew assembleRelease
+          fi
+
+      - name: Prepare APKs
+        run: |
+          TAG="${{ env.TAG }}"
+          mkdir -p dist
+          if [ -d "app/build/outputs/apk/release" ]; then
+            for apk in app/build/outputs/apk/release/*.apk; do
+              if [ -f "$apk" ]; then
+                cp "$apk" "dist/FPS-Meter-${TAG}-release.apk"
+              fi
+            done
+          fi
+          if [ -d "app/build/outputs/apk/debug" ]; then
+            for apk in app/build/outputs/apk/debug/*.apk; do
+              if [ -f "$apk" ]; then
+                cp "$apk" "dist/FPS-Meter-${TAG}-debug.apk"
+              fi
+            done
+          fi
+
+      - name: Upload pre-release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FPS-Meter-${{ env.TAG }}
+          path: dist/*.apk
+
+      - name: Publish Pre-Release on GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ env.TAG }}"
+          VERSION="${{ env.VERSION }}"
+          REPO="${{ github.repository }}"
+          COMMIT_SHA="${{ github.sha }}"
+
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          printf "## FPS Meter %s\n\n- **Current App Version:** v%s\n- **Commit Changelog:** https://github.com/%s/commits/%s\n" \
+            "$TAG" "$VERSION" "$REPO" "$COMMIT_SHA" > release_notes.md
+
+          if [ -n "$PREV_TAG" ]; then
+            printf -- "- **Compare with Previous Tag (%s):** https://github.com/%s/compare/%s...%s\n" \
+              "$PREV_TAG" "$REPO" "$PREV_TAG" "$COMMIT_SHA" >> release_notes.md
+          fi
+
+          APK_ARGS=()
+          for f in dist/*.apk; do
+            if [ -f "$f" ]; then
+              APK_ARGS+=("$f")
+            fi
+          done
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Pre-release $TAG already exists. Updating notes..."
+            gh release edit "$TAG" --title "FPS Meter $TAG" --notes-file release_notes.md --prerelease
+            if [ ${#APK_ARGS[@]} -gt 0 ]; then
+              gh release upload "$TAG" "${APK_ARGS[@]}" --clobber
+            fi
+          else
+            echo "Creating new pre-release $TAG..."
+            gh release create "$TAG" "${APK_ARGS[@]}" \
+              --title "FPS Meter $TAG" \
+              --notes-file release_notes.md \
+              --prerelease
+          fi
+
+      - name: Clean up Keystore
+        if: always()
+        run: rm -rf app/keystore
