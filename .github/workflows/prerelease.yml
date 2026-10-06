@@ -123,7 +123,7 @@ jobs:
           COMMIT_SHA="${{ github.sha }}"
 
           CLEAN_VER="${VERSION#v}"
-          printf "## FPS Meter %s\n\n- **Current App Version:** v%s\n- **Commit Changelog:** https://github.com/%s/commits/%s\n" \
+          printf "## FPS Meter %s\n\n> [!WARNING]\n> This is a beta build, only use this if you want to test the app early. Features might change on the final release version.\n\n- **Current App Version:** v%s\n- **Commit Changelog:** https://github.com/%s/commit/%s\n" \
             "$TAG" "$CLEAN_VER" "$REPO" "$COMMIT_SHA" > release_notes.md
 
           APK_ARGS=()
