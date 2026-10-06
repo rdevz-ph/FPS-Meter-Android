@@ -72,7 +72,7 @@ fun MainScreen(
     val (versionName, buildNumber) = remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            val vName = packageInfo.versionName ?: "2.6"
+            val vName = packageInfo.versionName ?: "2.7-beta"
             val vCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode.toString()
             } else {
@@ -81,7 +81,7 @@ fun MainScreen(
             }
             Pair(vName, vCode)
         } catch (e: Exception) {
-            Pair("2.6", "17")
+            Pair("2.7-beta", "18")
         }
     }
 
@@ -743,7 +743,7 @@ fun ShizukuCard(
                 modifier = Modifier.clickable { expanded = !expanded }
             ) {
                 Icon(
-                    Icons.Default.Security,
+                    painter = painterResource(R.drawable.ic_shizuku),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)
@@ -1208,7 +1208,7 @@ fun OverlaySettingsPanel(
     // Text size
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.text_size), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.text_size), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(95.dp))
             Slider(
                 value = settings.textSizeSp,
                 onValueChange = { onChange(settings.copy(textSizeSp = it)) },
@@ -1224,9 +1224,9 @@ fun OverlaySettingsPanel(
             )
         }
 
-        // Overall Opacity
+        // Text Opacity
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.opacity), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.opacity), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(95.dp))
             Slider(
                 value = settings.alpha,
                 onValueChange = { onChange(settings.copy(alpha = it)) },
@@ -1243,7 +1243,7 @@ fun OverlaySettingsPanel(
 
         // Background Opacity
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.bg_opacity), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.bg_opacity), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(95.dp))
             Slider(
                 value = settings.backgroundAlpha,
                 onValueChange = { onChange(settings.copy(backgroundAlpha = it)) },
@@ -1261,7 +1261,7 @@ fun OverlaySettingsPanel(
         // Color picker row
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.color_label), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(90.dp))
+            Text(stringResource(R.string.color_label), style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(95.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Auto option first
                 Box(

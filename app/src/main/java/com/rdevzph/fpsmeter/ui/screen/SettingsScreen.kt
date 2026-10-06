@@ -20,7 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +37,7 @@ import com.rdevzph.fpsmeter.util.LocaleHelper
 private const val REPO_URL = "https://github.com/rdevz-ph/FPS-Meter-Android"
 private const val ISSUES_URL = "https://github.com/rdevz-ph/FPS-Meter-Android/issues"
 private const val PORTFOLIO_URL = "https://romel-portfolio.vercel.app/"
+private const val PRIVACY_POLICY_URL = "https://rdevz-ph.github.io/FPS-Meter-Android/privacy.html"
 
 private fun openBrowser(context: Context, url: String) {
     try {
@@ -60,8 +61,14 @@ fun SettingsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    var isDiagnosticsOpen by remember { mutableStateOf(false) }
 
+    if (isDiagnosticsOpen) {
+        DeviceDiagnosticsScreen(onBack = { isDiagnosticsOpen = false })
+        return
+    }
+
+    val context = LocalContext.current
     BackHandler(onBack = onBack)
 
     Scaffold(
@@ -251,6 +258,30 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(20.dp))
 
+            // Section: Diagnostics
+            SettingsSectionHeader(
+                title = stringResource(R.string.section_diagnostics),
+                icon = Icons.Default.Analytics
+            )
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { isDiagnosticsOpen = true }
+            ) {
+                SettingsActionRow(
+                    icon = Icons.Default.PhoneAndroid,
+                    title = stringResource(R.string.device_diagnostics),
+                    subtitle = stringResource(R.string.device_diagnostics_desc),
+                    onClick = { isDiagnosticsOpen = true }
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+
             // Section 2: Developer Infos
             SettingsSectionHeader(
                 title = stringResource(R.string.section_developer),
@@ -345,6 +376,16 @@ fun SettingsScreen(
                         title = stringResource(R.string.github_report_issue),
                         subtitle = stringResource(R.string.github_report_issue_desc),
                         onClick = { openBrowser(context, ISSUES_URL) }
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 14.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                    SettingsActionRow(
+                        icon = Icons.Default.Security,
+                        title = stringResource(R.string.privacy_policy),
+                        subtitle = stringResource(R.string.privacy_policy_desc),
+                        onClick = { openBrowser(context, PRIVACY_POLICY_URL) }
                     )
                 }
             }

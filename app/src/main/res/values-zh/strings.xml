@@ -65,7 +65,7 @@
     <string name="show_api_badge">显示图形 API 标识</string>
     <string name="show_api_badge_desc">自动检测 Vulkan [VK] 或 OpenGL [GL]</string>
     <string name="text_size">文字大小</string>
-    <string name="opacity">不透明度</string>
+    <string name="opacity">文字不透明度</string>
     <string name="bg_opacity">背景不透明度</string>
     <string name="color_label">颜色</string>
     <string name="show_ms">显示 ms</string>
@@ -124,6 +124,8 @@
     <string name="github_star_desc">用一颗星支持本项目</string>
     <string name="github_report_issue">反馈问题</string>
     <string name="github_report_issue_desc">提交错误报告或功能建议</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="privacy_policy_desc">100% 离线运行，零数据收集</string>
     <string name="section_support">支持开发</string>
     <string name="support_body">如果你喜欢使用 FPS Meter，欢迎支持后续开发。</string>
     <string name="donate_support">捐赠 / 支持作者</string>
@@ -134,6 +136,23 @@
     <string name="language_system">跟随系统</string>
     <string name="language_english">English</string>
     <string name="language_chinese">简体中文</string>
+
+    <!-- Device Diagnostics -->
+    <string name="section_diagnostics">诊断</string>
+    <string name="device_diagnostics">设备诊断</string>
+    <string name="device_diagnostics_desc">硬件、发热及 Shizuku 原始数据，便于排错</string>
+    <string name="diag_share_github">在 GitHub 提交反馈</string>
+    <string name="diag_copy_all">复制全部</string>
+    <string name="diag_share">分享</string>
+    <string name="diag_refresh">刷新</string>
+    <string name="diag_copied_toast">诊断信息已复制到剪贴板</string>
+    <string name="diag_section_device">设备与系统</string>
+    <string name="diag_section_display">屏幕与刷新率</string>
+    <string name="diag_section_soc">处理器与 GPU</string>
+    <string name="diag_section_thermals">发热与电池</string>
+    <string name="diag_section_shizuku">Shizuku 特权原始数据</string>
+    <string name="diag_section_permissions">权限与服务状态</string>
+    <string name="diag_shizuku_not_connected">Shizuku 未运行或未授权。启动 Shizuku 可查看更深层的硬件传感器数据。</string>
 
     <!-- Games screen -->
     <string name="accessibility_required">需要无障碍服务</string>

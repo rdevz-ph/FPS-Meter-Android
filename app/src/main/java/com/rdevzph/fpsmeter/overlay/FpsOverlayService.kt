@@ -462,7 +462,9 @@ class FpsOverlayService : Service() {
             overlayView.post {
                 overlayView.textSize = textSizeSp
                 overlayView.background = createOverlayBackgroundDrawable(lastUseNextLine == true)
-                overlayView.alpha = overlayAlpha.coerceIn(0.1f, 1.0f)
+                overlayView.alpha = 1.0f
+                val shadowAlpha = (255 * overlayAlpha.coerceIn(0.1f, 1.0f)).roundToInt()
+                overlayView.setShadowLayer(2f, 0f, 0f, Color.argb(shadowAlpha, 0, 0, 0))
                 
                 layoutParams.gravity = overlayGravity
                 layoutParams.x = posX
@@ -494,11 +496,12 @@ class FpsOverlayService : Service() {
             background = createOverlayBackgroundDrawable(false)
             textSize = textSizeSp
             typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
-            alpha = overlayAlpha.coerceIn(0.1f, 1.0f)
+            alpha = 1.0f
             gravity = Gravity.CENTER
             setLineSpacing(6f, 1f)
             setPadding(24, 8, 24, 8)
-            setShadowLayer(2f, 0f, 0f, Color.BLACK)
+            val shadowAlpha = (255 * overlayAlpha.coerceIn(0.1f, 1.0f)).roundToInt()
+            setShadowLayer(2f, 0f, 0f, Color.argb(shadowAlpha, 0, 0, 0))
             setOnTouchListener(DragTouchListener())
         }
 
@@ -621,10 +624,17 @@ class FpsOverlayService : Service() {
         }
     }
 
+    private fun applyTextAlpha(color: Int): Int {
+        val factor = overlayAlpha.coerceIn(0.1f, 1.0f)
+        val origAlpha = Color.alpha(color)
+        val newAlpha = (origAlpha * factor).roundToInt().coerceIn(0, 255)
+        return Color.argb(newAlpha, Color.red(color), Color.green(color), Color.blue(color))
+    }
+
     private fun SpannableStringBuilder.append(text: String, color: Int, style: Any? = null): SpannableStringBuilder {
         val start = length
         append(text)
-        setSpan(ForegroundColorSpan(color), start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        setSpan(ForegroundColorSpan(applyTextAlpha(color)), start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         style?.let { setSpan(it, start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE) }
         return this
     }
