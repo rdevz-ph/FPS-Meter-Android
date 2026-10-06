@@ -1,0 +1,112 @@
+## Version 2.7-beta
+- Added in-app changelog bottom sheet for version updates and release history.
+- Added dedicated Device Diagnostics screen with hardware, thermal, and Shizuku raw data.
+- Added one-tap shortcut to report diagnostics to GitHub issues.
+- Updated overlay opacity setting to only affect text opacity.
+- Added official Shizuku icon on the dashboard card.
+- Added Privacy Policy link in settings.
+
+## Version 2.6
+- Added live benchmark scorecard preview dialog with one-tap sharing in History.
+- Added Return to App button on the floating assistive overlay menu.
+- Updated GitHub branding icons across Settings, Updates, and Developer cards.
+- Enhanced accessibility service privacy configuration.
+- Added live Android CI status badge and streamlined documentation.
+
+## Version 2.5
+- Added real-time app version and build number indicator to the startup splash screen.
+- Updated ShizukuProvider declaration to follow current Shizuku API documentation.
+
+## Version 2.4
+- Material 3 Expressive Floating Toolbar and vibrant action button.
+- Enabled R8 minification and resource shrinking, reducing APK size to 1.6 MB.
+- Added debug build advisory dialog linking to official GitHub releases.
+- Full-screen content scrolling behind floating toolbar.
+
+## Version 2.3
+- Added full Simplified Chinese (values-zh) localization.
+- Added in-app language switcher in Settings (System, English, Chinese).
+- Layout fixes: Text overflow protection and scrollable chips for multi-language display.
+
+## Version 2.2
+- Set HUD background pill opacity (0-100%) independently from text opacity.
+- Added separate overall opacity and background pill opacity sliders in Overlay settings.
+- Export and share custom benchmark scorecard images from recorded gameplay sessions.
+- Added animated loading placeholders to the Games screen while launcher apps load.
+
+## Version 2.1
+- Dark AMOLED theme with pure black (#000000) background for OLED displays.
+- Dedicated full-page Settings screen with back navigation.
+- TopAppBar overflow menu with About info, Settings, and Donation chooser.
+- Real-time battery percentage indicator on HUD overlay.
+- Unified battery telemetry merging temperature and percentage.
+- Support and Donation dialog with links for Ko-fi and Buy Me a Coffee.
+
+## Version 2.0
+- Added universal Auto-Record All Games master toggle on Games screen.
+- Streamlined Games interface by hiding per-game recording dot buttons when Auto-Record All is active.
+- Added informative safety confirmation dialog before activating universal recording.
+- Assistive floating bubble menu allows immediate 1-tap recording without per-game configuration.
+- Added real per-app launcher icons in History screen with in-memory LRU caching.
+
+## Version 1.9
+- Modernized Material 3 bottom navigation with dedicated Overlay, Games, and History tabs.
+- Added optional lightweight per-game FPS recording and session statistics.
+- Added dedicated FPS History screen with session records and delete confirmation.
+- Added interactive floating assistive quick menu to start/stop recording and toggle HUD in-game.
+- Added direct 1-tap game launcher button in Games list.
+- Recording protection guard gating in-game recording strictly to enabled games.
+
+## Version 1.8
+- Replaced broad QUERY_ALL_PACKAGES permission with targeted launcher-intent queries filter.
+- Streamlined layout spacing across developer card and footer actions.
+- Added official website and setup documentation quick access.
+
+## Version 1.7
+- Corrected Qualcomm Snapdragon SoC silicon temperature calculation.
+- Added dedicated CPU and GPU temperature overlay toggles.
+- Added adaptive multi-line layout dynamically formatting 1 to 3 metrics in single line and 4+ metrics in two lines.
+- Verified hardware thermal monitoring across Qualcomm and MediaTek devices.
+
+## Version 1.6
+- Added real-time SoC (CPU/GPU) temperature monitoring via Shizuku privileged Thermal HAL access.
+- Added independent toggles for Battery Temp and SoC Temp in overlay settings.
+- Enhanced overlay layout with single-line enforcement and distinct BATT and SOC tags.
+- Added built-in crash reporter with copy, share, and direct GitHub issue filing.
+- Fixed overlay view initialization safety during app startup and upgrades.
+
+## Version 1.5
+- Clarified Shizuku integration in settings to highlight privileged real game FPS monitoring.
+- Added Fastlane metadata and removed foojay-resolver plugin for official F-Droid compliance.
+
+## Version 1.4
+- SurfaceFlinger FPS: Measure true game frame rates via privileged Shizuku access.
+- Choreographer Mode: Low-overhead display vsync timing for general UI monitoring.
+- Graphics API Detection: Automatically detects Vulkan and OpenGL ES game pipelines.
+- Graphics API Overlay Badge: Optional [VK] or [GL] HUD badge on the overlay.
+- Self-Healing Layer Recovery: Prevents 0 FPS stalls when switching between games.
+- Graceful fallback to Choreographer if Shizuku is stopped.
+
+## Version 1.3
+- Minimalist 2-color precision tachometer app icon.
+- Quick Settings Tile: Toggle the FPS overlay directly from the notification shade.
+- Floating Assistive Bubble: Draggable overlay bubble for 1-tap counter toggle.
+- Auto On/Off: Automatically start/stop overlay when target games launch or close.
+- App Selector: Searchable dialog with filter chips to pick auto-start games.
+- Immediate accessibility permission detection on resume.
+
+## Version 1.2
+- Added SharedPreferences persistent storage to remember overlay settings across restarts.
+- Added Reset Settings button under overlay controls with confirmation dialog.
+- Added interactive updates card footer displaying current application version.
+- Refined visual alignments and centered layouts inside settings cards.
+
+## Version 1.1
+- Added auto-detection for overlay permission settings when resuming the app.
+- Implemented GitHub Actions automated release pipeline with release notes extraction.
+
+## Version 1.0
+- Lightweight real-time FPS overlay for Android inspired by Samsung Perf Z.
+- Choreographer vsync measurement.
+- Real-time frame time (ms) and battery temperature monitoring.
+- Dynamic color coding and preset positioning.

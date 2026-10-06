@@ -1,0 +1,6 @@
+- Added in-app changelog bottom sheet for version updates and release history.
+- Added dedicated Device Diagnostics screen with hardware, thermal, and Shizuku data.
+- Added one-tap shortcut to report diagnostics to GitHub issues.
+- Updated overlay opacity setting to only affect text opacity.
+- Added official Shizuku icon on the dashboard card.
+- Added Privacy Policy link in settings.

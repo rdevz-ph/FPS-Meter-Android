@@ -4,6 +4,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.rdevzph.fpsmeter.R
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color as AColor
 import android.net.Uri
@@ -142,6 +143,31 @@ fun MainScreen(
     var showDonationDialog by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
 
+    val prefs = remember(context) {
+        context.getSharedPreferences("fps_meter_app_prefs", Context.MODE_PRIVATE)
+    }
+    val changelogKey = remember(versionName, buildNumber) {
+        "changelog_seen_v${versionName}_b$buildNumber"
+    }
+    var showChangelogSheet by rememberSaveable {
+        val isCurrentVersionSeen = prefs.getBoolean(changelogKey, false)
+        if (!isCurrentVersionSeen) {
+            val editor = prefs.edit()
+            prefs.all.keys
+                .filter { it.startsWith("changelog_seen_") || it.startsWith("last_seen_changelog_") }
+                .forEach { oldKey -> editor.remove(oldKey) }
+            editor.apply()
+            mutableStateOf(true)
+        } else {
+            mutableStateOf(false)
+        }
+    }
+
+    val dismissChangelog: () -> Unit = {
+        showChangelogSheet = false
+        prefs.edit().putBoolean(changelogKey, true).apply()
+    }
+
     val isDebugBuild = remember(context) {
         (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
     }
@@ -240,6 +266,16 @@ fun MainScreen(
                                     expanded = showOverflowMenu,
                                     onDismissRequest = { showOverflowMenu = false }
                                 ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.changelog_title)) },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                                        },
+                                        onClick = {
+                                            showOverflowMenu = false
+                                            showChangelogSheet = true
+                                        }
+                                    )
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.common_about)) },
                                         leadingIcon = {
@@ -642,6 +678,13 @@ fun MainScreen(
             SplashOverlay(versionName = versionName, buildNumber = buildNumber)
         }
 
+        if (showChangelogSheet && !showSplash) {
+            ChangelogBottomSheet(
+                versionName = versionName,
+                onDismiss = dismissChangelog
+            )
+        }
+
         if (showAboutDialog) {
             AboutDialog(
                 onDismiss = { showAboutDialog = false },
@@ -653,7 +696,7 @@ fun MainScreen(
             DonationChooserDialog(onDismiss = { showDonationDialog = false })
         }
 
-        if (showDebugWarningDialog && !showSplash) {
+        if (showDebugWarningDialog && !showSplash && !showChangelogSheet) {
             DebugBuildWarningDialog(onDismiss = { showDebugWarningDialog = false })
         }
     }

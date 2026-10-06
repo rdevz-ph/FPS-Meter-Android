@@ -310,4 +310,9 @@
     <string name="debug_warning_latest_release">Latest GitHub Release</string>
     <string name="debug_warning_get_release">Get Release Build</string>
     <string name="debug_warning_continue">Continue Anyway</string>
+
+    <!-- Changelog BottomSheet -->
+    <string name="changelog_title">What\'s New</string>
+    <string name="changelog_subtitle">Highlights and improvements in this release</string>
+    <string name="changelog_btn_got_it">Got it</string>
 </resources>

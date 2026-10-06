@@ -310,4 +310,9 @@
     <string name="debug_warning_latest_release">最新 GitHub 发布版本</string>
     <string name="debug_warning_get_release">获取正式版本</string>
     <string name="debug_warning_continue">继续使用</string>
+
+    <!-- Changelog BottomSheet -->
+    <string name="changelog_title">更新日志</string>
+    <string name="changelog_subtitle">本次版本的主要更新与改进</string>
+    <string name="changelog_btn_got_it">我知道了</string>
 </resources>
