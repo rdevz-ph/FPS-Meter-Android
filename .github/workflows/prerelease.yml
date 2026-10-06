@@ -46,10 +46,17 @@ jobs:
         id: determine_tag
         run: |
           VERSION=$(grep 'versionName\s*=' app/build.gradle.kts | sed -E 's/.*"([^"]+)".*/\1/' | tr -d ' ')
+          CLEAN_VER="${VERSION#v}"
           if [ -n "${{ github.event.inputs.tag_name }}" ]; then
-            TAG="${{ github.event.inputs.tag_name }}"
+            INPUT_TAG="${{ github.event.inputs.tag_name }}"
+            TAG="${INPUT_TAG#v}"
+            TAG="v${TAG}"
           else
-            TAG="v${VERSION}-beta"
+            if [[ "$CLEAN_VER" == *"-beta"* ]]; then
+              TAG="v${CLEAN_VER}"
+            else
+              TAG="v${CLEAN_VER}-beta"
+            fi
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "TAG=$TAG" >> $GITHUB_ENV
@@ -115,15 +122,9 @@ jobs:
           REPO="${{ github.repository }}"
           COMMIT_SHA="${{ github.sha }}"
 
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-
+          CLEAN_VER="${VERSION#v}"
           printf "## FPS Meter %s\n\n- **Current App Version:** v%s\n- **Commit Changelog:** https://github.com/%s/commits/%s\n" \
-            "$TAG" "$VERSION" "$REPO" "$COMMIT_SHA" > release_notes.md
-
-          if [ -n "$PREV_TAG" ]; then
-            printf -- "- **Compare with Previous Tag (%s):** https://github.com/%s/compare/%s...%s\n" \
-              "$PREV_TAG" "$REPO" "$PREV_TAG" "$COMMIT_SHA" >> release_notes.md
-          fi
+            "$TAG" "$CLEAN_VER" "$REPO" "$COMMIT_SHA" > release_notes.md
 
           APK_ARGS=()
           for f in dist/*.apk; do
