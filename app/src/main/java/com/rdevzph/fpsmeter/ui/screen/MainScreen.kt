@@ -73,7 +73,7 @@ fun MainScreen(
     val (versionName, buildNumber) = remember(context) {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            val vName = packageInfo.versionName ?: "2.7-beta"
+            val vName = packageInfo.versionName ?: "Unknown"
             val vCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode.toString()
             } else {
@@ -81,8 +81,8 @@ fun MainScreen(
                 packageInfo.versionCode.toString()
             }
             Pair(vName, vCode)
-        } catch (e: Exception) {
-            Pair("2.7-beta", "18")
+        } catch (_: Exception) {
+            Pair("Unknown", "0")
         }
     }
 

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v2.7] - 2026-10-07
+
+### Added
+- **In-App Changelog Bottom Sheet**: Added a Material 3 bottom sheet that automatically displays release highlights when the app opens after an update, with an expandable section for historical releases and manual access through the top overflow menu.
+- **Dedicated Device Diagnostics Screen**: Added a diagnostics screen showing hardware specifications, thermal readings, battery health, and raw Shizuku command output.
+- **One-Tap Diagnostic Reporting**: Added a button on the diagnostics screen to copy and report system information directly to GitHub issues.
+- **Official Shizuku Branding**: Added the official Shizuku vector icon to the dashboard card.
+- **Privacy Policy Link**: Added a direct link to the Privacy Policy in the Settings screen.
+
+### Changed
+- **Overlay Opacity Setting**: Updated the overlay opacity slider to adjust only text opacity, keeping the HUD background container consistent.
+
+---
+
 ## [v2.6] - 2026-10-04
 
 ### Added

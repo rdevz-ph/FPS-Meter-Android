@@ -1,5 +1,12 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 2.6 | Latest Release | October 4, 2026
+window.CHANGELOGS_TEXT = `## Version 2.7 | Latest Release | October 7, 2026
+- In-App Changelog Bottom Sheet: Added a Material 3 bottom sheet that automatically displays release highlights when the app opens after an update, with an expandable section for historical releases and manual access through the top overflow menu.
+- Dedicated Device Diagnostics Screen: Added a diagnostics screen showing hardware specifications, thermal readings, battery health, and raw Shizuku command output.
+- One-Tap Diagnostic Reporting: Added a button on the diagnostics screen to copy and report system information directly to GitHub issues.
+- Overlay Opacity Setting: Updated the overlay opacity slider to adjust only text opacity, keeping the HUD background container consistent.
+- Official Shizuku Branding and Privacy Policy: Added the official Shizuku vector icon to the dashboard card and linked the privacy policy in settings.
+
+## Version 2.6 | October 4, 2026
 - Scorecard Live Preview Dialog: Added an interactive live preview dialog in History displaying the generated scorecard before opening the system share sheet, complete with a one-tap Share button.
 - Floating Overlay Return to App: Added a Return to App button on the floating assistive overlay quick menu, allowing users to return to the main app with one tap while gaming.
 - GitHub Brand Icons: Added official GitHub vector icon across the app, replacing placeholder icons in the Check for Updates card, Settings screen, and Developer card.

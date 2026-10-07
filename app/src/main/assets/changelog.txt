@@ -1,4 +1,4 @@
-## Version 2.7-beta
+## Version 2.7
 - Added in-app changelog bottom sheet for version updates and release history.
 - Added dedicated Device Diagnostics screen with hardware, thermal, and Shizuku raw data.
 - Added one-tap shortcut to report diagnostics to GitHub issues.

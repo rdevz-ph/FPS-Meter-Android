@@ -68,13 +68,23 @@ private fun loadChangelogFromAssets(context: Context): List<ChangelogVersion> {
 @Composable
 fun ChangelogBottomSheet(
     onDismiss: () -> Unit,
-    versionName: String = "2.7-beta"
+    versionName: String? = null
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val changelogVersions = remember(context) { loadChangelogFromAssets(context) }
     val latestVersion = changelogVersions.firstOrNull()
+    val resolvedVersionName = remember(versionName, latestVersion, context) {
+        versionName
+            ?: try {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            } catch (_: Exception) {
+                null
+            }
+            ?: latestVersion?.title?.removePrefix("Version ")?.trim()
+            ?: "Unknown"
+    }
     val previousVersions = remember(changelogVersions) { changelogVersions.drop(1) }
     var showPreviousVersions by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
@@ -131,7 +141,7 @@ fun ChangelogBottomSheet(
                             color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Text(
-                                text = "v$versionName",
+                                text = "v$resolvedVersionName",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,

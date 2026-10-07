@@ -506,7 +506,7 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         val vCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode else @Suppress("DEPRECATION") pInfo.versionCode
         "${pInfo.versionName} ($vCode)"
     } catch (_: Exception) {
-        "2.7-beta (18)"
+        "Unknown"
     }
     val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
     val wm = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
