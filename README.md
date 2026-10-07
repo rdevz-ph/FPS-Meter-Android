@@ -10,6 +10,7 @@
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
   [![Version](https://img.shields.io/badge/version-2.7-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
   [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmy-release-badge-api.netlify.app%2Fapi%2Fbadge%3Fowner%3Drdevz-ph%26repo%3DFPS-Meter-Android%26mode%3Djson&query=%24.downloads&label=downloads&color=2563eb&style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases)
+  [![Telegram](https://img.shields.io/badge/Telegram-@fpsmeterandroid-24A1DE?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/fpsmeterandroid)
   [![Website](https://img.shields.io/badge/Website-Live%20Showcase-00e676?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rdevz-ph.github.io/FPS-Meter-Android/)
   [![Privacy Policy](https://img.shields.io/badge/Privacy-Offline%20First-00e5ff?style=for-the-badge)](https://rdevz-ph.github.io/FPS-Meter-Android/privacy.html)
 
@@ -46,10 +47,12 @@
 <p align="center">
   <a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest"><img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/master/get-it-on-github.png" alt="Get it on GitHub" height="65" /></a>
   &nbsp;&nbsp;
+  <a href="https://t.me/fpsmeterandroid"><img src="./docs/assets/get-it-on-telegram.png" alt="Get it on Telegram" height="65" /></a>
+  &nbsp;&nbsp;
   <a href="https://awesome-shizuku.vercel.app/apps/fps-meter-android"><img src="https://awesome-shizuku.vercel.app/get-it-on-shizustore.png" alt="Get it on ShizuStore" height="65" /></a>
 </p>
 
-Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-Android/) to explore interactive features, test screenshots, and view full release changelogs. You can also navigate directly to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK or install and receive automated updates via [ShizuStore](https://awesome-shizuku.vercel.app/apps/fps-meter-android). For troubleshooting installation issues (Google Play Protect) or Android 13+ permission restrictions, check out the [Troubleshooting and Setup Guide](./tutorials/README.md).
+Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-Android/) to explore interactive features, test screenshots, and view full release changelogs. You can also navigate directly to the [Releases](https://github.com/rdevz-ph/FPS-Meter-Android/releases) page to download the latest APK, join the [Telegram Channel](https://t.me/fpsmeterandroid) (@fpsmeterandroid) for instant release APK updates, or install and receive automated updates via [ShizuStore](https://awesome-shizuku.vercel.app/apps/fps-meter-android). For troubleshooting installation issues (Google Play Protect) or Android 13+ permission restrictions, check out the [Troubleshooting and Setup Guide](./tutorials/README.md).
 
 ## Screenshots
 
