@@ -17,13 +17,26 @@ Before submitting a bug report:
 1. Check the [existing issues](https://github.com/rdevz-ph/FPS-Meter-Android/issues) to see if the problem was already reported.
 2. Verify you are using the latest release of FPS Meter.
 
+### Recommended Step: Device Diagnostics (Version 2.7+)
+
+To help investigate the issue, please include your device diagnostics:
+1. Open the app and grant it Shizuku permission.
+2. Go to **Settings > Device Diagnostics**.
+3. Tap **Report on GitHub** or **Copy All**, then paste the results into your GitHub issue.
+
+> [!NOTE]
+> FPS Meter is designed to work without root access. There are no plans to add root support, so you will still need Shizuku to use the app's features that require it, even if your device is rooted with Magisk or KernelSU.
+
 When creating a new bug report, please include:
 - A clear and descriptive title.
 - Steps to reproduce the problem.
 - Expected behavior versus what actually happened.
 - Device information: device model, Android version, and ROM if applicable.
+- Device diagnostics report from Settings > Device Diagnostics.
 - Selected FPS provider (Choreographer or SurfaceFlinger).
 - Logcat output or crash report text if available (FPS Meter includes a built-in crash reporter with a Copy Report button).
+
+Thank you for taking the time to report issues and help improve FPS Meter!
 
 ---
 
