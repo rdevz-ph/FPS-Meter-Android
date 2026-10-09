@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate & Support - FPS Meter for Android</title>
+
+  <!-- SEO & Social Meta -->
+  <meta name="description"
+    content="Support FPS Meter for Android. Help keep the application 100% free, offline, ad-free, and open-source.">
+  <meta name="keywords"
+    content="FPS Meter, Android, Donate, Support, Open Source, Ko-fi, Buy Me a Coffee, GitHub">
+  <meta name="author" content="Romel (rdevz-ph)">
+
+  <meta property="og:title" content="Donate & Support - FPS Meter for Android">
+  <meta property="og:description"
+    content="Support FPS Meter for Android. Help keep the application 100% free, offline, ad-free, and open-source.">
+  <meta property="og:image" content="assets/icon.png">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+
+  <!-- Google Fonts: Roboto & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Material Symbols Outlined -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    .donate-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+      width: 100%;
+    }
+
+    .donate-card {
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-extra-large);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      width: 100%;
+    }
+
+    .donate-header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      padding-bottom: 1.5rem;
+    }
+
+    .donate-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .donate-subtitle {
+      font-size: 1.05rem;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.5;
+    }
+
+    .dev-box {
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-large);
+      padding: 1.25rem;
+      margin: 1.5rem 0 2rem;
+    }
+
+    .dev-box h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--md-sys-color-primary);
+      margin-bottom: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .dev-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .dev-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0.85rem;
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-medium);
+      min-width: 0;
+    }
+
+    .dev-icon {
+      color: var(--md-sys-color-primary);
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .dev-icon svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      fill: currentColor;
+    }
+
+    .dev-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dev-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .dev-value {
+      font-size: 0.9rem;
+      color: var(--md-sys-color-on-surface);
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .dev-link {
+      font-size: 0.875rem;
+      color: var(--md-sys-color-primary);
+      text-decoration: underline;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+      transition: opacity 0.2s ease;
+    }
+
+    .dev-link:hover {
+      opacity: 0.8;
+    }
+
+    /* Donation Channels Grid */
+    .channels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin: 1.5rem 0 2.5rem;
+    }
+
+    .channel-card {
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-large);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.25rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .channel-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .channel-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .channel-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--md-sys-shape-corner-medium);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .channel-icon-kofi {
+      background-color: rgba(255, 94, 91, 0.15);
+      color: #FF5E5B;
+    }
+
+    .channel-icon-bmac {
+      background-color: rgba(255, 221, 0, 0.18);
+      color: #D4A000;
+    }
+
+    .channel-icon-github {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .channel-icon-github svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    .channel-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 0.25rem;
+    }
+
+    .channel-desc {
+      font-size: 0.875rem;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.45;
+    }
+
+    .channel-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--md-sys-shape-corner-full);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .channel-btn-primary {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+
+    .channel-btn-tonal {
+      background-color: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+
+    .channel-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Content Sections */
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-title span.material-symbols-outlined {
+      color: var(--md-sys-color-primary);
+      font-size: 1.5rem;
+    }
+
+    .section-text {
+      font-size: 0.95rem;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .free-support-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 1.5rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .free-support-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-medium);
+      font-size: 0.9rem;
+      color: var(--md-sys-color-on-surface);
+      line-height: 1.45;
+    }
+
+    .free-support-item span.material-symbols-outlined {
+      color: var(--md-sys-color-primary);
+      font-size: 1.25rem;
+      margin-top: 0.1rem;
+      flex-shrink: 0;
+    }
+
+    .free-support-item strong {
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .free-support-item a {
+      color: var(--md-sys-color-primary);
+      text-decoration: underline;
+    }
+
+    /* Top App Bar Overrides */
+    .m3-top-app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--md-sys-color-surface);
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      padding: 0.65rem 0;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: var(--md-sys-color-on-surface);
+      min-width: 0;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      white-space: nowrap;
+    }
+
+    .brand-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background-color: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .nav-btn-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--md-sys-shape-corner-full);
+      font-size: 0.825rem;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface);
+      background-color: var(--md-sys-color-surface-container-high);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .nav-btn-link:hover {
+      background-color: var(--md-sys-color-surface-container-highest);
+    }
+
+    .theme-btn-round {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background-color: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .theme-btn-round:hover {
+      background-color: var(--md-sys-color-surface-container-highest);
+    }
+
+    @media (max-width: 600px) {
+      .donate-container {
+        padding: 1rem 0.75rem 3rem;
+      }
+
+      .donate-card {
+        padding: 1.5rem 1rem;
+      }
+
+      .donate-title {
+        font-size: 1.75rem;
+      }
+
+      .channels-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-btn-text {
+        display: none;
+      }
+
+      .nav-btn-link {
+        padding: 0;
+        width: 2.25rem;
+        height: 2.25rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top App Bar -->
+  <header class="m3-top-app-bar">
+    <div class="container header-content">
+      <a href="index.html" class="brand-link">
+        <img src="assets/icon.png" alt="FPS Meter Icon" class="brand-icon">
+        <div class="brand-title">
+          FPS Meter
+          <span class="brand-badge">Android</span>
+        </div>
+      </a>
+
+      <!-- Quick Action Buttons -->
+      <div class="nav-actions">
+        <a href="index.html" class="nav-btn-link" title="Back to Home">
+          <span class="material-symbols-outlined" style="font-size: 1.15rem;">arrow_back</span>
+          <span class="nav-btn-text">Back to Home</span>
+        </a>
+
+        <!-- Theme Switcher -->
+        <button id="theme-toggle-btn" class="theme-btn-round" aria-label="Toggle Theme" title="Theme (Dark / AMOLED / Light)">
+          <span class="material-symbols-outlined" id="theme-icon" style="font-size: 1.15rem;">dark_mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="donate-container">
+    <article class="donate-card">
+
+      <header class="donate-header">
+        <h1 class="donate-title">Support FPS Meter</h1>
+        <p class="donate-subtitle">
+          FPS Meter Android is free, offline-first, and open-source under the MIT License. It contains zero ads, zero subscriptions, and zero tracking.
+        </p>
+      </header>
+
+      <!-- Developer Info Box -->
+      <div class="dev-box">
+        <h3>Project Information</h3>
+        <div class="dev-grid">
+          <div class="dev-item">
+            <span class="material-symbols-outlined dev-icon">person</span>
+            <div class="dev-info">
+              <span class="dev-label">Developer</span>
+              <span class="dev-value">Romel (rdevz-ph)</span>
+            </div>
+          </div>
+
+          <div class="dev-item">
+            <span class="dev-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </span>
+            <div class="dev-info">
+              <span class="dev-label">Repository</span>
+              <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="dev-link">
+                FPS-Meter-Android
+              </a>
+            </div>
+          </div>
+
+          <div class="dev-item">
+            <span class="material-symbols-outlined dev-icon">language</span>
+            <div class="dev-info">
+              <span class="dev-label">Portfolio</span>
+              <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" class="dev-link">
+                romel-portfolio.vercel.app
+              </a>
+            </div>
+          </div>
+
+          <div class="dev-item">
+            <span class="material-symbols-outlined dev-icon">verified_user</span>
+            <div class="dev-info">
+              <span class="dev-label">License</span>
+              <a href="https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="dev-link">
+                MIT (Free & Open Source)
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donation Channels -->
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">favorite</span>
+        Donation Options
+      </h2>
+      <p class="section-text">
+        If you find FPS Meter useful for mobile gaming, performance testing, or thermal monitoring, you can support development through any of the platforms below:
+      </p>
+
+      <div class="channels-grid">
+        <!-- Ko-fi -->
+        <div class="channel-card">
+          <div>
+            <div class="channel-top">
+              <div class="channel-icon-wrap channel-icon-kofi">
+                <span class="material-symbols-outlined" style="font-size: 1.75rem;">local_cafe</span>
+              </div>
+              <div>
+                <h3 class="channel-title">Ko-fi</h3>
+                <p class="channel-desc">One-time tips or regular support with zero platform fees.</p>
+              </div>
+            </div>
+          </div>
+          <a href="https://ko-fi.com/romelbrosas" target="_blank" rel="noopener noreferrer" class="channel-btn channel-btn-primary">
+            <span>Support on Ko-fi</span>
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">open_in_new</span>
+          </a>
+        </div>
+
+        <!-- Buy Me a Coffee -->
+        <div class="channel-card">
+          <div>
+            <div class="channel-top">
+              <div class="channel-icon-wrap channel-icon-bmac">
+                <span class="material-symbols-outlined" style="font-size: 1.75rem;">coffee</span>
+              </div>
+              <div>
+                <h3 class="channel-title">Buy Me a Coffee</h3>
+                <p class="channel-desc">Buy a coffee to support continued tool improvements.</p>
+              </div>
+            </div>
+          </div>
+          <a href="https://buymeacoffee.com/rdevzph" target="_blank" rel="noopener noreferrer" class="channel-btn channel-btn-primary">
+            <span>Support on Buy Me a Coffee</span>
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">open_in_new</span>
+          </a>
+        </div>
+
+        <!-- GitHub -->
+        <div class="channel-card">
+          <div>
+            <div class="channel-top">
+              <div class="channel-icon-wrap channel-icon-github">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="channel-title">GitHub</h3>
+                <p class="channel-desc">Follow the developer on GitHub and explore open-source work.</p>
+              </div>
+            </div>
+          </div>
+          <a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer" class="channel-btn channel-btn-tonal">
+            <span>View GitHub Profile</span>
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">open_in_new</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Free Ways to Support -->
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">volunteer_activism</span>
+        Other Ways to Support
+      </h2>
+      <p class="section-text">
+        Financial support is never required. You can also support the project in other meaningful ways:
+      </p>
+
+      <ul class="free-support-list">
+        <li class="free-support-item">
+          <span class="material-symbols-outlined">star</span>
+          <div>
+            <strong>Star the Repository:</strong> Give <a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer">FPS-Meter-Android</a> a star on GitHub to increase visibility.
+          </div>
+        </li>
+        <li class="free-support-item">
+          <span class="material-symbols-outlined">share</span>
+          <div>
+            <strong>Share with Others:</strong> Recommend the app to mobile gamers, benchmark testers, and Android enthusiasts.
+          </div>
+        </li>
+        <li class="free-support-item">
+          <span class="material-symbols-outlined">bug_report</span>
+          <div>
+            <strong>Report Issues & Suggest Features:</strong> Help improve device compatibility by submitting feedback on <a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>.
+          </div>
+        </li>
+        <li class="free-support-item">
+          <span class="material-symbols-outlined">send</span>
+          <div>
+            <strong>Join the Community:</strong> Join our <a href="https://t.me/fpsmeterandroid" target="_blank" rel="noopener noreferrer">Telegram Channel</a> to stay informed on updates and releases.
+          </div>
+        </li>
+      </ul>
+
+      <!-- Why We Build This -->
+      <h2 class="section-title">
+        <span class="material-symbols-outlined">info</span>
+        Why Support Matters
+      </h2>
+      <p class="section-text">
+        FPS Meter Android is independently maintained. Your support helps cover:
+      </p>
+      <p class="section-text">
+        - Testing on diverse hardware platforms including Qualcomm Snapdragon and MediaTek devices.
+        <br>
+        - Maintaining real-time SurfaceFlinger sampling and Shizuku privileged telemetry across new Android OS releases.
+        <br>
+        - Keeping the app completely ad-free, lightweight, and offline-first for everyone.
+      </p>
+
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <ul class="footer-links">
+        <li><a href="index.html" class="footer-link">Home</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/releases" target="_blank" rel="noopener noreferrer" class="footer-link">Releases</a></li>
+        <li><a href="https://f-droid.org/en/packages/com.rdevzph.fpsmeter/" target="_blank" rel="noopener noreferrer" class="footer-link">F-Droid</a></li>
+        <li><a href="https://t.me/fpsmeterandroid" target="_blank" rel="noopener noreferrer" class="footer-link">Telegram Channel</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issue Tracker</a></li>
+        <li><a href="https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">MIT License</a></li>
+        <li><a href="privacy.html" class="footer-link">Privacy Policy</a></li>
+        <li><a href="donate.html" class="footer-link" style="color: var(--md-sys-color-primary); font-weight: 500;">Donate</a></li>
+      </ul>
+
+      <p class="footer-meta">
+        FPS Meter for Android • Developed by <strong>Romel</strong> (<a href="https://github.com/rdevz-ph" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">rdevz-ph</a>) • <a href="https://romel-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Portfolio</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Theme Script -->
+  <script>
+    const THEMES = ['dark', 'amoled', 'light'];
+    const THEME_ICONS = {
+      'dark': 'dark_mode',
+      'amoled': 'contrast',
+      'light': 'light_mode'
+    };
+    const THEME_TITLES = {
+      'dark': 'Theme: Dark (Default) - Click to switch to AMOLED Black',
+      'amoled': 'Theme: AMOLED Black - Click to switch to Light',
+      'light': 'Theme: Light - Click to switch to Dark'
+    };
+
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function applyTheme(themeName) {
+      if (!THEMES.includes(themeName)) themeName = 'dark';
+      document.documentElement.setAttribute('data-theme', themeName);
+      if (themeIcon) themeIcon.textContent = THEME_ICONS[themeName] || 'dark_mode';
+      if (themeToggleBtn) themeToggleBtn.title = THEME_TITLES[themeName] || 'Toggle Theme';
+      try {
+        localStorage.setItem('fpsmeter_theme', themeName);
+      } catch (_) {}
+    }
+
+    const savedTheme = (() => {
+      try {
+        return localStorage.getItem('fpsmeter_theme');
+      } catch (_) {
+        return null;
+      }
+    })();
+
+    if (savedTheme && THEMES.includes(savedTheme)) {
+      applyTheme(savedTheme);
+    } else {
+      applyTheme('dark');
+    }
+
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const nextIdx = (THEMES.indexOf(current) + 1) % THEMES.length;
+        applyTheme(THEMES[nextIdx]);
+      });
+    }
+  </script>
+</body>
+
+</html>
