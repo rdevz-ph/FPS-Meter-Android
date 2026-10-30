@@ -1,4 +1,8 @@
-## Version 3.0 | Latest Release | October 16, 2026
+## Version 3.1 | Latest Release | October 31, 2026
+- Fixed a crash when opening the floating bubble menu in landscape mode during games.
+- Fixed an issue where the Games and History screens could not scroll when the phone was in landscape orientation.
+
+## Version 3.0 | October 16, 2026
 - MSI Afterburner Style (RTSS): Added a new hardware overlay layout inspired by MSI Afterburner (RTSS), accessible via the Overlay Style setting.
 - Hardware Telemetry Rows: Added multi-row telemetry with distinct color tags for each hardware component, including GPU (Green), CPU with clock frequency in MHz (Sky Blue), dedicated SoC temperature (Cyan), Battery (Amber Gold), available RAM count (Violet), and FPS with frame time and graphics API (Coral).
 - Processor and SoC Model Header: Display the detected processor or SoC model anchored at the top of the Afterburner overlay.

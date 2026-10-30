@@ -15,7 +15,9 @@ import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Build
 import android.text.TextUtils
+import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -144,40 +146,55 @@ class FloatingToggleButton(
             return
         }
 
-        val screenWidth = displayMetrics.widthPixels
-        val screenHeight = displayMetrics.heightPixels
-        val menuWidth = (240 * displayMetrics.density).toInt()
-
-        val isBubbleOnLeft = (wmLayoutParams.x + buttonSize / 2) < (screenWidth / 2)
-        val menuX = if (isBubbleOnLeft) {
-            (wmLayoutParams.x + buttonSize + (8 * displayMetrics.density).toInt())
-                .coerceAtMost(screenWidth - menuWidth - 8)
-        } else {
-            (wmLayoutParams.x - menuWidth - (8 * displayMetrics.density).toInt())
-                .coerceAtLeast(8)
-        }
-
-        val menuY = (wmLayoutParams.y - (20 * displayMetrics.density).toInt())
-            .coerceIn((40 * displayMetrics.density).toInt(), screenHeight - (320 * displayMetrics.density).toInt())
-
-        val menuLayoutParams = WindowManager.LayoutParams(
-            menuWidth,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = menuX
-            y = menuY
-        }
-
-        val view = buildMenuView()
-
         try {
+            val screenWidth: Int
+            val screenHeight: Int
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bounds = windowManager.currentWindowMetrics.bounds
+                screenWidth = bounds.width()
+                screenHeight = bounds.height()
+            } else {
+                val currentMetrics = DisplayMetrics()
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.getMetrics(currentMetrics)
+                screenWidth = currentMetrics.widthPixels
+                screenHeight = currentMetrics.heightPixels
+            }
+
+            val menuWidth = (240 * displayMetrics.density).toInt()
+            val minX = (8 * displayMetrics.density).toInt()
+            val maxX = maxOf(minX, screenWidth - menuWidth - minX)
+
+            val isBubbleOnLeft = (wmLayoutParams.x + buttonSize / 2) < (screenWidth / 2)
+            val rawMenuX = if (isBubbleOnLeft) {
+                wmLayoutParams.x + buttonSize + minX
+            } else {
+                wmLayoutParams.x - menuWidth - minX
+            }
+            val menuX = if (maxX >= minX) rawMenuX.coerceIn(minX, maxX) else minX
+
+            val minY = (16 * displayMetrics.density).toInt()
+            val estimatedMenuHeight = (220 * displayMetrics.density).toInt()
+            val maxY = maxOf(minY, screenHeight - estimatedMenuHeight - minY)
+            val targetY = wmLayoutParams.y - (20 * displayMetrics.density).toInt()
+            val menuY = if (maxY >= minY) targetY.coerceIn(minY, maxY) else minY
+
+            val menuLayoutParams = WindowManager.LayoutParams(
+                menuWidth,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.START
+                x = menuX
+                y = menuY
+            }
+
+            val view = buildMenuView()
             windowManager.addView(view, menuLayoutParams)
             menuView = view
             isMenuAttached = true
@@ -652,7 +669,11 @@ class FloatingToggleButton(
         }
 
         private fun snapToNearestEdge() {
-            val screenWidth = displayMetrics.widthPixels
+            val screenWidth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                windowManager.currentWindowMetrics.bounds.width()
+            } else {
+                displayMetrics.widthPixels
+            }
             val targetX = if ((wmLayoutParams.x + buttonSize / 2) < (screenWidth / 2)) {
                 16
             } else {

@@ -4,6 +4,14 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.1] - 2026-10-31
+
+### Fixed
+- **Floating Assistive Menu Landscape Crash**: Fixed a crash where tapping the floating assistive bubble while playing games in landscape mode threw an empty range error ([#30](https://github.com/rdevz-ph/FPS-Meter-Android/issues/30)).
+- **Landscape Viewport Scrolling in Games and History**: Fixed an issue where the Games manager and History logs could not scroll when the phone was in landscape orientation.
+
+---
+
 ## [v3.0] - 2026-10-16
 
 ### Added
@@ -301,6 +309,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+[v3.1]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.1
 [v3.0]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.0
 [v2.9-hotfix]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v2.9-hotfix
 [v2.9]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v2.9

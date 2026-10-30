@@ -1,3 +1,7 @@
+## Version 3.1
+- Fixed a crash when opening the floating bubble menu in landscape mode during games.
+- Fixed an issue where the Games and History screens could not scroll when the phone was in landscape orientation.
+
 ## Version 3.0
 - Added MSI Afterburner Style (RTSS) overlay with multi-column hardware telemetry.
 - Added color-coded hardware rows for GPU, CPU with MHz frequency, dedicated SoC temperature, Battery, RAM, and FPS.

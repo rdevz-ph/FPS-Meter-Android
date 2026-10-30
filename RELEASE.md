@@ -1,18 +1,10 @@
-# FPS Meter Android v3.0
+# FPS Meter Android v3.1
 
-### What's New in v3.0
+### What's New in v3.1
 
-#### Added
-- **MSI Afterburner Style (RTSS) Overlay**: Added a new hardware overlay layout inspired by MSI Afterburner (RTSS), accessible via the Overlay Style setting.
-- **Hardware Telemetry Rows**: Added multi-row telemetry with distinct color tags for each hardware component:
-  - Header: Detected processor or SoC model (such as MT6897).
-  - GPU (Green): Real-time GPU temperature.
-  - CPU (Sky Blue): CPU temperature and active clock frequency in MHz.
-  - SOC (Electric Cyan): Dedicated system-on-chip temperature.
-  - BAT (Amber Gold): Battery temperature and charge percentage.
-  - RAM (Violet): Real-time available RAM in gigabytes and occupied percentage.
-  - FPS (Salmon Coral): Frame rate, frame time in milliseconds, and detected graphics API.
-- **System Font Integration**: The overlay text now follows your device's active system font in bold weight instead of forcing a fixed font family.
+#### Fixed
+- **Floating Assistive Menu Landscape Crash**: Fixed a crash where tapping the floating assistive bubble while playing games in landscape mode threw an empty range error ([#30](https://github.com/rdevz-ph/FPS-Meter-Android/issues/30)).
+- **Landscape Viewport Scrolling in Games and History**: Fixed an issue where the Games manager and History logs could not scroll when the phone was in landscape orientation.
 
 ### Feature Highlights
 

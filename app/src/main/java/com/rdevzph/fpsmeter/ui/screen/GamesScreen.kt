@@ -211,420 +211,413 @@ fun GamesScreen(
         )
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    val shimmerBrush = if (isLoading) rememberShimmerBrush() else null
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Auto-Start Service Control Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            )
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // Accessibility Service status warning if disabled or malfunctioning
-                if (!accessibilityEnabled) {
-                    val isMalfunctioning = accessibilityMalfunctioning
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Warning,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        stringResource(
-                                            if (isMalfunctioning) R.string.accessibility_malfunctioning_title
-                                            else R.string.accessibility_required
-                                        ),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.error
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Accessibility Service status warning if disabled or malfunctioning
+                    if (!accessibilityEnabled) {
+                        val isMalfunctioning = accessibilityMalfunctioning
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Warning,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(20.dp)
                                     )
-                                    Text(
-                                        stringResource(
-                                            if (isMalfunctioning) R.string.accessibility_malfunctioning_desc
-                                            else R.string.accessibility_required_desc
-                                        ),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            stringResource(
+                                                if (isMalfunctioning) R.string.accessibility_malfunctioning_title
+                                                else R.string.accessibility_required
+                                            ),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                        Text(
+                                            stringResource(
+                                                if (isMalfunctioning) R.string.accessibility_malfunctioning_desc
+                                                else R.string.accessibility_required_desc
+                                            ),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
-                            }
-                            Spacer(Modifier.height(10.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                if (isMalfunctioning) {
-                                    if (shizukuGranted) {
+                                Spacer(Modifier.height(10.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (isMalfunctioning) {
+                                        if (shizukuGranted) {
+                                            OutlinedButton(
+                                                onClick = onForceStopAndReset,
+                                                shape = RoundedCornerShape(8.dp),
+                                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(
+                                                    stringResource(R.string.accessibility_force_stop_shizuku),
+                                                    style = MaterialTheme.typography.labelSmall
+                                                )
+                                            }
+                                            Spacer(Modifier.width(6.dp))
+                                        }
                                         OutlinedButton(
-                                            onClick = onForceStopAndReset,
+                                            onClick = onOpenAppInfo,
                                             shape = RoundedCornerShape(8.dp),
                                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                         ) {
                                             Text(
-                                                stringResource(R.string.accessibility_force_stop_shizuku),
+                                                stringResource(R.string.accessibility_app_info),
                                                 style = MaterialTheme.typography.labelSmall
                                             )
                                         }
                                         Spacer(Modifier.width(6.dp))
+                                    } else if (shizukuGranted) {
+                                        OutlinedButton(
+                                            onClick = onEnableAccessibilityViaShizuku,
+                                            shape = RoundedCornerShape(8.dp),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(
+                                                stringResource(R.string.enable_via_shizuku),
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+                                        Spacer(Modifier.width(8.dp))
                                     }
-                                    OutlinedButton(
-                                        onClick = onOpenAppInfo,
-                                        shape = RoundedCornerShape(8.dp),
-                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-                                    ) {
-                                        Text(
-                                            stringResource(R.string.accessibility_app_info),
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
-                                    }
-                                    Spacer(Modifier.width(6.dp))
-                                } else if (shizukuGranted) {
-                                    OutlinedButton(
-                                        onClick = onEnableAccessibilityViaShizuku,
+                                    Button(
+                                        onClick = onOpenAccessibilitySettings,
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                                     ) {
                                         Text(
-                                            stringResource(R.string.enable_via_shizuku),
+                                            stringResource(
+                                                if (isMalfunctioning) R.string.open_accessibility_settings
+                                                else R.string.common_enable
+                                            ),
                                             style = MaterialTheme.typography.labelSmall
                                         )
                                     }
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                                Button(
-                                    onClick = onOpenAccessibilitySettings,
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            if (isMalfunctioning) R.string.open_accessibility_settings
-                                            else R.string.common_enable
-                                        ),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
                                 }
                             }
                         }
+                        Spacer(Modifier.height(12.dp))
                     }
-                    Spacer(Modifier.height(12.dp))
-                }
 
-                // Auto-Start master toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.auto_start_target),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            stringResource(R.string.auto_start_target_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    if (shizukuGranted) {
-                        IconButton(
-                            onClick = onRestartAccessibilityViaShizuku,
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = stringResource(R.string.auto_start_restart_shizuku),
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                    // Auto-Start master toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.auto_start_target),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                stringResource(R.string.auto_start_target_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                    }
-                    Spacer(Modifier.width(4.dp))
-                    Switch(
-                        checked = settings.autoStartEnabled,
-                        onCheckedChange = onToggleAutoStart,
-                        enabled = accessibilityEnabled
-                    )
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-
-                // Auto-Record All master toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.auto_record_all),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            stringResource(R.string.auto_record_all_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Switch(
-                        checked = settings.autoRecordAll,
-                        onCheckedChange = { checked ->
-                            if (checked) {
-                                showAutoRecordAllDialog = true
-                            } else {
-                                onToggleAutoRecordAll(false)
+                        Spacer(Modifier.width(8.dp))
+                        if (shizukuGranted) {
+                            IconButton(
+                                onClick = onRestartAccessibilityViaShizuku,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = stringResource(R.string.auto_start_restart_shizuku),
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
-                    )
+                        Spacer(Modifier.width(4.dp))
+                        Switch(
+                            checked = settings.autoStartEnabled,
+                            onCheckedChange = onToggleAutoStart,
+                            enabled = accessibilityEnabled
+                        )
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+                    // Auto-Record All master toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.auto_record_all),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                stringResource(R.string.auto_record_all_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Switch(
+                            checked = settings.autoRecordAll,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    showAutoRecordAllDialog = true
+                                } else {
+                                    onToggleAutoRecordAll(false)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
 
         // Search Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = { Text(stringResource(R.string.search_apps)) },
-            singleLine = true,
-            leadingIcon = {
-                Icon(Icons.Default.Search, contentDescription = null)
-            },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { searchQuery = "" }) {
-                        Icon(Icons.Default.Clear, contentDescription = null)
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text(stringResource(R.string.search_apps)) },
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = null)
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = null)
+                        }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp)
-        )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp)
+            )
+        }
 
         // Filter Chips
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            FilterChip(
-                selected = filterMode == 0,
-                onClick = { filterMode = 0 },
-                label = { Text(stringResource(R.string.filter_all), style = MaterialTheme.typography.labelSmall) }
-            )
-            FilterChip(
-                selected = filterMode == 1,
-                onClick = { filterMode = 1 },
-                label = { Text(stringResource(R.string.filter_user_apps), style = MaterialTheme.typography.labelSmall) }
-            )
-            FilterChip(
-                selected = filterMode == 2,
-                onClick = { filterMode = 2 },
-                label = { Text(stringResource(R.string.filter_auto, settings.autoStartPackages.size), style = MaterialTheme.typography.labelSmall) }
-            )
-            FilterChip(
-                selected = filterMode == 3,
-                onClick = { filterMode = 3 },
-                label = {
-                    Text(
-                        if (settings.autoRecordAll) stringResource(R.string.filter_rec_all) else stringResource(R.string.filter_rec, settings.recordingPackages.size),
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            )
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                FilterChip(
+                    selected = filterMode == 0,
+                    onClick = { filterMode = 0 },
+                    label = { Text(stringResource(R.string.filter_all), style = MaterialTheme.typography.labelSmall) }
+                )
+                FilterChip(
+                    selected = filterMode == 1,
+                    onClick = { filterMode = 1 },
+                    label = { Text(stringResource(R.string.filter_user_apps), style = MaterialTheme.typography.labelSmall) }
+                )
+                FilterChip(
+                    selected = filterMode == 2,
+                    onClick = { filterMode = 2 },
+                    label = { Text(stringResource(R.string.filter_auto, settings.autoStartPackages.size), style = MaterialTheme.typography.labelSmall) }
+                )
+                FilterChip(
+                    selected = filterMode == 3,
+                    onClick = { filterMode = 3 },
+                    label = {
+                        Text(
+                            if (settings.autoRecordAll) stringResource(R.string.filter_rec_all) else stringResource(R.string.filter_rec, settings.recordingPackages.size),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                )
+            }
         }
 
         // Target Apps List Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.target_apps, filteredApps.size),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = if (settings.autoRecordAll) stringResource(R.string.target_apps_hint_auto) else stringResource(R.string.target_apps_hint_rec),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.target_apps, filteredApps.size),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = if (settings.autoRecordAll) stringResource(R.string.target_apps_hint_auto) else stringResource(R.string.target_apps_hint_rec),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
         // List of Apps
-        if (isLoading) {
-            val shimmerBrush = rememberShimmerBrush()
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(bottom = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(7) {
-                    AppCardSkeleton(shimmerBrush)
-                }
+        if (isLoading && shimmerBrush != null) {
+            items(7) {
+                AppCardSkeleton(shimmerBrush)
             }
         } else if (filteredApps.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(bottom = 96.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.no_apps_match),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.no_apps_match),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(bottom = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(filteredApps, key = { it.packageName }) { app ->
-                    val isAutoStart = settings.autoStartPackages.contains(app.packageName)
-                    val isRecording = settings.recordingPackages.contains(app.packageName)
+            items(filteredApps, key = { it.packageName }) { app ->
+                val isAutoStart = settings.autoStartPackages.contains(app.packageName)
+                val isRecording = settings.recordingPackages.contains(app.packageName)
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            if (isAutoStart || (!settings.autoRecordAll && isRecording)) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                            else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                        )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        if (isAutoStart || (!settings.autoRecordAll && isRecording)) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onTogglePackage(app.packageName) }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onTogglePackage(app.packageName) }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = isAutoStart,
-                                onCheckedChange = { onTogglePackage(app.packageName) }
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(
-                                        text = app.appName,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = if (isAutoStart) FontWeight.Bold else FontWeight.Normal,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.weight(1f, fill = false)
-                                    )
-                                    if (!app.isSystemApp) {
-                                        Spacer(Modifier.width(6.dp))
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.primaryContainer,
-                                            shape = RoundedCornerShape(4.dp)
-                                        ) {
-                                            Text(
-                                                stringResource(R.string.badge_user),
-                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontSize = 9.sp,
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            )
-                                        }
+                        Checkbox(
+                            checked = isAutoStart,
+                            onCheckedChange = { onTogglePackage(app.packageName) }
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = app.appName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isAutoStart) FontWeight.Bold else FontWeight.Normal,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                                if (!app.isSystemApp) {
+                                    Spacer(Modifier.width(6.dp))
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.badge_user),
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
                                     }
                                 }
-                                Text(
-                                    text = app.packageName,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
                             }
+                            Text(
+                                text = app.packageName,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
 
-                            Spacer(Modifier.width(4.dp))
+                        Spacer(Modifier.width(4.dp))
 
-                            // Launch game button
-                            IconButton(
+                        // Launch game button
+                        IconButton(
+                            onClick = {
+                                val launchIntent = context.packageManager.getLaunchIntentForPackage(app.packageName)
+                                if (launchIntent != null) {
+                                    context.startActivity(launchIntent)
+                                } else {
+                                    Toast.makeText(context, context.getString(R.string.no_launcher_activity, app.appName), Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.size(38.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = stringResource(R.string.content_desc_launch, app.appName),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
+                        // Per-game recording toggle button (hidden when Auto-Record All is enabled)
+                        if (!settings.autoRecordAll) {
+                            FilledTonalIconButton(
                                 onClick = {
-                                    val launchIntent = context.packageManager.getLaunchIntentForPackage(app.packageName)
-                                    if (launchIntent != null) {
-                                        context.startActivity(launchIntent)
+                                    if (isRecording) {
+                                        onSetRecordingPackage(app.packageName, false)
                                     } else {
-                                        Toast.makeText(context, context.getString(R.string.no_launcher_activity, app.appName), Toast.LENGTH_SHORT).show()
+                                        appToConfirmRecording = app
                                     }
                                 },
-                                modifier = Modifier.size(38.dp)
+                                modifier = Modifier.size(38.dp),
+                                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                    containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    contentColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = stringResource(R.string.content_desc_launch, app.appName),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(22.dp)
+                                    imageVector = if (isRecording) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                    contentDescription = if (isRecording) stringResource(R.string.content_desc_rec_enabled, app.appName) else stringResource(R.string.content_desc_rec_disabled, app.appName),
+                                    modifier = Modifier.size(20.dp)
                                 )
-                            }
-
-                            // Per-game recording toggle button (hidden when Auto-Record All is enabled)
-                            if (!settings.autoRecordAll) {
-                                FilledTonalIconButton(
-                                    onClick = {
-                                        if (isRecording) {
-                                            onSetRecordingPackage(app.packageName, false)
-                                        } else {
-                                            appToConfirmRecording = app
-                                        }
-                                    },
-                                    modifier = Modifier.size(38.dp),
-                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                        containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                        contentColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = if (isRecording) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                        contentDescription = if (isRecording) stringResource(R.string.content_desc_rec_enabled, app.appName) else stringResource(R.string.content_desc_rec_disabled, app.appName),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
                             }
                         }
                     }

@@ -1,0 +1,2 @@
+- Fixed a crash when opening the floating bubble menu in landscape mode during games.
+- Fixed an issue where the Games and History screens could not scroll when the phone was in landscape orientation.
