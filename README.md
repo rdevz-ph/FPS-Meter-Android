@@ -67,13 +67,9 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 ## Screenshots
 
 ### Application Interface
-| Meter & Telemetry | SurfaceFlinger & Shizuku | Games & Auto-Recording | Performance History Logs |
-|:-----------------:|:------------------------:|:----------------------:|:------------------------:|
-| ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![SurfaceFlinger & Shizuku](./screenshots/Screenshot_2.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_3.jpg) | ![Performance History Logs](./screenshots/Screenshot_4.jpg) |
-
-| Auto-Record All Games Toggle | Confirmation Notice Dialog |
-|:----------------------------:|:--------------------------:|
-| ![Auto-Record All Games](./screenshots/enable-all.jpg) | ![Confirmation Notice Dialog](./screenshots/fps-record-warning.jpg) |
+| Meter & Telemetry | Games & Auto-Recording | Performance History Logs | Application Settings |
+|:-----------------:|:----------------------:|:------------------------:|:--------------------:|
+| ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_2.jpg) | ![Performance History Logs](./screenshots/Screenshot_3.jpg) | ![Application Settings](./screenshots/Screenshot_4.jpg) |
 
 ### Overlay Styles
 | Overlay Style Setting | MSI Afterburner Style (RTSS) Telemetry Overlay |
