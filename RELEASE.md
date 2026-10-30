@@ -6,12 +6,6 @@
 - **Floating Assistive Menu Landscape Crash**: Fixed a crash where tapping the floating assistive bubble while playing games in landscape mode threw an empty range error ([#30](https://github.com/rdevz-ph/FPS-Meter-Android/issues/30)).
 - **Landscape Viewport Scrolling in Games and History**: Fixed an issue where the Games manager and History logs could not scroll when the phone was in landscape orientation.
 
-### Feature Highlights
-
-| Overlay Style Setting | MSI Afterburner Style (RTSS) Overlay |
-| :---: | :---: |
-| ![Overlay Style Setting](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/overlay-styles.png) | ![MSI Afterburner Style (RTSS) Overlay](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/msi-afterburner-style.png) |
-
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 
 ### Features
