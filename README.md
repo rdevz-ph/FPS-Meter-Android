@@ -2,7 +2,7 @@
 
   <img src="./icon/icon.png" width="120" height="120" alt="FPS Meter Icon" />
 
-  # FPS Meter Android
+  # FPS Meter
 
   [![Android CI](https://img.shields.io/github/actions/workflow/status/rdevz-ph/FPS-Meter-Android/android.yml?branch=main&label=Android%20CI&style=for-the-badge&logo=github&logoColor=white)](https://github.com/rdevz-ph/FPS-Meter-Android/actions/workflows/android.yml)
   [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
@@ -71,6 +71,9 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 |:-----------------:|:----------------------:|:------------------------:|:--------------------:|
 | ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_2.jpg) | ![Performance History Logs](./screenshots/Screenshot_3.jpg) | ![Application Settings](./screenshots/Screenshot_4.jpg) |
 
+> [!TIP]
+> You can customize the interface appearance under App Theme in Settings. Choose between Follow System, Dark, and Light modes, toggle pure black for AMOLED displays, or enable Dynamic Color to adapt UI accents to your device wallpaper.
+
 ### Overlay Styles
 | Overlay Style Setting | MSI Afterburner Style (RTSS) Telemetry Overlay |
 |:---------------------:|:----------------------------------------------:|
@@ -80,9 +83,6 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 | OpenGL ES `[GL]` | Vulkan `[VK]` |
 |:----------------:|:-------------:|
 | ![OpenGL ES Test](./screenshots/game_screenshot_gl.jpg) | ![Vulkan Test](./screenshots/game_screenshot_vk.jpg) |
-
-> [!TIP]
-> This app theme follows system colors (Material You Dynamic Color), so UI accents and theme colors will adapt to your device's active wallpaper and system palette.
 
 ## Requirements
 - Android 8.0+ (API 26)
