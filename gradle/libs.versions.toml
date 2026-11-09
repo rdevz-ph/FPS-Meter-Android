@@ -10,7 +10,7 @@ lifecycleViewmodelCompose = "2.8.0"
 activityCompose = "1.13.0"
 kotlin = "2.2.10"
 composeBom = "2024.09.00"
-material3 = "1.4.0-alpha18"
+material3 = "1.5.0-alpha15"
 shizuku = "13.0.0"
 
 [libraries]

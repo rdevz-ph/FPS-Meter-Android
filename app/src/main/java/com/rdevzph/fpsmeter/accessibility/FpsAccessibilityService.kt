@@ -288,6 +288,9 @@ class FpsAccessibilityService : AccessibilityService() {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        if (FpsOverlayService.isRunning && FpsOverlayService.isAutoStarted) {
+            FpsOverlayService.stop(this)
+        }
         stopOverlayJob?.cancel()
         stopOverlayJob = null
         isCurrentlyInTargetApp = false
@@ -300,6 +303,9 @@ class FpsAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (FpsOverlayService.isRunning && FpsOverlayService.isAutoStarted) {
+            FpsOverlayService.stop(this)
+        }
         stopOverlayJob?.cancel()
         stopOverlayJob = null
         isCurrentlyInTargetApp = false

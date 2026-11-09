@@ -1,3 +1,11 @@
+## Version 3.2
+- Added Battery Power output in Overlay settings to display real-time power in watts and current in milliamperes.
+- Added a snapshot of battery wattage, voltage, and raw current telemetry to Device Diagnostics.
+- Added Start on Boot option in Settings to start the overlay automatically when your device finishes booting.
+- Fixed an issue where the bottom floating navigation toolbar overlapped the keyboard while typing.
+- Fixed an issue where the FPS counter stopped updating when a game switched dynamically between OpenGL and Vulkan.
+- Turning off Auto-Start on Target Apps now automatically disables the Accessibility Service when Shizuku is granted.
+
 ## Version 3.1
 - Fixed a crash when opening the floating bubble menu in landscape mode during games.
 - Fixed an issue where the Games and History screens could not scroll when the phone was in landscape orientation.

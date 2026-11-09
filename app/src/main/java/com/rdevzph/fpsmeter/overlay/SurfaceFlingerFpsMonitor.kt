@@ -33,6 +33,7 @@ class SurfaceFlingerFpsMonitor(
     private var currentForegroundPackage: String? = null
     private var currentGraphicsApi = GraphicsApi.UNKNOWN
     private var zeroFpsCount = 0
+    private var apiCheckCounter = 0
 
     private var consecutiveFailures = 0
 
@@ -43,6 +44,7 @@ class SurfaceFlingerFpsMonitor(
         lastPresentTimestamp = 0L
         lastLayerFrameCount = -1L
         zeroFpsCount = 0
+        apiCheckCounter = 0
         consecutiveFailures = 0
 
         monitorJob = coroutineScope.launch {
@@ -86,6 +88,7 @@ class SurfaceFlingerFpsMonitor(
         lastPresentTimestamp = 0L
         lastLayerFrameCount = -1L
         zeroFpsCount = 0
+        apiCheckCounter = 0
     }
 
     fun getCurrentForegroundPackage(): String? = currentForegroundPackage
@@ -104,6 +107,7 @@ class SurfaceFlingerFpsMonitor(
             lastPresentTimestamp = 0L
             lastLayerFrameCount = -1L
             zeroFpsCount = 0
+            apiCheckCounter = 0
             consecutiveFailures = 0
             withContext(Dispatchers.Main) {
                 onFpsUpdate(0, 0f, GraphicsApi.UNKNOWN, null, null)
@@ -119,6 +123,32 @@ class SurfaceFlingerFpsMonitor(
             lastPresentTimestamp = 0L
             lastLayerFrameCount = -1L
             zeroFpsCount = 0
+            apiCheckCounter = 0
+        } else {
+            // Package is the same: periodically re-check graphics API.
+            // Many modern games start with an OpenGL/GLES splash or UI before initializing Vulkan.
+            // Check every 2 seconds if not yet detected as Vulkan, or every 5 seconds if already Vulkan.
+            apiCheckCounter++
+            val shouldCheckApi = if (currentGraphicsApi != GraphicsApi.VULKAN) {
+                apiCheckCounter >= 2
+            } else {
+                apiCheckCounter >= 5
+            }
+
+            if (shouldCheckApi) {
+                apiCheckCounter = 0
+                val detectedApi = detectGraphicsApi(foregroundPkg)
+                if (detectedApi != currentGraphicsApi) {
+                    Log.d(TAG, "Graphics API changed for $foregroundPkg: $currentGraphicsApi -> $detectedApi")
+                    currentGraphicsApi = detectedApi
+                    // Graphics API changed (e.g. GL splash -> VK in-game).
+                    // Invalidate target layer and timestamps so we bind to the newly created 3D rendering layer.
+                    currentTargetLayer = null
+                    lastPresentTimestamp = 0L
+                    lastLayerFrameCount = -1L
+                    zeroFpsCount = 0
+                }
+            }
         }
 
         // 2. Resolve Target Layer
@@ -130,6 +160,18 @@ class SurfaceFlingerFpsMonitor(
             lastLayerFrameCount = -1L
             zeroFpsCount = 0
             Log.d(TAG, "Resolved target layer for $foregroundPkg: $layer")
+        } else if (!layer.contains("SurfaceView", ignoreCase = true)) {
+            // If the current layer is not a SurfaceView (e.g. initial Activity window during splash),
+            // actively check if a SurfaceView layer has now been created by the game engine.
+            val candidateLayer = resolveLayerForPackage(foregroundPkg)
+            if (candidateLayer != null && candidateLayer != layer && candidateLayer.contains("SurfaceView", ignoreCase = true)) {
+                Log.d(TAG, "Game upgraded from window layer to SurfaceView: '$layer' -> '$candidateLayer'")
+                layer = candidateLayer
+                currentTargetLayer = candidateLayer
+                lastPresentTimestamp = 0L
+                lastLayerFrameCount = -1L
+                zeroFpsCount = 0
+            }
         }
 
         if (layer == null) {
@@ -145,9 +187,15 @@ class SurfaceFlingerFpsMonitor(
         // 4. Self-healing layer recovery if stuck at 0 FPS
         if (fpsResult.fps <= 0) {
             zeroFpsCount++
-            // If the current layer produced 0 FPS for 2 consecutive samples, invalidate it
-            // so we re-scan SurfaceFlinger for the active rendering layer next tick
-            if (zeroFpsCount >= 2) {
+            // Check if active Output Layer has changed
+            val activeLayer = resolveLayerForPackage(foregroundPkg)
+            if (activeLayer != null && activeLayer != layer) {
+                Log.d(TAG, "Active layer changed while at 0 FPS: '$layer' -> '$activeLayer'")
+                currentTargetLayer = activeLayer
+                lastPresentTimestamp = 0L
+                lastLayerFrameCount = -1L
+                zeroFpsCount = 0
+            } else if (zeroFpsCount >= 2) {
                 Log.d(TAG, "Layer '$layer' produced 0 FPS for $zeroFpsCount samples. Invalidating to re-resolve.")
                 currentTargetLayer = null
                 lastPresentTimestamp = 0L
@@ -229,14 +277,21 @@ class SurfaceFlingerFpsMonitor(
         // Crucial for Vulkan games or drivers that don't output full timestamps to --latency
         val layerFrameCount = queryLayerFrameCount(layer)
         if (layerFrameCount != null && layerFrameCount >= 0) {
-            if (lastLayerFrameCount >= 0) {
-                val deltaFrames = (layerFrameCount - lastLayerFrameCount).coerceAtLeast(0L)
+            if (lastLayerFrameCount >= 0 && layerFrameCount >= lastLayerFrameCount) {
+                val deltaFrames = layerFrameCount - lastLayerFrameCount
                 val counterFps = ((deltaFrames * 1000f) / elapsedMs).roundToInt()
 
                 if (calculatedFps <= 0 && counterFps > 0) {
                     calculatedFps = counterFps
+                } else if (deltaFrames == 0L && calculatedFps > 0) {
+                    // Frame counter didn't advance at all; layer is idle or stagnant
+                    calculatedFps = 0
                 } else if (api == GraphicsApi.VULKAN && counterFps > 0 && calculatedFps > 0) {
-                    calculatedFps = if (Math.abs(counterFps - calculatedFps) <= 3) calculatedFps else counterFps
+                    calculatedFps = if (Math.abs(counterFps - calculatedFps) <= 2) calculatedFps else counterFps
+                } else if (api == GraphicsApi.OPENGL && counterFps > 0 && calculatedFps > 0) {
+                    if (Math.abs(counterFps - calculatedFps) > 5) {
+                        calculatedFps = counterFps
+                    }
                 }
             }
             lastLayerFrameCount = layerFrameCount
@@ -250,13 +305,26 @@ class SurfaceFlingerFpsMonitor(
 
     private fun queryLayerFrameCount(layer: String): Long? {
         try {
-            val sanitized = layer.substringBefore("#").trim()
-            val output = runShellCommand("dumpsys SurfaceFlinger")
-            for (line in output.lines()) {
-                if (line.contains(sanitized) && !line.contains("Background for") && line.contains("frame=")) {
+            val sanitized = layer.substringBefore("#").trim().replace("'", "'\\''")
+            val output = runShellCommand("dumpsys SurfaceFlinger | grep -A 2 -F '$sanitized'")
+            val lines = output.lines()
+            var expectFrameOnNextLine = false
+            for (line in lines) {
+                if (line.contains(sanitized) && !line.contains("Background for") && !line.contains("mirrored")) {
                     val match = Regex("frame=(\\d+)").find(line)
                     if (match != null) {
                         return match.groupValues[1].toLongOrNull()
+                    }
+                    if (line.contains("Layer [") || line.contains("Output Layer")) {
+                        expectFrameOnNextLine = true
+                    }
+                } else if (expectFrameOnNextLine) {
+                    val match = Regex("frame=(\\d+)").find(line)
+                    if (match != null) {
+                        return match.groupValues[1].toLongOrNull()
+                    }
+                    if (line.contains("Layer [") || line.contains("--")) {
+                        expectFrameOnNextLine = false
                     }
                 }
             }
@@ -315,13 +383,15 @@ class SurfaceFlingerFpsMonitor(
         try {
             // 1. Primary inspection via Android GPU service: dumpsys gpu
             val gpuOutput = runShellCommand("dumpsys gpu")
-            val packageSection = extractPackageSectionFromGpuDump(gpuOutput, packageName)
+            val packageSections = extractPackageSectionsFromGpuDump(gpuOutput, packageName)
 
-            if (packageSection != null) {
-                val hasVulkanSwapchain = packageSection.contains("createdVulkanSwapchain = 1") ||
-                        packageSection.contains("createdVulkanDevice = 1")
-                val hasGlesContext = packageSection.contains("createdGlesContext = 1") ||
-                        packageSection.contains("gles1InUse = 1")
+            if (packageSections.isNotEmpty()) {
+                val hasVulkanSwapchain = packageSections.any {
+                    it.contains("createdVulkanSwapchain = 1") || it.contains("createdVulkanDevice = 1")
+                }
+                val hasGlesContext = packageSections.any {
+                    it.contains("createdGlesContext = 1") || it.contains("gles1InUse = 1")
+                }
 
                 if (hasVulkanSwapchain) {
                     Log.d(TAG, "Package $packageName detected as VULKAN via dumpsys gpu (createdVulkanSwapchain=1)")
@@ -352,17 +422,21 @@ class SurfaceFlingerFpsMonitor(
         return GraphicsApi.OPENGL // Safe standard default on Android
     }
 
-    private fun extractPackageSectionFromGpuDump(gpuDump: String, packageName: String): String? {
+    private fun extractPackageSectionsFromGpuDump(gpuDump: String, packageName: String): List<String> {
+        val sections = mutableListOf<String>()
         val marker = "appPackageName = $packageName"
-        val startIndex = gpuDump.indexOf(marker)
-        if (startIndex == -1) return null
-
-        val nextSectionIndex = gpuDump.indexOf("appPackageName =", startIndex + marker.length)
-        return if (nextSectionIndex != -1) {
-            gpuDump.substring(startIndex, nextSectionIndex)
-        } else {
-            gpuDump.substring(startIndex)
+        var startIndex = gpuDump.indexOf(marker)
+        while (startIndex != -1) {
+            val nextSectionIndex = gpuDump.indexOf("appPackageName =", startIndex + marker.length)
+            val section = if (nextSectionIndex != -1) {
+                gpuDump.substring(startIndex, nextSectionIndex)
+            } else {
+                gpuDump.substring(startIndex)
+            }
+            sections.add(section)
+            startIndex = if (nextSectionIndex != -1) gpuDump.indexOf(marker, nextSectionIndex) else -1
         }
+        return sections
     }
 
     /**

@@ -56,8 +56,10 @@ private fun openBrowser(context: Context, url: String) {
 fun SettingsScreen(
     themeSettings: AppThemeSettings,
     currentLanguage: String,
+    startOnBoot: Boolean = false,
     onThemeChange: (AppThemeSettings) -> Unit,
     onLanguageChange: (String) -> Unit,
+    onStartOnBootChange: (Boolean) -> Unit = {},
     onOpenDonation: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -254,6 +256,53 @@ fun SettingsScreen(
                             )
                         }
                     }
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // Section: Startup
+            SettingsSectionHeader(
+                title = stringResource(R.string.section_startup),
+                icon = Icons.Default.RestartAlt
+            )
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onStartOnBootChange(!startOnBoot) }
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.start_on_boot),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            stringResource(R.string.start_on_boot_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            stringResource(R.string.start_on_boot_warning),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = startOnBoot,
+                        onCheckedChange = onStartOnBootChange
+                    )
                 }
             }
 

@@ -4,11 +4,11 @@
 
   # FPS Meter
 
-  [![Android CI](https://img.shields.io/github/actions/workflow/status/rdevz-ph/FPS-Meter-Android/android.yml?branch=main&label=Android%20CI&style=for-the-badge&logo=github&logoColor=white)](https://github.com/rdevz-ph/FPS-Meter-Android/actions/workflows/android.yml)
+  [![Release Build CI](https://img.shields.io/github/actions/workflow/status/rdevz-ph/FPS-Meter-Android/release.yml?label=Release%20Build%20CI&style=for-the-badge&logo=github&logoColor=white)](https://github.com/rdevz-ph/FPS-Meter-Android/actions/workflows/release.yml)
   [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
-  [![Version](https://img.shields.io/badge/version-3.1-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
+  [![Version](https://img.shields.io/badge/version-3.2-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
   [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmy-release-badge-api.netlify.app%2Fapi%2Fbadge%3Fowner%3Drdevz-ph%26repo%3DFPS-Meter-Android%26mode%3Djson&query=%24.downloads&label=downloads&color=2563eb&style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases)
   [![Telegram](https://img.shields.io/badge/Telegram-@fpsmeterandroid-24A1DE?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/fpsmeterandroid)
   [![F-Droid](https://img.shields.io/f-droid/v/com.rdevzph.fpsmeter?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org/en/packages/com.rdevzph.fpsmeter/)
@@ -33,15 +33,16 @@
 >   - **SurfaceFlinger (Game FPS via Shizuku)**: Connects to Android's compositor via privileged Shizuku shell commands to measure real game frame presentation buffers from active `SurfaceView` buffer queues.
 > - **Automatic Graphics API Detection**: Automatically detects whether the foreground game is rendering with **Vulkan** or **OpenGL ES** (tested on games such as Genshin Impact and Wuthering Waves) using system GPU telemetry (`dumpsys gpu` and `dumpsys gfxinfo`), adapting the measurement method accordingly.
 > - **Hardware & Battery Telemetry**:
->   - **Battery Temperature & Charge Level (`BAT`)**: Uses a dynamic `BroadcastReceiver` for `Intent.ACTION_BATTERY_CHANGED` to monitor real-time battery temperature and remaining charge percentage (`BAT xx%`) for fullscreen gaming. When both are enabled, they automatically merge into a unified indicator: `BAT <temp> (<level>)` (e.g. `BAT 38°C (85%)`).
+>   - **Battery Temperature, Level & Power Output (`BAT`)**: Uses a dynamic `BroadcastReceiver` for `Intent.ACTION_BATTERY_CHANGED` to monitor real-time battery temperature, charge percentage (`BAT xx%`), and live power in watts alongside current in milliamperes (e.g. `BAT 38°C (85%) -2.4W (-600mA)`).
 >   - **SoC, CPU & GPU Temps (`SOC`, `CPU`, `GPU`)**: Queries Android's Thermal HAL (`dumpsys thermalservice`) and Linux sysfs thermal zones (`cpu-*-usr`, `gpuss-*-usr`) via Shizuku privileged shell access to monitor accurate live silicon hotspot, individual CPU core, and GPU temperatures during gaming across Qualcomm Snapdragon and MediaTek platforms.
 > - **Customizable Overlay Styles**: Switch between the default compact pill and the multi-row MSI Afterburner Style (RTSS) telemetry layout featuring real-time processor model, clock frequencies, and color-coded hardware sensors.
 > - **Adaptive Dynamic Layout**: Automatically presents a clean single-line pill when 1 to 3 metrics are enabled, and organizes into a structured two-line layout (Line 1: Performance metrics, Line 2: Temperatures) when 4 or more metrics are active.
 > - **Material 3 Navigation & Dedicated Screens**: Modern navigation featuring Overlay settings, Games manager with 1-tap game launching, and dedicated FPS session History with per-app launcher icons.
 > - **Universal Auto-Record & Per-Game Recording**: Choose between universal automated session recording for all active games or per-app configuration, aggregating average, min, and max FPS and duration with zero sample-by-sample disk overhead.
 > - **Floating Assistive Bubble & Quick Menu**: Provides an optional draggable floating on-screen bubble (`FloatingToggleButton`) that expands into a quick HUD menu to start/stop game FPS recording, toggle overlay visibility, and return to the app from inside any active game.
+> - **Start on Boot**: Automatically launch the overlay when your device finishes powering on, configurable under Settings.
 > - **Quick Settings Panel Tile**: Exposes an Android `TileService` (`FpsTileService`) that allows 1-tap toggling of the FPS overlay directly from the notification pull-down shade without opening the main app.
-> - **Auto On/Off Game Detection**: An optional `AccessibilityService` (`FpsAccessibilityService`) monitors foreground window state changes to automatically activate the overlay when designated target games/apps launch and stop when exited.
+> - **Auto On/Off Game Detection**: An optional `AccessibilityService` (`FpsAccessibilityService`) monitors foreground window state changes to automatically activate the overlay when designated target games/apps launch and stop when exited. Turning off auto-start automatically stops the service when Shizuku is granted.
 > - **Interaction & Dragging**: Tracks touch gestures using an `OnTouchListener` to support real-time dragging. The updated layout coordinates are saved in `SharedPreferences` on gesture completion to persist the custom location.
 > - **Shizuku Integration**: Provides privileged shell operations to grant overlay permissions without manual settings navigation, and to sample SurfaceFlinger compositor buffers for actual game FPS.
 

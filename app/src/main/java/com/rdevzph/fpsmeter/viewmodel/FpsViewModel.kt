@@ -52,9 +52,11 @@ data class OverlaySettings(
     val fpsProvider: FpsProvider = FpsProvider.CHOREOGRAPHER,
     val showGraphicsApi: Boolean = true,
     val showBatteryLevel: Boolean = false,
+    val showBatteryPower: Boolean = false,
     val showRam: Boolean = false,
     val singleLineOverlay: Boolean = false,
-    val overlayStyle: OverlayStyle = OverlayStyle.DEFAULT
+    val overlayStyle: OverlayStyle = OverlayStyle.DEFAULT,
+    val startOnBoot: Boolean = false
 ) {
     companion object {
         const val AUTO_COLOR = 0 // Sentinel value for automatic coloring
@@ -80,9 +82,11 @@ data class OverlaySettings(
         private const val KEY_FPS_PROVIDER = "fps_provider"
         private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
         private const val KEY_SHOW_BATTERY_LEVEL = "show_battery_level"
+        private const val KEY_SHOW_BATTERY_POWER = "show_battery_power"
         private const val KEY_SHOW_RAM = "show_ram"
         private const val KEY_SINGLE_LINE_OVERLAY = "single_line_overlay"
         private const val KEY_OVERLAY_STYLE = "overlay_style"
+        private const val KEY_START_ON_BOOT = "start_on_boot"
 
         fun load(context: Context): OverlaySettings {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -108,9 +112,11 @@ data class OverlaySettings(
                 fpsProvider = FpsProvider.fromString(prefs.getString(KEY_FPS_PROVIDER, defaultSettings.fpsProvider.name)),
                 showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi),
                 showBatteryLevel = prefs.getBoolean(KEY_SHOW_BATTERY_LEVEL, defaultSettings.showBatteryLevel),
+                showBatteryPower = prefs.getBoolean(KEY_SHOW_BATTERY_POWER, defaultSettings.showBatteryPower),
                 showRam = prefs.getBoolean(KEY_SHOW_RAM, defaultSettings.showRam),
                 singleLineOverlay = prefs.getBoolean(KEY_SINGLE_LINE_OVERLAY, defaultSettings.singleLineOverlay),
-                overlayStyle = OverlayStyle.fromString(prefs.getString(KEY_OVERLAY_STYLE, defaultSettings.overlayStyle.name))
+                overlayStyle = OverlayStyle.fromString(prefs.getString(KEY_OVERLAY_STYLE, defaultSettings.overlayStyle.name)),
+                startOnBoot = prefs.getBoolean(KEY_START_ON_BOOT, defaultSettings.startOnBoot)
             )
         }
 
@@ -136,9 +142,11 @@ data class OverlaySettings(
                 putString(KEY_FPS_PROVIDER, settings.fpsProvider.name)
                 putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
                 putBoolean(KEY_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
+                putBoolean(KEY_SHOW_BATTERY_POWER, settings.showBatteryPower)
                 putBoolean(KEY_SHOW_RAM, settings.showRam)
                 putBoolean(KEY_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putString(KEY_OVERLAY_STYLE, settings.overlayStyle.name)
+                putBoolean(KEY_START_ON_BOOT, settings.startOnBoot)
                 apply()
             }
         }
@@ -299,6 +307,50 @@ class FpsViewModel(
 
     fun enableAccessibilityViaShizuku(context: Context, onComplete: ((Boolean) -> Unit)? = null) =
         restartAccessibilityViaShizuku(context, isEnabling = true, onComplete = onComplete)
+
+    fun disableAccessibilityViaShizuku(context: Context, onComplete: ((Boolean) -> Unit)? = null) {
+        if (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value) {
+            onComplete?.invoke(false)
+            return
+        }
+
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val svc = "${context.packageName}/${FpsAccessibilityService::class.java.name}"
+            val script = """
+                SVC="$svc"
+                CUR=${'$'}(settings get secure enabled_accessibility_services)
+                TMP=${'$'}(echo "${'$'}CUR" | tr ':' '\n' | grep -v "${'$'}SVC" | grep -v '^${'$'}' | paste -sd:)
+                if [ -z "${'$'}TMP" ] || [ "${'$'}TMP" = "null" ]; then
+                    settings put secure enabled_accessibility_services ""
+                    settings put secure accessibility_enabled 0
+                else
+                    settings put secure enabled_accessibility_services "${'$'}TMP"
+                fi
+            """.trimIndent()
+
+            try {
+                val process = rikka.shizuku.Shizuku.newProcess(
+                    arrayOf("sh", "-c", script),
+                    null, null
+                )
+                val exitCode = process.waitFor()
+                kotlinx.coroutines.delay(400)
+                FpsAccessibilityService.isServiceRunning = false
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    checkAccessibilityService(context)
+                    if (exitCode == 0) {
+                        _statusMessage.value = context.getString(R.string.accessibility_disable_success)
+                    }
+                    onComplete?.invoke(exitCode == 0)
+                }
+            } catch (e: Exception) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    checkAccessibilityService(context)
+                    onComplete?.invoke(false)
+                }
+            }
+        }
+    }
 
     fun restartAccessibilityViaShizuku(
         context: Context,

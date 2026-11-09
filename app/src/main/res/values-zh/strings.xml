@@ -74,6 +74,8 @@
     <string name="gpu_temp">GPU 温度</string>
     <string name="soc_temp">SoC 温度</string>
     <string name="battery_level">电池电量</string>
+    <string name="battery_power">电池功率</string>
+    <string name="battery_power_desc">实时显示电池功耗（瓦特）或电流（毫安）</string>
     <string name="remaining_ram">剩余运存</string>
     <string name="remaining_ram_desc">在悬浮窗第三行显示可用内存及已占用百分比</string>
     <string name="single_line_overlay">单行显示悬浮窗</string>
@@ -112,11 +114,15 @@
     <string name="quick_access">快捷访问与开关</string>
     <string name="floating_bubble">悬浮辅助球</string>
     <string name="floating_bubble_desc">可在任意应用上拖动的悬浮球，通过快捷菜单启动/停止游戏帧率记录并切换 HUD 显示。</string>
+    <string name="start_on_boot">开机自启</string>
+    <string name="start_on_boot_desc">设备开机时自动启动悬浮窗</string>
+    <string name="start_on_boot_warning">由于厂商电池优化或后台限制，此功能在部分设备上可能不可靠</string>
     <string name="quick_settings_tile">快捷设置面板磁贴</string>
     <string name="quick_settings_tile_desc">在任意游戏中从状态栏下滑，点按“FPS Meter”磁贴即可切换，无需打开本应用。</string>
 
     <!-- Settings screen -->
     <string name="settings_title">设置</string>
+    <string name="section_startup">自启动设置</string>
     <string name="section_app_theme">应用主题</string>
     <string name="theme_follow_system">跟随系统</string>
     <string name="theme_dark">深色</string>
@@ -185,6 +191,7 @@
     <string name="accessibility_restart_success">无障碍服务与自动启动已成功重启</string>
     <string name="accessibility_restart_failed">通过 Shizuku 重启服务失败</string>
     <string name="accessibility_enable_success">无障碍服务已成功启用</string>
+    <string name="accessibility_disable_success">无障碍服务已禁用并清除</string>
     <string name="accessibility_enable_failed">通过 Shizuku 启动无障碍服务失败</string>
     <string name="enable_via_shizuku">通过 Shizuku 启用</string>
     <string name="auto_start_restart_shizuku">通过 Shizuku 重启自动启动</string>
@@ -249,8 +256,8 @@
     <string name="about_feature3_desc">实时识别当前运行的 Vulkan 与 OpenGL ES 渲染管线。</string>
     <string name="about_feature4_title">全面温度指标</string>
     <string name="about_feature4_desc">实时读取 SoC 热点、CPU、GPU 与电池温度。</string>
-    <string name="about_feature5_title">电量指示</string>
-    <string name="about_feature5_desc">全屏游戏时在悬浮窗上实时显示剩余电量百分比。</string>
+    <string name="about_feature5_title">电池电量与实时功耗</string>
+    <string name="about_feature5_desc">在悬浮窗上实时显示电池剩余百分比及功耗（瓦特）或电流（毫安）。</string>
     <string name="about_feature6_title">游戏性能记录</string>
     <string name="about_feature6_desc">按游戏自动记录会话，保留平均、峰值与最低帧率历史日志。</string>
     <string name="about_feature7_title">开源且注重隐私</string>

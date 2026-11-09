@@ -76,6 +76,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_FPS_PROVIDER = "fps_provider"
         const val EXTRA_SHOW_API = "show_api"
         const val EXTRA_SHOW_BATTERY_LEVEL = "show_battery_level"
+        const val EXTRA_SHOW_BATTERY_POWER = "show_battery_power"
         const val EXTRA_SHOW_RAM = "show_ram"
         const val EXTRA_SINGLE_LINE_OVERLAY = "single_line_overlay"
         const val EXTRA_OVERLAY_STYLE = "overlay_style"
@@ -143,6 +144,7 @@ class FpsOverlayService : Service() {
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
     private var showGraphicsApi = true
     private var showBatteryLevel = false
+    private var showBatteryPower = false
     private var showRam = false
     private var singleLineOverlay = false
     private var overlayStyle = OverlayStyle.DEFAULT
@@ -151,26 +153,11 @@ class FpsOverlayService : Service() {
     private var usedRamPercent: Int = 0
     private var ramMonitorJob: Job? = null
 
-    private var batteryTemp: Float = 0f
-    private var batteryLevel: Int = -1
+    private var batteryMonitor: BatteryMonitor? = null
     private var socTemp: Float = 0f
     private var cpuTemp: Float = 0f
     private var gpuTemp: Float = 0f
     private var socThermalMonitor: SocThermalMonitor? = null
-
-    private val batteryReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            intent?.let {
-                val temp = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
-                batteryTemp = temp / 10f
-                val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-                val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-                if (level >= 0 && scale > 0) {
-                    batteryLevel = (level * 100) / scale
-                }
-            }
-        }
-    }
 
     private fun getAppNameForPackage(pkg: String): String {
         return try {
@@ -229,23 +216,7 @@ class FpsOverlayService : Service() {
         instance = this
         isRunning = true
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        val stickyBattery = registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        stickyBattery?.let {
-            val temp = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
-            batteryTemp = temp / 10f
-            val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-            val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-            if (level >= 0 && scale > 0) {
-                batteryLevel = (level * 100) / scale
-            }
-        }
-        if (batteryLevel < 0) {
-            val bm = getSystemService(BATTERY_SERVICE) as? BatteryManager
-            val cap = bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) ?: -1
-            if (cap in 0..100) {
-                batteryLevel = cap
-            }
-        }
+        batteryMonitor = BatteryMonitor(this).apply { start() }
 
         // Load initial settings from SharedPreferences
         val saved = OverlaySettings.load(this)
@@ -265,6 +236,7 @@ class FpsOverlayService : Service() {
         fpsProvider = saved.fpsProvider
         showGraphicsApi = saved.showGraphicsApi
         showBatteryLevel = saved.showBatteryLevel
+        showBatteryPower = saved.showBatteryPower
         showRam = saved.showRam
         singleLineOverlay = saved.singleLineOverlay
         overlayStyle = saved.overlayStyle
@@ -487,6 +459,9 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_SHOW_BATTERY_LEVEL)) {
             showBatteryLevel = intent.getBooleanExtra(EXTRA_SHOW_BATTERY_LEVEL, showBatteryLevel)
         }
+        if (intent.hasExtra(EXTRA_SHOW_BATTERY_POWER)) {
+            showBatteryPower = intent.getBooleanExtra(EXTRA_SHOW_BATTERY_POWER, showBatteryPower)
+        }
         if (intent.hasExtra(EXTRA_SHOW_RAM)) {
             val newShowRam = intent.getBooleanExtra(EXTRA_SHOW_RAM, showRam)
             if (newShowRam != showRam) {
@@ -633,6 +608,9 @@ class FpsOverlayService : Service() {
         val labelColor = Color.parseColor("#00E5FF") // Cyan accent
         val valueColor = Color.WHITE
 
+        val batteryTemp = batteryMonitor?.getTemperature() ?: 0f
+        val batteryLevel = batteryMonitor?.getLevel() ?: -1
+
         val hasApi = fpsProvider == FpsProvider.SURFACE_FLINGER && showGraphicsApi && detectedGraphicsApi != GraphicsApi.UNKNOWN
         val hasMs = showMs && fps > 0
         val hasCpu = showCpuTemp
@@ -640,6 +618,7 @@ class FpsOverlayService : Service() {
         val hasSoc = showSocTemp
         val hasBatt = showTemp
         val hasBattLevel = showBatteryLevel
+        val hasBattPower = showBatteryPower
         val hasBattBoth = hasBatt && hasBattLevel
         val hasRam = showRam
 
@@ -648,9 +627,10 @@ class FpsOverlayService : Service() {
                 (if (hasCpu) 1 else 0) +
                 (if (hasGpu) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
-                (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0)))
+                (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0))) +
+                (if (hasBattPower) 1 else 0)
 
-        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower
         // Wrap thermals to next line if more than 3 extra overlays are enabled (> 3) OR if RAM overlay is also enabled and thermals are present
         // If singleLineOverlay is enabled, keep all metrics on a single horizontal line.
         val useNextLine = !singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals))
@@ -746,8 +726,8 @@ class FpsOverlayService : Service() {
                 appendRow("SOC", colorSocTag, listOf(socTempStr to colorVal))
             }
 
-            // 5. BAT row (only if battery temp or level enabled)
-            if (hasBatt || hasBattLevel) {
+            // 5. BAT row (only if battery temp, level, or power enabled)
+            if (hasBatt || hasBattLevel || hasBattPower) {
                 newLine()
                 val batCells = mutableListOf<Pair<String, Int>>()
                 if (hasBatt) {
@@ -761,6 +741,12 @@ class FpsOverlayService : Service() {
                 if (hasBattLevel && batteryLevel >= 0) {
                     val batLevelStr = if (singleLineOverlay) "$batteryLevel%" else "$batteryLevel %"
                     batCells.add(batLevelStr to colorVal)
+                }
+                if (hasBattPower) {
+                    val powerStr = batteryMonitor?.getPowerText(singleLineOverlay)
+                    if (powerStr != null) {
+                        batCells.add(powerStr to colorVal)
+                    }
                 }
                 appendRow("BAT", colorBat, batCells)
             }
@@ -860,15 +846,23 @@ class FpsOverlayService : Service() {
                 val socDisplay = if (socTemp > 0f) "${socTemp}°C" else "--°C"
                 appendThermal("SOC", socDisplay)
             }
+            val powerSuffix = if (hasBattPower) {
+                val p = batteryMonitor?.getPowerText(true)
+                if (p != null) " $p" else ""
+            } else ""
+
             if (hasBattBoth) {
                 val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
                 val tempDisplay = if (batteryTemp > 0f) "${batteryTemp}°C" else "--°C"
-                appendThermal("BAT", "$tempDisplay ($levelDisplay)")
+                appendThermal("BAT", "$tempDisplay ($levelDisplay)$powerSuffix")
             } else if (hasBatt) {
-                appendThermal("BATT", "${batteryTemp}°C")
+                appendThermal("BATT", "${batteryTemp}°C$powerSuffix")
             } else if (hasBattLevel) {
                 val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
-                appendThermal("BAT", levelDisplay)
+                appendThermal("BAT", "$levelDisplay$powerSuffix")
+            } else if (hasBattPower) {
+                val p = batteryMonitor?.getPowerText(true) ?: "--W"
+                appendThermal("BAT", p)
             }
         }
 
@@ -1237,7 +1231,8 @@ class FpsOverlayService : Service() {
         ramMonitorJob?.cancel()
         ramMonitorJob = null
         FpsRecordingManager.endCurrentSession(this)
-        unregisterReceiver(batteryReceiver)
+        batteryMonitor?.stop()
+        batteryMonitor = null
         if (::overlayView.isInitialized) {
             try {
                 windowManager.removeView(overlayView)

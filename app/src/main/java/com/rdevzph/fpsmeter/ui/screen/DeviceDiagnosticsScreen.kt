@@ -12,6 +12,7 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import com.rdevzph.fpsmeter.overlay.BatteryMonitor
 import android.view.Display
 import android.view.WindowManager
 import android.widget.Toast
@@ -86,6 +87,9 @@ data class DeviceDiagnosticData(
     val vulkanSupport: String = "",
     val batteryLevel: String = "",
     val batteryTemp: String = "",
+    val batteryWattage: String = "",
+    val batteryVoltage: String = "",
+    val batteryCurrentRaw: String = "",
     val batteryStatus: String = "",
     val batteryHealth: String = "",
     val powerSaveMode: Boolean = false,
@@ -370,6 +374,9 @@ fun DeviceDiagnosticsScreen(
                 val thermalItems = mutableListOf(
                     DiagnosticItem("Battery Temperature", diagnosticData.batteryTemp),
                     DiagnosticItem("Battery Level", diagnosticData.batteryLevel),
+                    DiagnosticItem("Battery Wattage", diagnosticData.batteryWattage),
+                    DiagnosticItem("Battery Voltage", diagnosticData.batteryVoltage),
+                    DiagnosticItem("Battery Current (Raw)", diagnosticData.batteryCurrentRaw),
                     DiagnosticItem("Battery Status", diagnosticData.batteryStatus),
                     DiagnosticItem("Battery Health", diagnosticData.batteryHealth),
                     DiagnosticItem("System Thermal Status", diagnosticData.systemThermalStatus),
@@ -668,6 +675,20 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
     val scale = batteryStatusIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
     val batteryLevel = if (level >= 0 && scale > 0) "${(level * 100) / scale}%" else "Unknown"
 
+    val voltMv = batteryStatusIntent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+    val batteryVoltage = if (voltMv > 0) "$voltMv mV" else "Unknown"
+
+    val bm = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
+    val rawCurrentNow = bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) ?: Int.MIN_VALUE
+    val rawCurrentAvg = bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) ?: Int.MIN_VALUE
+    val currentNowStr = if (rawCurrentNow != Int.MIN_VALUE) "$rawCurrentNow" else "N/A"
+    val currentAvgStr = if (rawCurrentAvg != Int.MIN_VALUE) "$rawCurrentAvg" else "N/A"
+    val batteryCurrentRaw = "Now: $currentNowStr, Avg: $currentAvgStr"
+
+    val batteryMonitor = BatteryMonitor(context).apply { start() }
+    val batteryWattage = batteryMonitor.getPowerText(singleLine = false) ?: "0 W (0 mA)"
+    batteryMonitor.stop()
+
     val status = batteryStatusIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
     val batteryStatus = when (status) {
         BatteryManager.BATTERY_STATUS_CHARGING -> "Charging"
@@ -817,6 +838,9 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         vulkanSupport = vulkanSupport,
         batteryLevel = batteryLevel,
         batteryTemp = batteryTemp,
+        batteryWattage = batteryWattage,
+        batteryVoltage = batteryVoltage,
+        batteryCurrentRaw = batteryCurrentRaw,
         batteryStatus = batteryStatus,
         batteryHealth = batteryHealth,
         powerSaveMode = isPowerSave,
@@ -898,6 +922,9 @@ private fun formatMarkdownReport(d: DeviceDiagnosticData): String {
     sb.appendLine("### Thermals & Battery")
     sb.appendLine("- **Battery Temp:** ${d.batteryTemp}")
     sb.appendLine("- **Battery Level:** ${d.batteryLevel} (${d.batteryStatus}, ${d.batteryHealth})")
+    sb.appendLine("- **Battery Wattage:** ${d.batteryWattage}")
+    sb.appendLine("- **Battery Voltage:** ${d.batteryVoltage}")
+    sb.appendLine("- **Battery Current (Raw):** ${d.batteryCurrentRaw}")
     sb.appendLine("- **System Thermal Status:** ${d.systemThermalStatus}")
     sb.appendLine("- **Thermal Headroom:** ${d.thermalHeadroom}")
     sb.appendLine("- **Power Save Mode:** ${if (d.powerSaveMode) "Active" else "Inactive"}")

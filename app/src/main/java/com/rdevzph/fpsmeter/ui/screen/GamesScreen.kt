@@ -347,7 +347,7 @@ fun GamesScreen(
                             )
                         }
                         Spacer(Modifier.width(8.dp))
-                        if (shizukuGranted) {
+                        if (shizukuGranted && accessibilityEnabled) {
                             IconButton(
                                 onClick = onRestartAccessibilityViaShizuku,
                                 modifier = Modifier.size(36.dp)
@@ -362,9 +362,9 @@ fun GamesScreen(
                         }
                         Spacer(Modifier.width(4.dp))
                         Switch(
-                            checked = settings.autoStartEnabled,
+                            checked = settings.autoStartEnabled && accessibilityEnabled,
                             onCheckedChange = onToggleAutoStart,
-                            enabled = accessibilityEnabled
+                            enabled = accessibilityEnabled || shizukuGranted
                         )
                     }
 

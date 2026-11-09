@@ -1,10 +1,16 @@
-# FPS Meter Android v3.1
+# FPS Meter Android v3.2
 
-### What's New in v3.1
+### What's New in v3.2
+
+#### Added
+- **Battery Power Output (Watts and Current)**: Added an option in Overlay settings to show live power consumption in watts and charging or discharging current in milliamperes (for example, -0.7W (-70mA) during battery use or +2.5W (+650mA) while charging) ([#38](https://github.com/rdevz-ph/FPS-Meter-Android/issues/38)).
+- **Battery Diagnostics Telemetry**: Added a snapshot of battery wattage, voltage, and raw current telemetry to Device Diagnostics and report exports.
+- **Start on Boot**: Added a Start on Boot toggle under the Settings screen to automatically start the overlay when your device finishes powering on ([#42](https://github.com/rdevz-ph/FPS-Meter-Android/issues/42)).
 
 #### Fixed
-- **Floating Assistive Menu Landscape Crash**: Fixed a crash where tapping the floating assistive bubble while playing games in landscape mode threw an empty range error ([#30](https://github.com/rdevz-ph/FPS-Meter-Android/issues/30)).
-- **Landscape Viewport Scrolling in Games and History**: Fixed an issue where the Games manager and History logs could not scroll when the phone was in landscape orientation.
+- **Floating Toolbar Keyboard Overlap**: Fixed an issue where the bottom floating navigation toolbar remained visible and overlapped the on-screen keyboard while typing ([#41](https://github.com/rdevz-ph/FPS-Meter-Android/issues/41)).
+- **In-Game Graphics API Switching**: Fixed an issue where games that switch dynamically between OpenGL and Vulkan (such as loading from game menus into 3D scenes) caused the FPS counter to stop updating.
+- **Auto-Start Service Cleanup**: Turning off Auto-Start on Target Apps now automatically disables and clears the Accessibility Service when Shizuku is granted.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 
@@ -13,7 +19,7 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Automatic Graphics API detection (Vulkan and OpenGL ES)
 - Two overlay styles: default compact pill and multi-row MSI Afterburner Style (RTSS) telemetry layout
 - Samsung-style pill-shaped overlay with cyan labels and white values
-- Real-time FPS, frame time (MS), RAM usage, and multi-metric temperature monitoring (CPU, GPU, SoC, and Battery)
+- Real-time FPS, frame time (MS), RAM usage, battery power (watts and current), and multi-metric temperature monitoring (CPU, GPU, SoC, and Battery)
 - Adaptive layout dynamically scaling across lines, with a single-line mode option for tablets and landscape gaming
 - Dynamic FPS color coding (green, yellow, orange, red) based on performance thresholds
 - In-memory per-game FPS session recording with dedicated History screen

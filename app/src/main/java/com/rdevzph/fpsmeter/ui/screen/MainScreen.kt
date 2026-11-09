@@ -61,7 +61,11 @@ enum class MainNavTab(val titleRes: Int, val icon: ImageVector) {
     HISTORY(R.string.tab_history, Icons.Default.QueryStats)
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun MainScreen(
     viewModel: FpsViewModel,
@@ -206,6 +210,7 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                 putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
+                putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
@@ -227,8 +232,12 @@ fun MainScreen(
             SettingsScreen(
                 themeSettings = themeSettings,
                 currentLanguage = currentLanguage,
+                startOnBoot = settings.startOnBoot,
                 onThemeChange = { viewModel.updateThemeSettings(it) },
                 onLanguageChange = onLanguageChange,
+                onStartOnBootChange = { enabled ->
+                    viewModel.updateSettings(settings.copy(startOnBoot = enabled))
+                },
                 onOpenDonation = { showDonationDialog = true },
                 onBack = { isSettingsOpen = false }
             )
@@ -390,6 +399,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                             putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
                             putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                             putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                             putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
@@ -421,6 +431,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_API, newSettings.showGraphicsApi)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, newSettings.showBatteryLevel)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, newSettings.showBatteryPower)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, newSettings.showRam)
                                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, newSettings.singleLineOverlay)
                                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, newSettings.overlayStyle.name)
@@ -615,6 +626,15 @@ fun MainScreen(
                 },
                 onToggleAutoStart = { enabled ->
                     viewModel.updateSettings(settings.copy(autoStartEnabled = enabled))
+                    if (!enabled) {
+                        if (shizukuGranted) {
+                            viewModel.disableAccessibilityViaShizuku(context)
+                        }
+                    } else {
+                        if (!accessibilityEnabled && shizukuGranted) {
+                            viewModel.enableAccessibilityViaShizuku(context)
+                        }
+                    }
                 },
                 onToggleAutoRecordAll = { enabled ->
                     viewModel.setAutoRecordAll(enabled)
@@ -646,59 +666,62 @@ fun MainScreen(
     }
 
     // Floating Toolbar anchored over screen content
-    Box(
+    val isImeVisible = WindowInsets.isImeVisible
+    BoxWithConstraints(
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .navigationBarsPadding()
             .padding(bottom = 16.dp)
     ) {
-        HorizontalFloatingToolbar(
-            expanded = true,
-            floatingActionButton = {
-                FloatingToolbarDefaults.VibrantFloatingActionButton(
-                    onClick = toggleOverlay,
-                    containerColor = if (overlayRunning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = if (overlayRunning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
-                ) {
-                    Icon(
-                        imageVector = if (overlayRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
-                        contentDescription = stringResource(if (overlayRunning) R.string.stop_overlay else R.string.start_overlay)
-                    )
-                }
-            },
-            colors = FloatingToolbarDefaults.standardFloatingToolbarColors(),
-        ) {
-            MainNavTab.values().forEach { tab ->
-                val selected = currentTab == tab
-                Surface(
-                    selected = selected,
-                    onClick = { currentTab = tab },
-                    shape = RoundedCornerShape(24.dp),
-                    color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                    contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(
-                            horizontal = if (selected) 14.dp else 10.dp,
-                            vertical = 8.dp
-                        ),
-                        verticalAlignment = Alignment.CenterVertically
+        if (!isImeVisible && maxHeight >= 80.dp) {
+            HorizontalFloatingToolbar(
+                expanded = true,
+                floatingActionButton = {
+                    FloatingToolbarDefaults.VibrantFloatingActionButton(
+                        onClick = toggleOverlay,
+                        containerColor = if (overlayRunning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = if (overlayRunning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
                     ) {
                         Icon(
-                            imageVector = tab.icon,
-                            contentDescription = stringResource(tab.titleRes),
-                            modifier = Modifier.size(20.dp)
+                            imageVector = if (overlayRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
+                            contentDescription = stringResource(if (overlayRunning) R.string.stop_overlay else R.string.start_overlay)
                         )
-                        AnimatedVisibility(visible = selected) {
-                            Row {
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = stringResource(tab.titleRes),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    maxLines = 1
-                                )
+                    }
+                },
+                colors = FloatingToolbarDefaults.standardFloatingToolbarColors(),
+            ) {
+                MainNavTab.values().forEach { tab ->
+                    val selected = currentTab == tab
+                    Surface(
+                        selected = selected,
+                        onClick = { currentTab = tab },
+                        shape = RoundedCornerShape(24.dp),
+                        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                        contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(
+                                horizontal = if (selected) 14.dp else 10.dp,
+                                vertical = 8.dp
+                            ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = tab.icon,
+                                contentDescription = stringResource(tab.titleRes),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            AnimatedVisibility(visible = selected) {
+                                Row {
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(tab.titleRes),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1
+                                    )
+                                }
                             }
                         }
                     }
@@ -1643,6 +1666,33 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(8.dp))
 
+        // Battery wattage / power toggle
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            ) {
+                Text(stringResource(R.string.battery_power), style = MaterialTheme.typography.labelMedium)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    stringResource(R.string.battery_power_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = settings.showBatteryPower,
+                onCheckedChange = { onChange(settings.copy(showBatteryPower = it)) },
+                modifier = Modifier.scale(0.8f)
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
         // Remaining RAM toggle (Third line)
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1798,6 +1848,7 @@ fun OverlaySettingsPanel(
         val hasSoc = settings.showSocTemp
         val hasBatt = settings.showTemp
         val hasBattLevel = settings.showBatteryLevel
+        val hasBattPower = settings.showBatteryPower
         val hasBattBoth = hasBatt && hasBattLevel
         val hasRam = settings.showRam
 
@@ -1806,9 +1857,10 @@ fun OverlaySettingsPanel(
                 (if (hasCpu) 1 else 0) +
                 (if (hasGpu) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
-                (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0)))
+                (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0))) +
+                (if (hasBattPower) 1 else 0)
 
-        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower
         val useNextLine = !settings.singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals))
         val isMultiLine = !settings.singleLineOverlay && (useNextLine || hasRam)
         val isAfterburner = settings.overlayStyle == OverlayStyle.MSI_AFTERBURNER
@@ -1907,12 +1959,13 @@ fun OverlaySettingsPanel(
                                 appendPreviewRow("SOC", colorSocTag, listOf(socTempStr to colorVal))
                             }
 
-                            // 5. BAT row (only if battery temp or level enabled)
-                            if (hasBatt || hasBattLevel) {
+                            // 5. BAT row (only if battery temp, level, or power enabled)
+                            if (hasBatt || hasBattLevel || hasBattPower) {
                                 newPreviewLine()
                                 val batCells = mutableListOf<Pair<String, Color>>()
                                 if (hasBatt) batCells.add((if (settings.singleLineOverlay) "34.9°C" else "34.9 °C") to colorVal)
                                 if (hasBattLevel) batCells.add((if (settings.singleLineOverlay) "85%" else "85 %") to colorVal)
+                                if (hasBattPower) batCells.add((if (settings.singleLineOverlay) "-2.4W (-600mA)" else "-2.4 W (-600 mA)") to colorVal)
                                 appendPreviewRow("BAT", colorBat, batCells)
                             }
 
@@ -1985,12 +2038,15 @@ fun OverlaySettingsPanel(
                                 if (hasCpu) appendThermal("CPU", "42.1°C")
                                 if (hasGpu) appendThermal("GPU", "38.5°C")
                                 if (hasSoc) appendThermal("SOC", "45.2°C")
+                                val powerSuffix = if (hasBattPower) " -2.4W (-600mA)" else ""
                                 if (hasBattBoth) {
-                                    appendThermal("BAT", "38.5°C (85%)")
+                                    appendThermal("BAT", "38.5°C (85%)$powerSuffix")
                                 } else if (hasBatt) {
-                                    appendThermal("BATT", "38.5°C")
+                                    appendThermal("BATT", "38.5°C$powerSuffix")
                                 } else if (hasBattLevel) {
-                                    appendThermal("BAT", "85%")
+                                    appendThermal("BAT", "85%$powerSuffix")
+                                } else if (hasBattPower) {
+                                    appendThermal("BAT", "-2.4W (-600mA)")
                                 }
                             }
 

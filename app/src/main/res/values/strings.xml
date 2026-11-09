@@ -74,6 +74,8 @@
     <string name="gpu_temp">GPU Temp</string>
     <string name="soc_temp">SoC Temp</string>
     <string name="battery_level">Battery Level</string>
+    <string name="battery_power">Battery Wattage</string>
+    <string name="battery_power_desc">Show real-time battery power output in watts (or current in mA)</string>
     <string name="remaining_ram">Remaining RAM</string>
     <string name="remaining_ram_desc">Display available memory and occupied RAM percentage on a third overlay line</string>
     <string name="single_line_overlay">Single-line overlay</string>
@@ -112,11 +114,15 @@
     <string name="quick_access">Quick Access &amp; Toggles</string>
     <string name="floating_bubble">Floating Assistive Bubble</string>
     <string name="floating_bubble_desc">Draggable on-screen bubble with a quick menu to start/stop game FPS recording and toggle HUD visibility from any app.</string>
+    <string name="start_on_boot">Start on Boot</string>
+    <string name="start_on_boot_desc">Automatically start the overlay when your device boots up</string>
+    <string name="start_on_boot_warning">May not be reliable on all devices due to OEM battery optimizations or background restrictions</string>
     <string name="quick_settings_tile">Quick Settings Panel Tile</string>
     <string name="quick_settings_tile_desc">Swipe down from your status bar in any game and tap the \'FPS Meter\' tile to toggle without opening this app.</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
+    <string name="section_startup">Startup</string>
     <string name="section_app_theme">App Theme</string>
     <string name="theme_follow_system">Follow System</string>
     <string name="theme_dark">Dark</string>
@@ -185,6 +191,7 @@
     <string name="accessibility_restart_success">Accessibility service and auto-start restarted successfully</string>
     <string name="accessibility_restart_failed">Failed to restart service via Shizuku</string>
     <string name="accessibility_enable_success">Accessibility service enabled successfully</string>
+    <string name="accessibility_disable_success">Accessibility service disabled and cleared</string>
     <string name="accessibility_enable_failed">Failed to start accessibility service via Shizuku</string>
     <string name="enable_via_shizuku">Via Shizuku</string>
     <string name="auto_start_restart_shizuku">Restart Auto-Start via Shizuku</string>
@@ -249,8 +256,8 @@
     <string name="about_feature3_desc">Live identification of active Vulkan and OpenGL ES rendering pipelines.</string>
     <string name="about_feature4_title">Comprehensive Thermal Metrics</string>
     <string name="about_feature4_desc">Real-time temperature readouts for SoC hotspot, CPU, GPU, and Battery.</string>
-    <string name="about_feature5_title">Battery Level Indicator</string>
-    <string name="about_feature5_desc">Live remaining battery percentage directly on the overlay during fullscreen gaming.</string>
+    <string name="about_feature5_title">Battery Level &amp; Power Output</string>
+    <string name="about_feature5_desc">Live battery percentage and real-time wattage power consumption on the overlay.</string>
     <string name="about_feature6_title">Game Performance Logging</string>
     <string name="about_feature6_desc">Automatic session recording per game with average, peak, and minimum FPS history logs.</string>
     <string name="about_feature7_title">Open Source &amp; Privacy First</string>
