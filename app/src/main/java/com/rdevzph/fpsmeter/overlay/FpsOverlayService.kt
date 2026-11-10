@@ -15,6 +15,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.BatteryManager
 import android.os.IBinder
+import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
@@ -43,6 +44,7 @@ import rikka.shizuku.Shizuku
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.Locale
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /**
@@ -521,6 +523,13 @@ class FpsOverlayService : Service() {
                 overlayView.textSize = textSizeSp
                 overlayView.typeface = Typeface.DEFAULT_BOLD
                 overlayView.gravity = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER && !singleLineOverlay) Gravity.START else Gravity.CENTER
+                if (singleLineOverlay) {
+                    overlayView.isSingleLine = true
+                    overlayView.maxLines = 1
+                } else {
+                    overlayView.isSingleLine = false
+                    overlayView.maxLines = Int.MAX_VALUE
+                }
                 val isMulti = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER) !singleLineOverlay else (lastUseNextLine == true)
                 overlayView.background = createOverlayBackgroundDrawable(isMulti)
                 if (overlayStyle == OverlayStyle.MSI_AFTERBURNER) {
@@ -565,13 +574,20 @@ class FpsOverlayService : Service() {
         }
 
         val isMulti = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER) !singleLineOverlay else false
-        overlayView = TextView(this).apply {
+        overlayView = OverlayTextView(this).apply {
             background = createOverlayBackgroundDrawable(isMulti)
             textSize = textSizeSp
             typeface = Typeface.DEFAULT_BOLD
             alpha = 1.0f
             gravity = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER && !singleLineOverlay) Gravity.START else Gravity.CENTER
             setLineSpacing(4f, 1f)
+            if (singleLineOverlay) {
+                isSingleLine = true
+                maxLines = 1
+            } else {
+                isSingleLine = false
+                maxLines = Int.MAX_VALUE
+            }
             if (overlayStyle == OverlayStyle.MSI_AFTERBURNER) {
                 if (singleLineOverlay) {
                     setPadding(24, 8, 24, 8)
@@ -792,6 +808,17 @@ class FpsOverlayService : Service() {
                         overlayView.setPadding(24, 8, 24, 8)
                     }
                 }
+                if (singleLineOverlay) {
+                    if (!overlayView.isSingleLine) {
+                        overlayView.isSingleLine = true
+                        overlayView.maxLines = 1
+                    }
+                } else {
+                    if (overlayView.isSingleLine) {
+                        overlayView.isSingleLine = false
+                        overlayView.maxLines = Int.MAX_VALUE
+                    }
+                }
                 overlayView.text = ssb
             }
             return
@@ -825,11 +852,12 @@ class FpsOverlayService : Service() {
                 ssb.append("\n")
             }
             var isFirstThermalOnLine = useNextLine
+            val tagSpace = if (singleLineOverlay) "\u00A0" else " "
             fun appendThermal(tag: String, value: String) {
                 if (!isFirstThermalOnLine) {
                     ssb.append("  |  ", Color.GRAY)
                 }
-                ssb.append("$tag ", labelColor, StyleSpan(Typeface.BOLD))
+                ssb.append("$tag$tagSpace", labelColor, StyleSpan(Typeface.BOLD))
                 ssb.append(value, valueColor, StyleSpan(Typeface.BOLD))
                 isFirstThermalOnLine = false
             }
@@ -847,21 +875,22 @@ class FpsOverlayService : Service() {
                 appendThermal("SOC", socDisplay)
             }
             val powerSuffix = if (hasBattPower) {
-                val p = batteryMonitor?.getPowerText(true)
-                if (p != null) " $p" else ""
+                val p = batteryMonitor?.getPowerText(singleLineOverlay)
+                if (p != null) (if (singleLineOverlay) "\u00A0$p" else " $p") else ""
             } else ""
 
             if (hasBattBoth) {
                 val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
                 val tempDisplay = if (batteryTemp > 0f) "${batteryTemp}°C" else "--°C"
-                appendThermal("BAT", "$tempDisplay ($levelDisplay)$powerSuffix")
+                val valueSep = if (singleLineOverlay) "\u00A0" else " "
+                appendThermal("BAT", "$tempDisplay$valueSep($levelDisplay)$powerSuffix")
             } else if (hasBatt) {
                 appendThermal("BATT", "${batteryTemp}°C$powerSuffix")
             } else if (hasBattLevel) {
                 val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
                 appendThermal("BAT", "$levelDisplay$powerSuffix")
             } else if (hasBattPower) {
-                val p = batteryMonitor?.getPowerText(true) ?: "--W"
+                val p = batteryMonitor?.getPowerText(singleLineOverlay) ?: "--W"
                 appendThermal("BAT", p)
             }
         }
@@ -873,11 +902,16 @@ class FpsOverlayService : Service() {
             } else {
                 ssb.append("\n")
             }
-            ssb.append("RAM ", labelColor, StyleSpan(Typeface.BOLD))
+            val ramTagSpace = if (singleLineOverlay) "\u00A0" else " "
+            ssb.append("RAM$ramTagSpace", labelColor, StyleSpan(Typeface.BOLD))
             val ramDisplay = if (availableRamGb > 0f) {
-                String.format(Locale.US, "%.1f GB (%d%%)", availableRamGb, usedRamPercent)
+                if (singleLineOverlay) {
+                    String.format(Locale.US, "%.1f\u00A0GB\u00A0(%d%%)", availableRamGb, usedRamPercent)
+                } else {
+                    String.format(Locale.US, "%.1f GB (%d%%)", availableRamGb, usedRamPercent)
+                }
             } else {
-                "-- GB (--%)"
+                if (singleLineOverlay) "--\u00A0GB\u00A0(--%)" else "-- GB (--%)"
             }
             ssb.append(ramDisplay, valueColor, StyleSpan(Typeface.BOLD))
         }
@@ -890,6 +924,17 @@ class FpsOverlayService : Service() {
                     overlayView.setPadding(28, 12, 28, 12)
                 } else {
                     overlayView.setPadding(24, 8, 24, 8)
+                }
+            }
+            if (singleLineOverlay) {
+                if (!overlayView.isSingleLine) {
+                    overlayView.isSingleLine = true
+                    overlayView.maxLines = 1
+                }
+            } else {
+                if (overlayView.isSingleLine) {
+                    overlayView.isSingleLine = false
+                    overlayView.maxLines = Int.MAX_VALUE
                 }
             }
             overlayView.text = ssb
@@ -1179,6 +1224,29 @@ class FpsOverlayService : Service() {
             .setOngoing(true)
             .setSilent(true)
             .build()
+    }
+
+    private inner class OverlayTextView(context: Context) : TextView(context) {
+        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            val currentText = text
+            if (!currentText.isNullOrEmpty()) {
+                val desiredTextWidth = ceil(Layout.getDesiredWidth(currentText, paint)).toInt() +
+                        compoundPaddingLeft + compoundPaddingRight
+                if (desiredTextWidth > measuredWidth) {
+                    val specSize = MeasureSpec.getSize(widthMeasureSpec)
+                    val state = if (specSize in 1 until desiredTextWidth) {
+                        MEASURED_STATE_TOO_SMALL
+                    } else {
+                        0
+                    }
+                    setMeasuredDimension(
+                        resolveSizeAndState(desiredTextWidth, widthMeasureSpec, state),
+                        measuredHeightAndState
+                    )
+                }
+            }
+        }
     }
 
     private inner class DragTouchListener : View.OnTouchListener {
