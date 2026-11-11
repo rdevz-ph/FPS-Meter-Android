@@ -1,3 +1,8 @@
+## Version 3.3
+- Added surfaceflinger TimeStats as fallback if Latency wont work.
+- Added an option in Overlay settings to disable the FPS meter and auto-hide provider settings.
+- Added fixes for single-line overlay wrapping onto a second line on tablets and wide displays (#43).
+
 ## Version 3.2
 - Added Battery Power output in Overlay settings to display real-time power in watts and current in milliamperes.
 - Added a snapshot of battery wattage, voltage, and raw current telemetry to Device Diagnostics.

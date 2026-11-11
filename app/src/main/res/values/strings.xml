@@ -57,11 +57,17 @@
     <!-- Overlay settings panel -->
     <string name="reset_settings_title">Reset Settings?</string>
     <string name="reset_settings_msg">Are you sure you want to reset all FPS overlay settings to their defaults? This cannot be undone.</string>
+    <string name="show_fps">Show FPS</string>
+    <string name="show_fps_desc">Display real-time FPS on the overlay</string>
     <string name="fps_measurement_provider">FPS Measurement Provider</string>
     <string name="provider_choreographer">Choreographer</string>
     <string name="provider_choreographer_desc">Display pace (Default)</string>
     <string name="provider_surfaceflinger">SurfaceFlinger</string>
     <string name="provider_surfaceflinger_real">Real Game FPS</string>
+    <string name="sf_method_timestats_label">Measure using TimeStats</string>
+    <string name="sf_method_latency_label">Measure using Latency</string>
+    <string name="sf_timestats_enabled_desc">Forces TimeStats. Reads compositor statistics instead of layer latency</string>
+    <string name="sf_timestats_disabled_desc">Measures layer latency with TimeStats fallback (Default). Enable to force TimeStats.</string>
     <string name="show_api_badge">Show Graphics API Badge</string>
     <string name="show_api_badge_desc">Auto-detects Vulkan [VK] or OpenGL [GL]</string>
     <string name="text_size">Text Size</string>

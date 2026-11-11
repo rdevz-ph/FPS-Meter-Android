@@ -1,0 +1,4 @@
+- Added surfaceflinger TimeStats as fallback if Latency wont work.
+- Added an option to disable the FPS meter and auto-hide provider settings.
+- Added fixes for single-line overlay wrapping onto a second line on tablets and wide displays (#43).
+

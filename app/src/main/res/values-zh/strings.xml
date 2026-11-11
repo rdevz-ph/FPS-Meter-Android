@@ -57,11 +57,17 @@
     <!-- Overlay settings panel -->
     <string name="reset_settings_title">重置设置？</string>
     <string name="reset_settings_msg">确定要将所有帧率悬浮窗设置恢复为默认值吗？此操作无法撤销。</string>
+    <string name="show_fps">显示帧率</string>
+    <string name="show_fps_desc">在悬浮窗上显示实时帧率</string>
     <string name="fps_measurement_provider">帧率测量方式</string>
     <string name="provider_choreographer">Choreographer</string>
     <string name="provider_choreographer_desc">显示节奏（默认）</string>
     <string name="provider_surfaceflinger">SurfaceFlinger</string>
     <string name="provider_surfaceflinger_real">真实游戏帧率</string>
+    <string name="sf_method_timestats_label">使用时间统计 (TimeStats)</string>
+    <string name="sf_method_latency_label">使用延迟测量 (Latency)</string>
+    <string name="sf_timestats_enabled_desc">强制使用 TimeStats。直接读取系统合成器统计信息，而非图层延迟</string>
+    <string name="sf_timestats_disabled_desc">测量图层延迟，若不支持则自动回退（默认）。开启以强制使用 TimeStats。</string>
     <string name="show_api_badge">显示图形 API 标识</string>
     <string name="show_api_badge_desc">自动检测 Vulkan [VK] 或 OpenGL [GL]</string>
     <string name="text_size">文字大小</string>

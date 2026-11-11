@@ -1,16 +1,9 @@
-# FPS Meter Android v3.2
+# FPS Meter Android v3.3
 
-### What's New in v3.2
-
-#### Added
-- **Battery Power Output (Watts and Current)**: Added an option in Overlay settings to show live power consumption in watts and charging or discharging current in milliamperes (for example, -0.7W (-70mA) during battery use or +2.5W (+650mA) while charging) ([#38](https://github.com/rdevz-ph/FPS-Meter-Android/issues/38)).
-- **Battery Diagnostics Telemetry**: Added a snapshot of battery wattage, voltage, and raw current telemetry to Device Diagnostics and report exports.
-- **Start on Boot**: Added a Start on Boot toggle under the Settings screen to automatically start the overlay when your device finishes powering on ([#42](https://github.com/rdevz-ph/FPS-Meter-Android/issues/42)).
-
-#### Fixed
-- **Floating Toolbar Keyboard Overlap**: Fixed an issue where the bottom floating navigation toolbar remained visible and overlapped the on-screen keyboard while typing ([#41](https://github.com/rdevz-ph/FPS-Meter-Android/issues/41)).
-- **In-Game Graphics API Switching**: Fixed an issue where games that switch dynamically between OpenGL and Vulkan (such as loading from game menus into 3D scenes) caused the FPS counter to stop updating.
-- **Auto-Start Service Cleanup**: Turning off Auto-Start on Target Apps now automatically disables and clears the Accessibility Service when Shizuku is granted.
+### What's Changed
+- Added surfaceflinger TimeStats as fallback if Latency wont work
+- Added an option to disable the FPS meter and auto hide provider settings
+- Added the fixes for single-line overlay wrapped onto a second line on tablets and wide displays ([#43](https://github.com/rdevz-ph/FPS-Meter-Android/issues/43))
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 

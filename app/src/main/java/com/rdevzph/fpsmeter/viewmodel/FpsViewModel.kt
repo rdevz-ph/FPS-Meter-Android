@@ -23,6 +23,7 @@ import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
 import com.rdevzph.fpsmeter.model.OverlayStyle
+import com.rdevzph.fpsmeter.model.SurfaceFlingerMethod
 import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.shizuku.ShizukuHelper
 import com.rdevzph.fpsmeter.ui.theme.AppThemeSettings
@@ -38,6 +39,7 @@ data class OverlaySettings(
     val backgroundAlpha: Float = 0.8f,
     val posX: Int = 0,
     val posY: Int = 100,
+    val showFps: Boolean = true,
     val showMs: Boolean = false,
     val showTemp: Boolean = false,
     val showSocTemp: Boolean = false,
@@ -50,6 +52,7 @@ data class OverlaySettings(
     val recordingPackages: Set<String> = emptySet(),
     val autoRecordAll: Boolean = false,
     val fpsProvider: FpsProvider = FpsProvider.CHOREOGRAPHER,
+    val surfaceFlingerMethod: SurfaceFlingerMethod = SurfaceFlingerMethod.LATENCY,
     val showGraphicsApi: Boolean = true,
     val showBatteryLevel: Boolean = false,
     val showBatteryPower: Boolean = false,
@@ -68,6 +71,7 @@ data class OverlaySettings(
         private const val KEY_BACKGROUND_ALPHA = "background_alpha"
         private const val KEY_POS_X = "pos_x"
         private const val KEY_POS_Y = "pos_y"
+        private const val KEY_SHOW_FPS = "show_fps"
         private const val KEY_SHOW_MS = "show_ms"
         private const val KEY_SHOW_TEMP = "show_temp"
         private const val KEY_SHOW_SOC_TEMP = "show_soc_temp"
@@ -80,6 +84,7 @@ data class OverlaySettings(
         private const val KEY_RECORDING_PACKAGES = "recording_packages"
         private const val KEY_AUTO_RECORD_ALL = "auto_record_all"
         private const val KEY_FPS_PROVIDER = "fps_provider"
+        private const val KEY_SURFACE_FLINGER_METHOD = "surface_flinger_method"
         private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
         private const val KEY_SHOW_BATTERY_LEVEL = "show_battery_level"
         private const val KEY_SHOW_BATTERY_POWER = "show_battery_power"
@@ -98,6 +103,7 @@ data class OverlaySettings(
                 backgroundAlpha = prefs.getFloat(KEY_BACKGROUND_ALPHA, defaultSettings.backgroundAlpha),
                 posX = prefs.getInt(KEY_POS_X, defaultSettings.posX),
                 posY = prefs.getInt(KEY_POS_Y, defaultSettings.posY),
+                showFps = prefs.getBoolean(KEY_SHOW_FPS, defaultSettings.showFps),
                 showMs = prefs.getBoolean(KEY_SHOW_MS, defaultSettings.showMs),
                 showTemp = prefs.getBoolean(KEY_SHOW_TEMP, defaultSettings.showTemp),
                 showSocTemp = prefs.getBoolean(KEY_SHOW_SOC_TEMP, defaultSettings.showSocTemp),
@@ -110,6 +116,7 @@ data class OverlaySettings(
                 recordingPackages = prefs.getStringSet(KEY_RECORDING_PACKAGES, defaultSettings.recordingPackages) ?: emptySet(),
                 autoRecordAll = prefs.getBoolean(KEY_AUTO_RECORD_ALL, defaultSettings.autoRecordAll),
                 fpsProvider = FpsProvider.fromString(prefs.getString(KEY_FPS_PROVIDER, defaultSettings.fpsProvider.name)),
+                surfaceFlingerMethod = SurfaceFlingerMethod.fromString(prefs.getString(KEY_SURFACE_FLINGER_METHOD, defaultSettings.surfaceFlingerMethod.name)),
                 showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi),
                 showBatteryLevel = prefs.getBoolean(KEY_SHOW_BATTERY_LEVEL, defaultSettings.showBatteryLevel),
                 showBatteryPower = prefs.getBoolean(KEY_SHOW_BATTERY_POWER, defaultSettings.showBatteryPower),
@@ -128,6 +135,7 @@ data class OverlaySettings(
                 putFloat(KEY_BACKGROUND_ALPHA, settings.backgroundAlpha)
                 putInt(KEY_POS_X, settings.posX)
                 putInt(KEY_POS_Y, settings.posY)
+                putBoolean(KEY_SHOW_FPS, settings.showFps)
                 putBoolean(KEY_SHOW_MS, settings.showMs)
                 putBoolean(KEY_SHOW_TEMP, settings.showTemp)
                 putBoolean(KEY_SHOW_SOC_TEMP, settings.showSocTemp)
@@ -140,6 +148,7 @@ data class OverlaySettings(
                 putStringSet(KEY_RECORDING_PACKAGES, settings.recordingPackages)
                 putBoolean(KEY_AUTO_RECORD_ALL, settings.autoRecordAll)
                 putString(KEY_FPS_PROVIDER, settings.fpsProvider.name)
+                putString(KEY_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                 putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
                 putBoolean(KEY_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                 putBoolean(KEY_SHOW_BATTERY_POWER, settings.showBatteryPower)

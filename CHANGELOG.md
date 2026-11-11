@@ -4,6 +4,17 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.3] - 2026-11-11
+
+### Added
+- **SurfaceFlinger TimeStats Fallback**: Added SurfaceFlinger TimeStats fallback when Latency does not work, with an option in Overlay settings to force TimeStats directly.
+- **Show FPS Toggle**: Added an option in Overlay settings to disable the FPS meter and automatically hide FPS provider settings, allowing users to show only hardware thermals, battery wattage, and RAM telemetry.
+
+### Fixed
+- **Single-Line Overlay Wrapping**: Fixed an issue where the single-line overlay wrapped onto a second line on tablets and wide displays ([#43](https://github.com/rdevz-ph/FPS-Meter-Android/issues/43)).
+
+---
+
 ## [v3.2] - 2026-11-10
 
 ### Added

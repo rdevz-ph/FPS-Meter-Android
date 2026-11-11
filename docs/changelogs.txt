@@ -1,4 +1,9 @@
-## Version 3.2 | Latest Release | November 10, 2026
+## Version 3.3 | Latest Release | November 11, 2026
+- SurfaceFlinger TimeStats Fallback: Added surfaceflinger TimeStats as fallback if Latency wont work.
+- Show FPS Option: Added an option in Overlay settings to disable the FPS meter and auto-hide provider settings.
+- Tablet Single-Line Fix: Added fixes for single-line overlay wrapping onto a second line on tablets and wide displays (#43).
+
+## Version 3.2 | November 10, 2026
 - Battery Power Output: Added an option in Overlay settings to show real-time power consumption in watts and current in milliamperes.
 - Battery Diagnostics: Added a snapshot of battery wattage, voltage, and raw current telemetry to Device Diagnostics.
 - Start on Boot: Added a setting in the Settings screen to automatically launch the overlay when the device boots up.

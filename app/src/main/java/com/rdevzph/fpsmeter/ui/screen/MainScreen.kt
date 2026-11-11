@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.OverlayStyle
+import com.rdevzph.fpsmeter.model.SurfaceFlingerMethod
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.util.DeviceHardwareHelper
 import com.rdevzph.fpsmeter.viewmodel.FpsViewModel
@@ -200,6 +201,7 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_BACKGROUND_ALPHA, settings.backgroundAlpha)
                 putExtra(FpsOverlayService.EXTRA_POSITION_X, settings.posX)
                 putExtra(FpsOverlayService.EXTRA_POSITION_Y, settings.posY)
+                putExtra(FpsOverlayService.EXTRA_SHOW_FPS, settings.showFps)
                 putExtra(FpsOverlayService.EXTRA_SHOW_MS, settings.showMs)
                 putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, settings.showTemp)
                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
@@ -208,6 +210,7 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
+                putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                 putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
@@ -389,6 +392,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_BACKGROUND_ALPHA, settings.backgroundAlpha)
                             putExtra(FpsOverlayService.EXTRA_POSITION_X, settings.posX)
                             putExtra(FpsOverlayService.EXTRA_POSITION_Y, settings.posY)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_FPS, settings.showFps)
                             putExtra(FpsOverlayService.EXTRA_SHOW_MS, settings.showMs)
                             putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, settings.showTemp)
                             putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
@@ -397,6 +401,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
+                            putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                             putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
@@ -421,6 +426,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_BACKGROUND_ALPHA, newSettings.backgroundAlpha)
                                 putExtra(FpsOverlayService.EXTRA_POSITION_X, newSettings.posX)
                                 putExtra(FpsOverlayService.EXTRA_POSITION_Y, newSettings.posY)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_FPS, newSettings.showFps)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_MS, newSettings.showMs)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_TEMP, newSettings.showTemp)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, newSettings.showSocTemp)
@@ -429,6 +435,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
+                                putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, newSettings.surfaceFlingerMethod.name)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_API, newSettings.showGraphicsApi)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, newSettings.showBatteryLevel)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, newSettings.showBatteryPower)
@@ -1281,142 +1288,199 @@ fun OverlaySettingsPanel(
         )
     }
 
-    // FPS Provider Selection Section
-    Text(
-        stringResource(R.string.fps_measurement_provider),
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary
-    )
-    Spacer(Modifier.height(8.dp))
-
+    // Show FPS Toggle
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
     ) {
-        // Choreographer Card
-        Surface(
-            modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .clickable {
-                    onChange(settings.copy(fpsProvider = FpsProvider.CHOREOGRAPHER))
-                }
-                .border(
-                    width = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER) 2.dp else 1.dp,
-                    color = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(12.dp)
-                ),
-            color = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-            else
-                MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = settings.fpsProvider == FpsProvider.CHOREOGRAPHER,
-                        onClick = { onChange(settings.copy(fpsProvider = FpsProvider.CHOREOGRAPHER)) },
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        stringResource(R.string.provider_choreographer),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.provider_choreographer_desc),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.show_fps), style = MaterialTheme.typography.labelMedium)
+            Text(
+                stringResource(R.string.show_fps_desc),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-
-        // SurfaceFlinger Card
-        Surface(
-            modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .clickable(enabled = shizukuReady) {
-                    onChange(settings.copy(fpsProvider = FpsProvider.SURFACE_FLINGER))
-                }
-                .border(
-                    width = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER) 2.dp else 1.dp,
-                    color = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER)
-                        MaterialTheme.colorScheme.primary
-                    else if (shizukuReady)
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    else
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(12.dp)
-                ),
-            color = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-            else if (shizukuReady)
-                MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-            else
-                MaterialTheme.colorScheme.surfaceColorAtElevation(0.dp).copy(alpha = 0.4f),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = settings.fpsProvider == FpsProvider.SURFACE_FLINGER,
-                        onClick = {
-                            if (shizukuReady) {
-                                onChange(settings.copy(fpsProvider = FpsProvider.SURFACE_FLINGER))
-                            }
-                        },
-                        enabled = shizukuReady,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        stringResource(R.string.provider_surfaceflinger),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (shizukuReady) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    if (shizukuReady) stringResource(R.string.provider_surfaceflinger_real) else stringResource(R.string.common_requires_shizuku),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (shizukuReady) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
-                    fontWeight = if (!shizukuReady) FontWeight.SemiBold else FontWeight.Normal
-                )
-            }
-        }
+        Switch(
+            checked = settings.showFps,
+            onCheckedChange = { onChange(settings.copy(showFps = it)) },
+            modifier = Modifier.scale(0.8f)
+        )
     }
 
-    if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER) {
-        Spacer(Modifier.height(10.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.show_api_badge), style = MaterialTheme.typography.labelMedium)
-                Text(
-                    stringResource(R.string.show_api_badge_desc),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = settings.showGraphicsApi,
-                onCheckedChange = { onChange(settings.copy(showGraphicsApi = it)) },
-                modifier = Modifier.scale(0.8f)
+    // FPS Provider Selection Section (auto-hides when Show FPS is disabled)
+    AnimatedVisibility(visible = settings.showFps) {
+        Column {
+            Spacer(Modifier.height(10.dp))
+            Text(
+                stringResource(R.string.fps_measurement_provider),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Choreographer Card
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            onChange(settings.copy(fpsProvider = FpsProvider.CHOREOGRAPHER))
+                        }
+                        .border(
+                            width = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER) 2.dp else 1.dp,
+                            color = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    color = if (settings.fpsProvider == FpsProvider.CHOREOGRAPHER)
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                    else
+                        MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = settings.fpsProvider == FpsProvider.CHOREOGRAPHER,
+                                onClick = { onChange(settings.copy(fpsProvider = FpsProvider.CHOREOGRAPHER)) },
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                stringResource(R.string.provider_choreographer),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            stringResource(R.string.provider_choreographer_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // SurfaceFlinger Card
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable(enabled = shizukuReady) {
+                            onChange(settings.copy(fpsProvider = FpsProvider.SURFACE_FLINGER))
+                        }
+                        .border(
+                            width = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER) 2.dp else 1.dp,
+                            color = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER)
+                                MaterialTheme.colorScheme.primary
+                            else if (shizukuReady)
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            else
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    color = if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER)
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                    else if (shizukuReady)
+                        MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                    else
+                        MaterialTheme.colorScheme.surfaceColorAtElevation(0.dp).copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = settings.fpsProvider == FpsProvider.SURFACE_FLINGER,
+                                onClick = {
+                                    if (shizukuReady) {
+                                        onChange(settings.copy(fpsProvider = FpsProvider.SURFACE_FLINGER))
+                                    }
+                                },
+                                enabled = shizukuReady,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                stringResource(R.string.provider_surfaceflinger),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (shizukuReady) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                            )
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            if (shizukuReady) stringResource(R.string.provider_surfaceflinger_real) else stringResource(R.string.common_requires_shizuku),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (shizukuReady) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                            fontWeight = if (!shizukuReady) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            if (settings.fpsProvider == FpsProvider.SURFACE_FLINGER) {
+                Spacer(Modifier.height(10.dp))
+                val isTimeStats = settings.surfaceFlingerMethod == SurfaceFlingerMethod.TIMESTATS
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            if (isTimeStats) stringResource(R.string.sf_method_timestats_label)
+                            else stringResource(R.string.sf_method_latency_label),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            if (isTimeStats) stringResource(R.string.sf_timestats_enabled_desc)
+                            else stringResource(R.string.sf_timestats_disabled_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = isTimeStats,
+                        onCheckedChange = { checked ->
+                            onChange(settings.copy(surfaceFlingerMethod = if (checked) SurfaceFlingerMethod.TIMESTATS else SurfaceFlingerMethod.LATENCY))
+                        },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.show_api_badge), style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            stringResource(R.string.show_api_badge_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = settings.showGraphicsApi,
+                        onCheckedChange = { onChange(settings.copy(showGraphicsApi = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
         }
     }
 
@@ -1841,8 +1905,8 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(12.dp))
 
-        val hasApi = settings.fpsProvider == FpsProvider.SURFACE_FLINGER && settings.showGraphicsApi
-        val hasMs = settings.showMs
+        val hasApi = settings.showFps && settings.fpsProvider == FpsProvider.SURFACE_FLINGER && settings.showGraphicsApi
+        val hasMs = settings.showFps && settings.showMs
         val hasCpu = settings.showCpuTemp
         val hasGpu = settings.showGpuTemp
         val hasSoc = settings.showSocTemp
@@ -1852,7 +1916,8 @@ fun OverlaySettingsPanel(
         val hasBattBoth = hasBatt && hasBattLevel
         val hasRam = settings.showRam
 
-        val extraOverlayCount = (if (hasApi) 1 else 0) +
+        val extraOverlayCount = (if (settings.showFps) 1 else 0) +
+                (if (hasApi) 1 else 0) +
                 (if (hasMs) 1 else 0) +
                 (if (hasCpu) 1 else 0) +
                 (if (hasGpu) 1 else 0) +
@@ -1977,51 +2042,61 @@ fun OverlaySettingsPanel(
                                 appendPreviewRow("RAM", colorRam, listOf(ramGbStr to colorVal, ramPctStr to colorVal))
                             }
 
-                            // 7. FPS row (always shown)
-                            newPreviewLine()
-                            val fpsCells = mutableListOf("60 FPS" to colorVal)
-                            if (hasApi) {
-                                fpsCells.add("VK" to colorApi)
+                            // 7. FPS row (only shown if showFps)
+                            if (settings.showFps) {
+                                newPreviewLine()
+                                val fpsCells = mutableListOf("60 FPS" to colorVal)
+                                if (hasApi) {
+                                    fpsCells.add("VK" to colorApi)
+                                }
+                                if (hasMs) {
+                                    fpsCells.add((if (settings.singleLineOverlay) "16.6ms" else "16.6 ms") to colorVal)
+                                }
+                                appendPreviewRow("FPS", colorFps, fpsCells)
                             }
-                            if (hasMs) {
-                                fpsCells.add((if (settings.singleLineOverlay) "16.6ms" else "16.6 ms") to colorVal)
+
+                            if (length == 0) {
+                                withStyle(SpanStyle(color = colorVal, fontWeight = FontWeight.Bold)) {
+                                    append("--")
+                                }
                             }
-                            appendPreviewRow("FPS", colorFps, fpsCells)
                         } else {
                             val labelColor = Color(0xFF00E5FF)
                             val valueColor = Color.White
 
-                            // === Line 1: Performance Group (FPS, Graphics API, Frame Time) ===
-                            withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                append("FPS ")
-                            }
-                            withStyle(SpanStyle(color = fpsValueColor, fontWeight = FontWeight.Bold)) {
-                                append("60")
-                            }
-
-                            if (hasApi) {
-                                withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
-                                withStyle(SpanStyle(color = Color(0xFFFF5722), fontWeight = FontWeight.Bold)) {
-                                    append("VK")
-                                }
-                            }
-
-                            if (hasMs) {
-                                withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                            if (settings.showFps) {
+                                // === Line 1: Performance Group (FPS, Graphics API, Frame Time) ===
                                 withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                    append("MS ")
+                                    append("FPS ")
                                 }
-                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
-                                    append("16")
+                                withStyle(SpanStyle(color = fpsValueColor, fontWeight = FontWeight.Bold)) {
+                                    append("60")
+                                }
+
+                                if (hasApi) {
+                                    withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                    withStyle(SpanStyle(color = Color(0xFFFF5722), fontWeight = FontWeight.Bold)) {
+                                        append("VK")
+                                    }
+                                }
+
+                                if (hasMs) {
+                                    withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                    withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                        append("MS ")
+                                    }
+                                    withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                        append("16")
+                                    }
                                 }
                             }
 
                             // === Hardware / Thermals Group (CPU, GPU, SoC, Battery) ===
                             if (hasThermals) {
-                                if (useNextLine) {
+                                if (settings.showFps && useNextLine) {
                                     append("\n")
                                 }
-                                var isFirstThermalOnLine = useNextLine
+                                var isFirstThermalOnLine = if (settings.showFps) useNextLine else true
                                 fun appendThermal(tag: String, value: String) {
                                     if (!isFirstThermalOnLine) {
                                         withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
@@ -2052,16 +2127,24 @@ fun OverlaySettingsPanel(
 
                             // === Memory Group (RAM) ===
                             if (hasRam) {
-                                if (settings.singleLineOverlay) {
-                                    withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
-                                } else {
-                                    append("\n")
+                                if (length > 0) {
+                                    if (settings.singleLineOverlay) {
+                                        withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                    } else {
+                                        append("\n")
+                                    }
                                 }
                                 withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
                                     append("RAM ")
                                 }
                                 withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
                                     append("4.2 GB (58%)")
+                                }
+                            }
+
+                            if (length == 0) {
+                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                    append("--")
                                 }
                             }
                         }

@@ -35,6 +35,7 @@ import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.GraphicsApi
 import com.rdevzph.fpsmeter.model.OverlayStyle
+import com.rdevzph.fpsmeter.model.SurfaceFlingerMethod
 import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.util.DeviceHardwareHelper
 import com.rdevzph.fpsmeter.util.LocaleHelper
@@ -68,6 +69,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_BACKGROUND_ALPHA = "background_alpha"
         const val EXTRA_POSITION_X = "pos_x"
         const val EXTRA_POSITION_Y = "pos_y"
+        const val EXTRA_SHOW_FPS = "show_fps"
         const val EXTRA_SHOW_MS = "show_ms"
         const val EXTRA_SHOW_TEMP = "show_temp"
         const val EXTRA_SHOW_SOC_TEMP = "show_soc_temp"
@@ -76,6 +78,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
         const val EXTRA_FPS_PROVIDER = "fps_provider"
+        const val EXTRA_SURFACE_FLINGER_METHOD = "surface_flinger_method"
         const val EXTRA_SHOW_API = "show_api"
         const val EXTRA_SHOW_BATTERY_LEVEL = "show_battery_level"
         const val EXTRA_SHOW_BATTERY_POWER = "show_battery_power"
@@ -136,6 +139,7 @@ class FpsOverlayService : Service() {
     private var backgroundAlpha = 0.8f
     private var posX = 0
     private var posY = 100
+    private var showFps = true
     private var showMs = false
     private var showTemp = false
     private var showSocTemp = false
@@ -144,6 +148,7 @@ class FpsOverlayService : Service() {
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
+    private var surfaceFlingerMethod = SurfaceFlingerMethod.LATENCY
     private var showGraphicsApi = true
     private var showBatteryLevel = false
     private var showBatteryPower = false
@@ -154,6 +159,7 @@ class FpsOverlayService : Service() {
     private var availableRamGb: Float = 0f
     private var usedRamPercent: Int = 0
     private var ramMonitorJob: Job? = null
+    private var noFpsTickerJob: Job? = null
 
     private var batteryMonitor: BatteryMonitor? = null
     private var socTemp: Float = 0f
@@ -228,6 +234,7 @@ class FpsOverlayService : Service() {
         backgroundAlpha = saved.backgroundAlpha
         posX = saved.posX
         posY = saved.posY
+        showFps = saved.showFps
         showMs = saved.showMs
         showTemp = saved.showTemp
         showSocTemp = saved.showSocTemp
@@ -236,6 +243,7 @@ class FpsOverlayService : Service() {
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
         fpsProvider = saved.fpsProvider
+        surfaceFlingerMethod = saved.surfaceFlingerMethod
         showGraphicsApi = saved.showGraphicsApi
         showBatteryLevel = saved.showBatteryLevel
         showBatteryPower = saved.showBatteryPower
@@ -412,6 +420,15 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_POSITION_Y)) {
             posY = intent.getIntExtra(EXTRA_POSITION_Y, posY)
         }
+        if (intent.hasExtra(EXTRA_SHOW_FPS)) {
+            val newShowFps = intent.getBooleanExtra(EXTRA_SHOW_FPS, showFps)
+            if (newShowFps != showFps) {
+                showFps = newShowFps
+                if (isRunning) {
+                    switchMeasuringProvider()
+                }
+            }
+        }
         if (intent.hasExtra(EXTRA_SHOW_MS)) {
             showMs = intent.getBooleanExtra(EXTRA_SHOW_MS, showMs)
         }
@@ -453,6 +470,14 @@ class FpsOverlayService : Service() {
                 if (isRunning) {
                     switchMeasuringProvider()
                 }
+            }
+        }
+        if (intent.hasExtra(EXTRA_SURFACE_FLINGER_METHOD)) {
+            val methodName = intent.getStringExtra(EXTRA_SURFACE_FLINGER_METHOD)
+            val newMethod = SurfaceFlingerMethod.fromString(methodName)
+            if (newMethod != surfaceFlingerMethod) {
+                surfaceFlingerMethod = newMethod
+                surfaceFlingerFpsMonitor?.setMethod(newMethod)
             }
         }
         if (intent.hasExtra(EXTRA_SHOW_API)) {
@@ -627,8 +652,8 @@ class FpsOverlayService : Service() {
         val batteryTemp = batteryMonitor?.getTemperature() ?: 0f
         val batteryLevel = batteryMonitor?.getLevel() ?: -1
 
-        val hasApi = fpsProvider == FpsProvider.SURFACE_FLINGER && showGraphicsApi && detectedGraphicsApi != GraphicsApi.UNKNOWN
-        val hasMs = showMs && fps > 0
+        val hasApi = showFps && fpsProvider == FpsProvider.SURFACE_FLINGER && showGraphicsApi && detectedGraphicsApi != GraphicsApi.UNKNOWN
+        val hasMs = showFps && showMs && fps > 0
         val hasCpu = showCpuTemp
         val hasGpu = showGpuTemp
         val hasSoc = showSocTemp
@@ -638,7 +663,8 @@ class FpsOverlayService : Service() {
         val hasBattBoth = hasBatt && hasBattLevel
         val hasRam = showRam
 
-        val extraOverlayCount = (if (hasApi) 1 else 0) +
+        val extraOverlayCount = (if (showFps) 1 else 0) +
+                (if (hasApi) 1 else 0) +
                 (if (hasMs) 1 else 0) +
                 (if (hasCpu) 1 else 0) +
                 (if (hasGpu) 1 else 0) +
@@ -783,19 +809,25 @@ class FpsOverlayService : Service() {
                 appendRow("RAM", colorRam, ramCells)
             }
 
-            // 7. FPS row (always shown)
-            newLine()
-            val fpsStr = "$fps FPS"
-            val fpsColor = if (textColor == OverlaySettings.AUTO_COLOR) colorVal else fpsValueColor
-            val fpsCells = mutableListOf(fpsStr to fpsColor)
-            if (hasApi && detectedGraphicsApi != GraphicsApi.UNKNOWN) {
-                fpsCells.add(detectedGraphicsApi.shortLabel to colorApi)
+            // 7. FPS row (only shown if showFps)
+            if (showFps) {
+                newLine()
+                val fpsStr = "$fps FPS"
+                val fpsColor = if (textColor == OverlaySettings.AUTO_COLOR) colorVal else fpsValueColor
+                val fpsCells = mutableListOf(fpsStr to fpsColor)
+                if (hasApi && detectedGraphicsApi != GraphicsApi.UNKNOWN) {
+                    fpsCells.add(detectedGraphicsApi.shortLabel to colorApi)
+                }
+                if (hasMs && fps > 0) {
+                    val msStr = if (singleLineOverlay) "${(1000f / fps).roundToInt()}ms" else "${(1000f / fps).roundToInt()} ms"
+                    fpsCells.add(msStr to colorVal)
+                }
+                appendRow("FPS", colorFps, fpsCells)
             }
-            if (hasMs && fps > 0) {
-                val msStr = if (singleLineOverlay) "${(1000f / fps).roundToInt()}ms" else "${(1000f / fps).roundToInt()} ms"
-                fpsCells.add(msStr to colorVal)
+
+            if (ssb.isEmpty()) {
+                ssb.append("--", colorVal, StyleSpan(Typeface.BOLD))
             }
-            appendRow("FPS", colorFps, fpsCells)
 
             val isMulti = !singleLineOverlay
             overlayView.post {
@@ -824,34 +856,36 @@ class FpsOverlayService : Service() {
             return
         }
 
-        // === Performance Group (FPS, Graphics API, Frame Time) ===
-        ssb.append("FPS ", labelColor, StyleSpan(Typeface.BOLD))
-        ssb.append("$fps", fpsValueColor, StyleSpan(Typeface.BOLD))
+        if (showFps) {
+            // === Performance Group (FPS, Graphics API, Frame Time) ===
+            ssb.append("FPS ", labelColor, StyleSpan(Typeface.BOLD))
+            ssb.append("$fps", fpsValueColor, StyleSpan(Typeface.BOLD))
 
-        // Graphics API tag (when using SurfaceFlinger provider and option enabled)
-        if (hasApi) {
-            val apiColor = if (detectedGraphicsApi == GraphicsApi.VULKAN) {
-                Color.parseColor("#FF5722") // Distinct orange for Vulkan
-            } else {
-                Color.parseColor("#2196F3") // Blue for OpenGL ES
+            // Graphics API tag (when using SurfaceFlinger provider and option enabled)
+            if (hasApi) {
+                val apiColor = if (detectedGraphicsApi == GraphicsApi.VULKAN) {
+                    Color.parseColor("#FF5722") // Distinct orange for Vulkan
+                } else {
+                    Color.parseColor("#2196F3") // Blue for OpenGL ES
+                }
+                ssb.append("  |  ", Color.GRAY)
+                ssb.append(detectedGraphicsApi.shortLabel, apiColor, StyleSpan(Typeface.BOLD))
             }
-            ssb.append("  |  ", Color.GRAY)
-            ssb.append(detectedGraphicsApi.shortLabel, apiColor, StyleSpan(Typeface.BOLD))
-        }
 
-        // MS segment
-        if (hasMs) {
-            ssb.append("  |  ", Color.GRAY)
-            ssb.append("MS ", labelColor, StyleSpan(Typeface.BOLD))
-            ssb.append("${(1000f / fps).roundToInt()}", valueColor, StyleSpan(Typeface.BOLD))
+            // MS segment
+            if (hasMs) {
+                ssb.append("  |  ", Color.GRAY)
+                ssb.append("MS ", labelColor, StyleSpan(Typeface.BOLD))
+                ssb.append("${(1000f / fps).roundToInt()}", valueColor, StyleSpan(Typeface.BOLD))
+            }
         }
 
         // === Hardware / Thermals Group (CPU, GPU, SoC, Battery) ===
         if (hasThermals) {
-            if (useNextLine) {
+            if (showFps && useNextLine) {
                 ssb.append("\n")
             }
-            var isFirstThermalOnLine = useNextLine
+            var isFirstThermalOnLine = if (showFps) useNextLine else true
             val tagSpace = if (singleLineOverlay) "\u00A0" else " "
             fun appendThermal(tag: String, value: String) {
                 if (!isFirstThermalOnLine) {
@@ -897,10 +931,12 @@ class FpsOverlayService : Service() {
 
         // === Memory Group (RAM) ===
         if (hasRam) {
-            if (singleLineOverlay) {
-                ssb.append("  |  ", Color.GRAY)
-            } else {
-                ssb.append("\n")
+            if (ssb.isNotEmpty()) {
+                if (singleLineOverlay) {
+                    ssb.append("  |  ", Color.GRAY)
+                } else {
+                    ssb.append("\n")
+                }
             }
             val ramTagSpace = if (singleLineOverlay) "\u00A0" else " "
             ssb.append("RAM$ramTagSpace", labelColor, StyleSpan(Typeface.BOLD))
@@ -914,6 +950,10 @@ class FpsOverlayService : Service() {
                 if (singleLineOverlay) "--\u00A0GB\u00A0(--%)" else "-- GB (--%)"
             }
             ssb.append(ramDisplay, valueColor, StyleSpan(Typeface.BOLD))
+        }
+
+        if (ssb.isEmpty()) {
+            ssb.append("--", valueColor, StyleSpan(Typeface.BOLD))
         }
 
         overlayView.post {
@@ -960,7 +1000,36 @@ class FpsOverlayService : Service() {
         switchMeasuringProvider()
     }
 
+    private fun startNoFpsTicker() {
+        stopNoFpsTicker()
+        noFpsTickerJob = serviceScope.launch(Dispatchers.Main) {
+            while (isActive) {
+                if (isOverlayVisible) {
+                    updateOverlayText()
+                }
+                delay(1000L)
+            }
+        }
+    }
+
+    private fun stopNoFpsTicker() {
+        noFpsTickerJob?.cancel()
+        noFpsTickerJob = null
+    }
+
     private fun switchMeasuringProvider() {
+        if (!showFps) {
+            stopSurfaceFlingerMeasuring()
+            stopChoreographerMeasuring()
+            startNoFpsTicker()
+            if (isOverlayVisible) {
+                updateOverlayText()
+            }
+            return
+        }
+
+        stopNoFpsTicker()
+
         if (fpsProvider == FpsProvider.SURFACE_FLINGER) {
             val isShizukuReady = try {
                 Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
@@ -1084,6 +1153,7 @@ class FpsOverlayService : Service() {
     private fun startSurfaceFlingerMeasuring() {
         if (surfaceFlingerFpsMonitor == null) {
             surfaceFlingerFpsMonitor = SurfaceFlingerFpsMonitor(
+                method = surfaceFlingerMethod,
                 onFpsUpdate = { fps, _, api, _, fgPkg ->
                     currentFps = fps
                     detectedGraphicsApi = api
@@ -1113,6 +1183,8 @@ class FpsOverlayService : Service() {
                     startChoreographerMeasuring()
                 }
             )
+        } else {
+            surfaceFlingerFpsMonitor?.setMethod(surfaceFlingerMethod)
         }
         surfaceFlingerFpsMonitor?.start()
     }
@@ -1292,6 +1364,7 @@ class FpsOverlayService : Service() {
         isRunning = false
         isAutoStarted = false
         serviceScope.cancel()
+        stopNoFpsTicker()
         stopChoreographerMeasuring()
         stopSurfaceFlingerMeasuring()
         socThermalMonitor?.stop()
