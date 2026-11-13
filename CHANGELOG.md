@@ -345,6 +345,9 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v3.4]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.4
+[v3.3]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.3
+[v3.2]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.2
 [v3.1]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.1
 [v3.0]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.0
 [v2.9-hotfix]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v2.9-hotfix
