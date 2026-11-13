@@ -4,6 +4,17 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.4] - 2026-11-13
+
+### Added
+- **Battery Current (mA) Toggle**: Added a Battery Current (mA) toggle under Battery Wattage in Overlay settings so you can hide the milliamperes value and show only watts.
+- **Auto-Hide Bubble & Double-Tap Overlay**: Added an Auto-Hide Bubble & Double-Tap Overlay option under Floating Assistive Bubble in Settings to hide the green floating bubble while the overlay is visible and let you double-tap the stats overlay to collapse it back into the floating bubble.
+- **Show Chip Name Toggle**: Added a Show Chip Name toggle below Overlay Style when RTSS is selected so you can hide the processor name header at the top of the overlay.
+
+Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
+
+---
+
 ## [v3.3] - 2026-11-11
 
 ### Added

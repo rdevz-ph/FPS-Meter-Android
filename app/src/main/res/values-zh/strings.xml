@@ -82,6 +82,8 @@
     <string name="battery_level">电池电量</string>
     <string name="battery_power">电池功率</string>
     <string name="battery_power_desc">实时显示电池功耗（瓦特）或电流（毫安）</string>
+    <string name="battery_current">电池电流 (mA)</string>
+    <string name="battery_current_desc">在电池功率旁显示实时电流（毫安）</string>
     <string name="remaining_ram">剩余运存</string>
     <string name="remaining_ram_desc">在悬浮窗第三行显示可用内存及已占用百分比</string>
     <string name="single_line_overlay">单行显示悬浮窗</string>
@@ -90,6 +92,8 @@
     <string name="overlay_style_desc">在默认紧凑悬浮窗与 MSI Afterburner 风格 (RTSS) 硬件遥测布局之间切换</string>
     <string name="overlay_style_default">默认</string>
     <string name="overlay_style_afterburner">RTSS</string>
+    <string name="show_chip_name">显示芯片名称</string>
+    <string name="show_chip_name_desc">在 RTSS 悬浮窗顶部显示处理器或 SoC 型号名称</string>
     <string name="position_presets">位置预设</string>
     <string name="pos_top_left">左上</string>
     <string name="pos_top_center">顶部居中</string>
@@ -120,6 +124,8 @@
     <string name="quick_access">快捷访问与开关</string>
     <string name="floating_bubble">悬浮辅助球</string>
     <string name="floating_bubble_desc">可在任意应用上拖动的悬浮球，通过快捷菜单启动/停止游戏帧率记录并切换 HUD 显示。</string>
+    <string name="auto_hide_floating_bubble">自动隐藏悬浮球与双击收起悬浮窗</string>
+    <string name="auto_hide_floating_bubble_desc">显示悬浮窗时自动隐藏悬浮球，双击数据悬浮窗可将其隐藏并在屏幕侧边显示悬浮球。</string>
     <string name="start_on_boot">开机自启</string>
     <string name="start_on_boot_desc">设备开机时自动启动悬浮窗</string>
     <string name="start_on_boot_warning">由于厂商电池优化或后台限制，此功能在部分设备上可能不可靠</string>

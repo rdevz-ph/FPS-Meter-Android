@@ -1,4 +1,9 @@
-## Version 3.3 | Latest Release | November 11, 2026
+## Version 3.4 | Latest Release | November 13, 2026
+- Battery Current (mA) Toggle: Added a Battery Current (mA) toggle under Battery Wattage in Overlay settings so you can hide the milliamperes value and show only watts.
+- Auto-Hide Bubble & Double-Tap Overlay: Added an Auto-Hide Bubble & Double-Tap Overlay option under Floating Assistive Bubble in Settings to hide the green floating bubble while the overlay is visible and let you double-tap the stats overlay to collapse it back into the floating bubble.
+- Show Chip Name Toggle: Added a Show Chip Name toggle below Overlay Style when RTSS is selected so you can hide the processor name header at the top of the overlay.
+
+## Version 3.3 | November 11, 2026
 - SurfaceFlinger TimeStats Fallback: Added surfaceflinger TimeStats as fallback if Latency wont work.
 - Show FPS Option: Added an option in Overlay settings to disable the FPS meter and auto-hide provider settings.
 - Tablet Single-Line Fix: Added fixes for single-line overlay wrapping onto a second line on tablets and wide displays (#43).

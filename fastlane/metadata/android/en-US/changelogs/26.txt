@@ -1,0 +1,3 @@
+- Added a Battery Current (mA) toggle under Battery Wattage in Overlay settings so you can hide the milliamperes value and show only watts.
+- Added an Auto-Hide Bubble & Double-Tap Overlay option under Floating Assistive Bubble in Settings to hide the green floating bubble while the overlay is visible and let you double-tap the stats overlay to collapse it back into the floating bubble.
+- Added a Show Chip Name toggle below Overlay Style when RTSS is selected so you can hide the processor name header at the top of the overlay.

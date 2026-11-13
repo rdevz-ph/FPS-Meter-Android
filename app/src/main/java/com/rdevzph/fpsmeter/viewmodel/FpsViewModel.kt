@@ -47,6 +47,7 @@ data class OverlaySettings(
     val showGpuTemp: Boolean = false,
     val gravity: Int = Gravity.TOP or Gravity.START,
     val floatingToggleEnabled: Boolean = false,
+    val autoHideFloatingBubble: Boolean = false,
     val autoStartEnabled: Boolean = false,
     val autoStartPackages: Set<String> = emptySet(),
     val recordingPackages: Set<String> = emptySet(),
@@ -56,9 +57,11 @@ data class OverlaySettings(
     val showGraphicsApi: Boolean = true,
     val showBatteryLevel: Boolean = false,
     val showBatteryPower: Boolean = false,
+    val showBatteryCurrent: Boolean = true,
     val showRam: Boolean = false,
     val singleLineOverlay: Boolean = false,
     val overlayStyle: OverlayStyle = OverlayStyle.DEFAULT,
+    val showSocName: Boolean = true,
     val startOnBoot: Boolean = false
 ) {
     companion object {
@@ -79,6 +82,7 @@ data class OverlaySettings(
         private const val KEY_SHOW_GPU_TEMP = "show_gpu_temp"
         private const val KEY_GRAVITY = "gravity"
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
+        private const val KEY_AUTO_HIDE_FLOATING_BUBBLE = "auto_hide_floating_bubble"
         private const val KEY_AUTO_START = "auto_start"
         private const val KEY_AUTO_PACKAGES = "auto_packages"
         private const val KEY_RECORDING_PACKAGES = "recording_packages"
@@ -88,9 +92,11 @@ data class OverlaySettings(
         private const val KEY_SHOW_GRAPHICS_API = "show_graphics_api"
         private const val KEY_SHOW_BATTERY_LEVEL = "show_battery_level"
         private const val KEY_SHOW_BATTERY_POWER = "show_battery_power"
+        private const val KEY_SHOW_BATTERY_CURRENT = "show_battery_current"
         private const val KEY_SHOW_RAM = "show_ram"
         private const val KEY_SINGLE_LINE_OVERLAY = "single_line_overlay"
         private const val KEY_OVERLAY_STYLE = "overlay_style"
+        private const val KEY_SHOW_SOC_NAME = "show_soc_name"
         private const val KEY_START_ON_BOOT = "start_on_boot"
 
         fun load(context: Context): OverlaySettings {
@@ -111,6 +117,7 @@ data class OverlaySettings(
                 showGpuTemp = prefs.getBoolean(KEY_SHOW_GPU_TEMP, defaultSettings.showGpuTemp),
                 gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
+                autoHideFloatingBubble = prefs.getBoolean(KEY_AUTO_HIDE_FLOATING_BUBBLE, defaultSettings.autoHideFloatingBubble),
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
                 autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet(),
                 recordingPackages = prefs.getStringSet(KEY_RECORDING_PACKAGES, defaultSettings.recordingPackages) ?: emptySet(),
@@ -120,9 +127,11 @@ data class OverlaySettings(
                 showGraphicsApi = prefs.getBoolean(KEY_SHOW_GRAPHICS_API, defaultSettings.showGraphicsApi),
                 showBatteryLevel = prefs.getBoolean(KEY_SHOW_BATTERY_LEVEL, defaultSettings.showBatteryLevel),
                 showBatteryPower = prefs.getBoolean(KEY_SHOW_BATTERY_POWER, defaultSettings.showBatteryPower),
+                showBatteryCurrent = prefs.getBoolean(KEY_SHOW_BATTERY_CURRENT, defaultSettings.showBatteryCurrent),
                 showRam = prefs.getBoolean(KEY_SHOW_RAM, defaultSettings.showRam),
                 singleLineOverlay = prefs.getBoolean(KEY_SINGLE_LINE_OVERLAY, defaultSettings.singleLineOverlay),
                 overlayStyle = OverlayStyle.fromString(prefs.getString(KEY_OVERLAY_STYLE, defaultSettings.overlayStyle.name)),
+                showSocName = prefs.getBoolean(KEY_SHOW_SOC_NAME, defaultSettings.showSocName),
                 startOnBoot = prefs.getBoolean(KEY_START_ON_BOOT, defaultSettings.startOnBoot)
             )
         }
@@ -143,6 +152,7 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_GPU_TEMP, settings.showGpuTemp)
                 putInt(KEY_GRAVITY, settings.gravity)
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                putBoolean(KEY_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)
                 putStringSet(KEY_AUTO_PACKAGES, settings.autoStartPackages)
                 putStringSet(KEY_RECORDING_PACKAGES, settings.recordingPackages)
@@ -152,9 +162,11 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_GRAPHICS_API, settings.showGraphicsApi)
                 putBoolean(KEY_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                 putBoolean(KEY_SHOW_BATTERY_POWER, settings.showBatteryPower)
+                putBoolean(KEY_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                 putBoolean(KEY_SHOW_RAM, settings.showRam)
                 putBoolean(KEY_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putString(KEY_OVERLAY_STYLE, settings.overlayStyle.name)
+                putBoolean(KEY_SHOW_SOC_NAME, settings.showSocName)
                 putBoolean(KEY_START_ON_BOOT, settings.startOnBoot)
                 apply()
             }

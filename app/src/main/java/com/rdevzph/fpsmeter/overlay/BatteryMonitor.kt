@@ -77,7 +77,7 @@ class BatteryMonitor(private val context: Context) {
      * Calculates real-time power consumption or charging rate in Watts.
      * If the calculated power is zero or voltage is missing, falls back to displaying current in mA.
      */
-    fun getPowerText(singleLine: Boolean): String? {
+    fun getPowerText(singleLine: Boolean, showCurrent: Boolean = true): String? {
         val bm = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager ?: return null
         var rawCurrent = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
         if (rawCurrent == Int.MIN_VALUE || rawCurrent == 0) {
@@ -144,9 +144,17 @@ class BatteryMonitor(private val context: Context) {
         // If calculated watts is >= 0.05W (displays as at least 0.1W), format as Watts and mA (e.g. -0.7W (-70mA)).
         // Otherwise, if watt output is zero or voltage is missing, fallback to mA only (e.g. -70mA).
         return if (watts >= 0.05) {
-            String.format(Locale.US, "%s%.1f%sW (%s)", sign, watts, space, maFormatted)
+            if (showCurrent) {
+                String.format(Locale.US, "%s%.1f%sW (%s)", sign, watts, space, maFormatted)
+            } else {
+                String.format(Locale.US, "%s%.1f%sW", sign, watts, space)
+            }
         } else if (maInt >= 1) {
-            maFormatted
+            if (showCurrent) {
+                maFormatted
+            } else {
+                String.format(Locale.US, "0.0%sW", space)
+            }
         } else {
             null
         }

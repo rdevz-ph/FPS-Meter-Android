@@ -1,9 +1,11 @@
-# FPS Meter Android v3.3
+# FPS Meter Android v3.4
 
 ### What's Changed
-- Added surfaceflinger TimeStats as fallback if Latency wont work
-- Added an option to disable the FPS meter and auto hide provider settings
-- Added the fixes for single-line overlay wrapped onto a second line on tablets and wide displays ([#43](https://github.com/rdevz-ph/FPS-Meter-Android/issues/43))
+- Added a Battery Current (mA) toggle under Battery Wattage in Overlay settings so you can hide the milliamperes value and show only watts
+- Added an Auto-Hide Bubble & Double-Tap Overlay option under Floating Assistive Bubble in Settings to hide the green floating bubble while the overlay is visible and let you double-tap the stats overlay to collapse it back into the floating bubble
+- Added a Show Chip Name toggle below Overlay Style when RTSS is selected so you can hide the processor name header at the top of the overlay
+
+Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 

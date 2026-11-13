@@ -22,13 +22,76 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rdevzph.fpsmeter.R
 import kotlinx.coroutines.launch
+
+private val CHANGELOG_LINK_REGEX = Regex(
+    """\[([^\]]+)]\((https?://[^\s)]+)\)|(?<![A-Za-z0-9/])#(\d{1,5})(?![0-9A-Fa-f])|(https?://[^\s)]+)"""
+)
+
+internal fun buildChangelogAnnotatedString(
+    text: String,
+    linkColor: Color
+): AnnotatedString = buildAnnotatedString {
+    val linkStyles = TextLinkStyles(
+        style = SpanStyle(
+            color = linkColor,
+            fontWeight = FontWeight.SemiBold,
+            textDecoration = TextDecoration.Underline
+        )
+    )
+    var lastIndex = 0
+    for (match in CHANGELOG_LINK_REGEX.findAll(text)) {
+        if (match.range.first > lastIndex) {
+            append(text.substring(lastIndex, match.range.first))
+        }
+        val mdLabel = match.groups[1]?.value
+        val mdUrl = match.groups[2]?.value
+        val issueNum = match.groups[3]?.value
+        val rawUrl = match.groups[4]?.value
+
+        when {
+            mdLabel != null && mdUrl != null -> {
+                withLink(LinkAnnotation.Url(mdUrl, linkStyles)) {
+                    append(mdLabel)
+                }
+            }
+            issueNum != null -> {
+                val issueUrl = "https://github.com/rdevz-ph/FPS-Meter-Android/issues/$issueNum"
+                withLink(LinkAnnotation.Url(issueUrl, linkStyles)) {
+                    append("#$issueNum")
+                }
+            }
+            rawUrl != null -> {
+                val trimmedUrl = rawUrl.trimEnd('.', ',', ';')
+                val trailing = rawUrl.substring(trimmedUrl.length)
+                withLink(LinkAnnotation.Url(trimmedUrl, linkStyles)) {
+                    append(trimmedUrl)
+                }
+                if (trailing.isNotEmpty()) {
+                    append(trailing)
+                }
+            }
+        }
+        lastIndex = match.range.last + 1
+    }
+    if (lastIndex < text.length) {
+        append(text.substring(lastIndex))
+    }
+}
 
 data class ChangelogVersion(
     val title: String,
@@ -225,7 +288,7 @@ fun ChangelogBottomSheet(
                                 Spacer(Modifier.width(12.dp))
 
                                 Text(
-                                    text = itemText,
+                                    text = buildChangelogAnnotatedString(itemText, MaterialTheme.colorScheme.primary),
                                     style = MaterialTheme.typography.bodyMedium,
                                     lineHeight = 20.sp,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -313,7 +376,7 @@ fun ChangelogBottomSheet(
                                             Spacer(Modifier.width(12.dp))
 
                                             Text(
-                                                text = itemText,
+                                                text = buildChangelogAnnotatedString(itemText, MaterialTheme.colorScheme.primary),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 lineHeight = 20.sp,
                                                 color = MaterialTheme.colorScheme.onSurface,

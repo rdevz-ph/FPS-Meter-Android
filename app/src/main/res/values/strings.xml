@@ -82,6 +82,8 @@
     <string name="battery_level">Battery Level</string>
     <string name="battery_power">Battery Wattage</string>
     <string name="battery_power_desc">Show real-time battery power output in watts (or current in mA)</string>
+    <string name="battery_current">Battery Current (mA)</string>
+    <string name="battery_current_desc">Show live current in milliamperes (mA) alongside battery wattage</string>
     <string name="remaining_ram">Remaining RAM</string>
     <string name="remaining_ram_desc">Display available memory and occupied RAM percentage on a third overlay line</string>
     <string name="single_line_overlay">Single-line overlay</string>
@@ -90,6 +92,8 @@
     <string name="overlay_style_desc">Choose between the default compact pill and the MSI Afterburner Style (RTSS) layout</string>
     <string name="overlay_style_default">Default</string>
     <string name="overlay_style_afterburner">RTSS</string>
+    <string name="show_chip_name">Show Chip Name</string>
+    <string name="show_chip_name_desc">Display the processor or SoC model name at the top of the RTSS overlay</string>
     <string name="position_presets">Position Presets</string>
     <string name="pos_top_left">Top Left</string>
     <string name="pos_top_center">Top Center</string>
@@ -120,6 +124,8 @@
     <string name="quick_access">Quick Access &amp; Toggles</string>
     <string name="floating_bubble">Floating Assistive Bubble</string>
     <string name="floating_bubble_desc">Draggable on-screen bubble with a quick menu to start/stop game FPS recording and toggle HUD visibility from any app.</string>
+    <string name="auto_hide_floating_bubble">Auto-Hide Bubble &amp; Double-Tap Overlay</string>
+    <string name="auto_hide_floating_bubble_desc">Hide the floating bubble while the overlay is visible. Double-tap the stats overlay to hide it and show the floating bubble on the side of the screen.</string>
     <string name="start_on_boot">Start on Boot</string>
     <string name="start_on_boot_desc">Automatically start the overlay when your device boots up</string>
     <string name="start_on_boot_warning">May not be reliable on all devices due to OEM battery optimizations or background restrictions</string>

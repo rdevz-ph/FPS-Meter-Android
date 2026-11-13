@@ -45,6 +45,7 @@ import rikka.shizuku.Shizuku
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -77,14 +78,17 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_GPU_TEMP = "show_gpu_temp"
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
+        const val EXTRA_AUTO_HIDE_FLOATING_BUBBLE = "auto_hide_floating_bubble"
         const val EXTRA_FPS_PROVIDER = "fps_provider"
         const val EXTRA_SURFACE_FLINGER_METHOD = "surface_flinger_method"
         const val EXTRA_SHOW_API = "show_api"
         const val EXTRA_SHOW_BATTERY_LEVEL = "show_battery_level"
         const val EXTRA_SHOW_BATTERY_POWER = "show_battery_power"
+        const val EXTRA_SHOW_BATTERY_CURRENT = "show_battery_current"
         const val EXTRA_SHOW_RAM = "show_ram"
         const val EXTRA_SINGLE_LINE_OVERLAY = "single_line_overlay"
         const val EXTRA_OVERLAY_STYLE = "overlay_style"
+        const val EXTRA_SHOW_SOC_NAME = "show_soc_name"
 
         @Volatile
         var instance: FpsOverlayService? = null
@@ -147,14 +151,17 @@ class FpsOverlayService : Service() {
     private var showGpuTemp = false
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
+    private var autoHideFloatingBubble = false
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
     private var surfaceFlingerMethod = SurfaceFlingerMethod.LATENCY
     private var showGraphicsApi = true
     private var showBatteryLevel = false
     private var showBatteryPower = false
+    private var showBatteryCurrent = true
     private var showRam = false
     private var singleLineOverlay = false
     private var overlayStyle = OverlayStyle.DEFAULT
+    private var showSocName = true
 
     private var availableRamGb: Float = 0f
     private var usedRamPercent: Int = 0
@@ -242,14 +249,17 @@ class FpsOverlayService : Service() {
         showGpuTemp = saved.showGpuTemp
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
+        autoHideFloatingBubble = saved.autoHideFloatingBubble
         fpsProvider = saved.fpsProvider
         surfaceFlingerMethod = saved.surfaceFlingerMethod
         showGraphicsApi = saved.showGraphicsApi
         showBatteryLevel = saved.showBatteryLevel
         showBatteryPower = saved.showBatteryPower
+        showBatteryCurrent = saved.showBatteryCurrent
         showRam = saved.showRam
         singleLineOverlay = saved.singleLineOverlay
         overlayStyle = saved.overlayStyle
+        showSocName = saved.showSocName
 
         if (showRam) {
             val (ramGb, ramPercent) = sampleRamUsage()
@@ -372,7 +382,11 @@ class FpsOverlayService : Service() {
                 )
             }
             floatingToggleButton?.updateState()
-            floatingToggleButton?.show()
+            if (autoHideFloatingBubble && isOverlayVisible) {
+                floatingToggleButton?.hide()
+            } else {
+                floatingToggleButton?.show()
+            }
         } else {
             floatingToggleButton?.hide()
             floatingToggleButton = null
@@ -395,7 +409,7 @@ class FpsOverlayService : Service() {
         if (::overlayView.isInitialized) {
             overlayView.visibility = if (isOverlayVisible) View.VISIBLE else View.GONE
         }
-        floatingToggleButton?.updateState()
+        syncFloatingToggleButton()
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIF_ID, buildNotification())
@@ -462,6 +476,9 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_FLOATING_TOGGLE)) {
             floatingToggleEnabled = intent.getBooleanExtra(EXTRA_FLOATING_TOGGLE, floatingToggleEnabled)
         }
+        if (intent.hasExtra(EXTRA_AUTO_HIDE_FLOATING_BUBBLE)) {
+            autoHideFloatingBubble = intent.getBooleanExtra(EXTRA_AUTO_HIDE_FLOATING_BUBBLE, autoHideFloatingBubble)
+        }
         if (intent.hasExtra(EXTRA_FPS_PROVIDER)) {
             val providerName = intent.getStringExtra(EXTRA_FPS_PROVIDER)
             val newProvider = FpsProvider.fromString(providerName)
@@ -488,6 +505,9 @@ class FpsOverlayService : Service() {
         }
         if (intent.hasExtra(EXTRA_SHOW_BATTERY_POWER)) {
             showBatteryPower = intent.getBooleanExtra(EXTRA_SHOW_BATTERY_POWER, showBatteryPower)
+        }
+        if (intent.hasExtra(EXTRA_SHOW_BATTERY_CURRENT)) {
+            showBatteryCurrent = intent.getBooleanExtra(EXTRA_SHOW_BATTERY_CURRENT, showBatteryCurrent)
         }
         if (intent.hasExtra(EXTRA_SHOW_RAM)) {
             val newShowRam = intent.getBooleanExtra(EXTRA_SHOW_RAM, showRam)
@@ -519,6 +539,9 @@ class FpsOverlayService : Service() {
                     updateOverlayAppearance()
                 }
             }
+        }
+        if (intent.hasExtra(EXTRA_SHOW_SOC_NAME)) {
+            showSocName = intent.getBooleanExtra(EXTRA_SHOW_SOC_NAME, showSocName)
         }
     }
 
@@ -725,7 +748,7 @@ class FpsOverlayService : Service() {
             }
 
             // 1. SoC header on top
-            if (socModel.isNotEmpty()) {
+            if (showSocName && socModel.isNotEmpty()) {
                 newLine()
                 ssb.append(socModel, colorSoc, StyleSpan(Typeface.BOLD))
             }
@@ -785,7 +808,7 @@ class FpsOverlayService : Service() {
                     batCells.add(batLevelStr to colorVal)
                 }
                 if (hasBattPower) {
-                    val powerStr = batteryMonitor?.getPowerText(singleLineOverlay)
+                    val powerStr = batteryMonitor?.getPowerText(singleLineOverlay, showBatteryCurrent)
                     if (powerStr != null) {
                         batCells.add(powerStr to colorVal)
                     }
@@ -909,7 +932,7 @@ class FpsOverlayService : Service() {
                 appendThermal("SOC", socDisplay)
             }
             val powerSuffix = if (hasBattPower) {
-                val p = batteryMonitor?.getPowerText(singleLineOverlay)
+                val p = batteryMonitor?.getPowerText(singleLineOverlay, showBatteryCurrent)
                 if (p != null) (if (singleLineOverlay) "\u00A0$p" else " $p") else ""
             } else ""
 
@@ -924,7 +947,7 @@ class FpsOverlayService : Service() {
                 val levelDisplay = if (batteryLevel >= 0) "${batteryLevel}%" else "--%"
                 appendThermal("BAT", "$levelDisplay$powerSuffix")
             } else if (hasBattPower) {
-                val p = batteryMonitor?.getPowerText(singleLineOverlay) ?: "--W"
+                val p = batteryMonitor?.getPowerText(singleLineOverlay, showBatteryCurrent) ?: "--W"
                 appendThermal("BAT", p)
             }
         }
@@ -1326,6 +1349,9 @@ class FpsOverlayService : Service() {
         private var initY = 0
         private var touchX = 0f
         private var touchY = 0f
+        private var isDragging = false
+        private var lastTapTime = 0L
+
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -1333,22 +1359,40 @@ class FpsOverlayService : Service() {
                     initY = layoutParams.y
                     touchX = event.rawX
                     touchY = event.rawY
+                    isDragging = false
                     return true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    // Update internal position so manual drag is remembered
-                    layoutParams.x = initX + (event.rawX - touchX).toInt()
-                    layoutParams.y = initY + (event.rawY - touchY).toInt()
-                    posX = layoutParams.x
-                    posY = layoutParams.y
-                    windowManager.updateViewLayout(overlayView, layoutParams)
+                    val dx = (event.rawX - touchX).toInt()
+                    val dy = (event.rawY - touchY).toInt()
+                    if (abs(dx) > 10 || abs(dy) > 10) {
+                        isDragging = true
+                    }
+                    if (isDragging) {
+                        // Update internal position so manual drag is remembered
+                        layoutParams.x = initX + dx
+                        layoutParams.y = initY + dy
+                        posX = layoutParams.x
+                        posY = layoutParams.y
+                        windowManager.updateViewLayout(overlayView, layoutParams)
+                    }
                     return true
                 }
                 MotionEvent.ACTION_UP -> {
-                    // Save the updated position to SharedPreferences
-                    val saved = OverlaySettings.load(this@FpsOverlayService)
-                    val updated = saved.copy(posX = posX, posY = posY)
-                    OverlaySettings.save(this@FpsOverlayService, updated)
+                    if (isDragging) {
+                        // Save the updated position to SharedPreferences
+                        val saved = OverlaySettings.load(this@FpsOverlayService)
+                        val updated = saved.copy(posX = posX, posY = posY)
+                        OverlaySettings.save(this@FpsOverlayService, updated)
+                    } else if (floatingToggleEnabled && autoHideFloatingBubble) {
+                        val now = System.currentTimeMillis()
+                        if (now - lastTapTime < 300L) {
+                            lastTapTime = 0L
+                            toggleOverlayVisibility()
+                        } else {
+                            lastTapTime = now
+                        }
+                    }
                     return true
                 }
             }

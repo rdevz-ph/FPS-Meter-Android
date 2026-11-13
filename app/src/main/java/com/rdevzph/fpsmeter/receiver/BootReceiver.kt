@@ -53,14 +53,17 @@ class BootReceiver : BroadcastReceiver() {
                     putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
                     putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                     putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                    putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
                     putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                     putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                     putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                     putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                     putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
+                    putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                     putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                     putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                     putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
+                    putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, settings.showSocName)
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

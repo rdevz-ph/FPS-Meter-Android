@@ -209,14 +209,17 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
                 putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                 putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                 putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
+                putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
+                putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, settings.showSocName)
             }
             context.startForegroundService(intent)
             viewModel.setOverlayRunning(true)
@@ -400,14 +403,17 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
+                            putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                             putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                             putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, settings.showBatteryLevel)
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                             putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                             putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                             putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, settings.showSocName)
                         }
                         context.startForegroundService(intent)
                         viewModel.setOverlayRunning(true)
@@ -434,14 +440,17 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, newSettings.showGpuTemp)
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
+                                putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
                                 putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, newSettings.surfaceFlingerMethod.name)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_API, newSettings.showGraphicsApi)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_LEVEL, newSettings.showBatteryLevel)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, newSettings.showBatteryPower)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, newSettings.showBatteryCurrent)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, newSettings.showRam)
                                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, newSettings.singleLineOverlay)
                                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, newSettings.overlayStyle.name)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, newSettings.showSocName)
                             }
                             context.startForegroundService(intent)
                         }
@@ -452,11 +461,29 @@ fun MainScreen(
                 QuickAccessCard(
                     settings = settings,
                     onToggleFloatingButton = { enabled ->
-                        val newSettings = settings.copy(floatingToggleEnabled = enabled)
+                        val newSettings = settings.copy(
+                            floatingToggleEnabled = enabled,
+                            autoHideFloatingBubble = if (!enabled) false else settings.autoHideFloatingBubble
+                        )
                         viewModel.updateSettings(newSettings)
                         if (overlayRunning) {
                             val intent = Intent(context, FpsOverlayService::class.java).apply {
-                                putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, enabled)
+                                putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
+                                putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
+                            }
+                            context.startForegroundService(intent)
+                        }
+                    },
+                    onToggleAutoHideBubble = { enabled ->
+                        val newSettings = settings.copy(
+                            autoHideFloatingBubble = enabled,
+                            floatingToggleEnabled = if (enabled) true else settings.floatingToggleEnabled
+                        )
+                        viewModel.updateSettings(newSettings)
+                        if (overlayRunning) {
+                            val intent = Intent(context, FpsOverlayService::class.java).apply {
+                                putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
+                                putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
                             }
                             context.startForegroundService(intent)
                         }
@@ -1755,6 +1782,35 @@ fun OverlaySettingsPanel(
             )
         }
 
+        AnimatedVisibility(visible = settings.showBatteryPower) {
+            Column {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    ) {
+                        Text(stringResource(R.string.battery_current), style = MaterialTheme.typography.labelMedium)
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            stringResource(R.string.battery_current_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = settings.showBatteryCurrent,
+                        onCheckedChange = { onChange(settings.copy(showBatteryCurrent = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(8.dp))
 
         // Remaining RAM toggle (Third line)
@@ -1849,6 +1905,35 @@ fun OverlaySettingsPanel(
                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(visible = settings.overlayStyle == OverlayStyle.MSI_AFTERBURNER) {
+            Column {
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    ) {
+                        Text(stringResource(R.string.show_chip_name), style = MaterialTheme.typography.labelMedium)
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            stringResource(R.string.show_chip_name_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = settings.showSocName,
+                        onCheckedChange = { onChange(settings.copy(showSocName = it)) },
+                        modifier = Modifier.scale(0.8f)
                     )
                 }
             }
@@ -1992,7 +2077,7 @@ fun OverlaySettingsPanel(
                             }
 
                             // 1. SoC header on top
-                            if (socModel.isNotEmpty()) {
+                            if (settings.showSocName && socModel.isNotEmpty()) {
                                 newPreviewLine()
                                 withStyle(SpanStyle(color = colorSoc, fontWeight = FontWeight.Bold)) {
                                     append(socModel)
@@ -2030,7 +2115,14 @@ fun OverlaySettingsPanel(
                                 val batCells = mutableListOf<Pair<String, Color>>()
                                 if (hasBatt) batCells.add((if (settings.singleLineOverlay) "34.9°C" else "34.9 °C") to colorVal)
                                 if (hasBattLevel) batCells.add((if (settings.singleLineOverlay) "85%" else "85 %") to colorVal)
-                                if (hasBattPower) batCells.add((if (settings.singleLineOverlay) "-2.4W (-600mA)" else "-2.4 W (-600 mA)") to colorVal)
+                                if (hasBattPower) {
+                                    val powerStr = if (settings.showBatteryCurrent) {
+                                        if (settings.singleLineOverlay) "-2.4W (-600mA)" else "-2.4 W (-600 mA)"
+                                    } else {
+                                        if (settings.singleLineOverlay) "-2.4W" else "-2.4 W"
+                                    }
+                                    batCells.add(powerStr to colorVal)
+                                }
                                 appendPreviewRow("BAT", colorBat, batCells)
                             }
 
@@ -2113,7 +2205,8 @@ fun OverlaySettingsPanel(
                                 if (hasCpu) appendThermal("CPU", "42.1°C")
                                 if (hasGpu) appendThermal("GPU", "38.5°C")
                                 if (hasSoc) appendThermal("SOC", "45.2°C")
-                                val powerSuffix = if (hasBattPower) " -2.4W (-600mA)" else ""
+                                val powerPreview = if (settings.showBatteryCurrent) "-2.4W (-600mA)" else "-2.4W"
+                                val powerSuffix = if (hasBattPower) " $powerPreview" else ""
                                 if (hasBattBoth) {
                                     appendThermal("BAT", "38.5°C (85%)$powerSuffix")
                                 } else if (hasBatt) {
@@ -2121,7 +2214,7 @@ fun OverlaySettingsPanel(
                                 } else if (hasBattLevel) {
                                     appendThermal("BAT", "85%$powerSuffix")
                                 } else if (hasBattPower) {
-                                    appendThermal("BAT", "-2.4W (-600mA)")
+                                    appendThermal("BAT", powerPreview)
                                 }
                             }
 
@@ -2364,7 +2457,8 @@ fun DeveloperCard() {
 @Composable
 fun QuickAccessCard(
     settings: OverlaySettings,
-    onToggleFloatingButton: (Boolean) -> Unit
+    onToggleFloatingButton: (Boolean) -> Unit,
+    onToggleAutoHideBubble: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -2415,6 +2509,34 @@ fun QuickAccessCard(
                     checked = settings.floatingToggleEnabled,
                     onCheckedChange = onToggleFloatingButton
                 )
+            }
+
+            AnimatedVisibility(visible = settings.floatingToggleEnabled) {
+                Column {
+                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.auto_hide_floating_bubble),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                stringResource(R.string.auto_hide_floating_bubble_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Switch(
+                            checked = settings.autoHideFloatingBubble,
+                            onCheckedChange = onToggleAutoHideBubble
+                        )
+                    }
+                }
             }
 
             Spacer(Modifier.height(12.dp))
