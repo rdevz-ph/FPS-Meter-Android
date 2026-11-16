@@ -242,17 +242,13 @@ object ShellHelper {
         }
 
         // 5. Determine Root Manager
-        val combined = "$suVersion $suPath $mountsRootHint".lowercase()
-        val rootManager = when {
-            combined.contains("kernelsu") || combined.contains("ksu") -> "KernelSU"
-            combined.contains("apatch") -> "APatch"
-            combined.contains("magisk") -> "Magisk"
-            combined.contains("supersu") -> "SuperSU"
-            mountsRootHint.isNotEmpty() -> mountsRootHint
-            isGranted || suPath.isNotEmpty() || suVersion.isNotEmpty() -> "Generic SU / Userdebug"
-            isAvailable -> "Unknown Root"
-            else -> "None"
-        }
+        val rootManager = resolveRootManager(
+            suVersion = suVersion,
+            suPath = suPath,
+            mountsRootHint = mountsRootHint,
+            isGranted = isGranted,
+            isAvailable = isAvailable
+        )
 
         if (suPath.isEmpty() && (rootManager == "KernelSU" || rootManager == "APatch")) {
             suPath = "Kernel Syscall Hook"
@@ -265,6 +261,26 @@ object ShellHelper {
             suPath = if (suPath.isNotEmpty()) suPath else if (isAvailable) "Not in standard PATH" else "None",
             suVersion = if (suVersion.isNotEmpty()) suVersion else "N/A"
         )
+    }
+
+    internal fun resolveRootManager(
+        suVersion: String,
+        suPath: String,
+        mountsRootHint: String,
+        isGranted: Boolean,
+        isAvailable: Boolean
+    ): String {
+        val combined = "$suVersion $suPath $mountsRootHint".lowercase()
+        return when {
+            combined.contains("magisk") -> "Magisk"
+            combined.contains("apatch") -> "APatch"
+            combined.contains("kernelsu") || combined.split(Regex("[^a-z0-9]")).contains("ksu") -> "KernelSU"
+            combined.contains("supersu") -> "SuperSU"
+            mountsRootHint.isNotEmpty() -> mountsRootHint
+            isGranted || suPath.isNotEmpty() || suVersion.isNotEmpty() -> "Generic SU / Userdebug"
+            isAvailable -> "Unknown Root"
+            else -> "None"
+        }
     }
 
     /**
