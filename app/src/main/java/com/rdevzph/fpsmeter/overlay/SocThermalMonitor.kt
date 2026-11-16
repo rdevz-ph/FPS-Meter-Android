@@ -23,8 +23,9 @@ data class ThermalSnapshot(
  * Runs on a lightweight background coroutine polling every 1.5 seconds.
  */
 class SocThermalMonitor(
-    private val onSnapshotUpdate: (snapshot: ThermalSnapshot) -> Unit,
-    private val onUnavailable: () -> Unit
+    private val onSnapshotUpdate: (snapshot: ThermalSnapshot) -> Unit = {},
+    private val onUnavailable: () -> Unit = {},
+    private var useRoot: Boolean = false
 ) {
     companion object {
         private const val TAG = "SocThermalMonitor"
@@ -50,6 +51,19 @@ class SocThermalMonitor(
     private var pollJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    fun setUseRoot(enabled: Boolean) {
+        useRoot = enabled
+    }
+
+    private fun isPrivilegedReady(): Boolean {
+        if (useRoot && com.rdevzph.fpsmeter.util.ShellHelper.isRootGranted.value) return true
+        return try {
+            Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     fun start() {
         stop()
         Log.d(TAG, "Starting SoC thermal monitor...")
@@ -57,13 +71,9 @@ class SocThermalMonitor(
         pollJob = coroutineScope.launch {
             while (isActive) {
                 try {
-                    val isShizukuReady = try {
-                        Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-                    } catch (e: Exception) {
-                        false
-                    }
+                    val isReady = isPrivilegedReady()
 
-                    if (!isShizukuReady) {
+                    if (!isReady) {
                         withContext(Dispatchers.Main) { onUnavailable() }
                         delay(POLL_INTERVAL_MS * 2)
                         continue
@@ -335,28 +345,7 @@ class SocThermalMonitor(
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun runShellCommand(command: String): String {
-        var process: Process? = null
-        return try {
-            process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
-            val output = StringBuilder()
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    output.append(line).append("\n")
-                }
-            }
-            process.waitFor()
-            output.toString()
-        } catch (e: Exception) {
-            ""
-        } finally {
-            try {
-                process?.destroy()
-            } catch (e: Exception) {
-                // Ignore
-            }
-        }
+        return com.rdevzph.fpsmeter.util.ShellHelper.runShellCommand(command, useRoot)
     }
 }

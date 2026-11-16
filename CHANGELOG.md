@@ -4,6 +4,17 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.5] - 2026-11-16
+
+### Added
+- **Root Mode**: Added a Root Mode toggle in App Settings with automatic root binary detection, allowing rooted devices to run privileged SurfaceFlinger FPS and hardware thermals without Shizuku.
+- **Dedicated RAM Overlays & Unit Selection**: Added a dedicated RAM Overlays section with separate toggles for Available RAM and Used RAM alongside their percentages, and an option to switch between GB and MB units.
+
+### Fixed
+- **Android 9 Text View Crash**: Fixed a crash on Android 9 caused by an unsupported text view method ([#52](https://github.com/rdevz-ph/FPS-Meter-Android/issues/52)).
+
+---
+
 ## [v3.4] - 2026-11-13
 
 ### Added
@@ -345,6 +356,7 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v3.5]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.5
 [v3.4]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.4
 [v3.3]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.3
 [v3.2]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.2

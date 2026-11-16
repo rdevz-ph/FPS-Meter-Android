@@ -41,6 +41,18 @@
     <string name="shizuku_service">服务</string>
     <string name="shizuku_permission">权限</string>
 
+    <!-- Root access card -->
+    <string name="root_operating_mode">Root 模式</string>
+    <string name="root_operating_desc">已获取 Root 权限。SurfaceFlinger 真实游戏帧率及硬件温度监控直接通过 Root 运行，无需 Shizuku。</string>
+    <string name="root_granted">已授权</string>
+    <string name="root_superuser">超级用户</string>
+
+    <!-- Settings Root section -->
+    <string name="section_root">Root 权限</string>
+    <string name="use_root_access">使用 Root 权限</string>
+    <string name="use_root_access_desc">直接使用 Root 权限执行特权命令（SurfaceFlinger 帧率与硬件温度），替代 Shizuku。</string>
+    <string name="root_unavailable_warning">此设备上未检测到 su 二进制文件。</string>
+
     <!-- Overlay permission card -->
     <string name="overlay_permission">悬浮窗权限</string>
     <string name="overlay_granted_desc">已授予 SYSTEM_ALERT_WINDOW —— 悬浮窗可显示在任意应用之上。</string>
@@ -86,6 +98,16 @@
     <string name="battery_current_desc">在电池功率旁显示实时电流（毫安）</string>
     <string name="remaining_ram">剩余运存</string>
     <string name="remaining_ram_desc">在悬浮窗第三行显示可用内存及已占用百分比</string>
+    <string name="ram_overlays">RAM 悬浮窗</string>
+    <string name="ram_overlays_desc">在悬浮窗上显示设备内存使用情况</string>
+    <string name="available_ram">可用内存</string>
+    <string name="available_ram_desc">显示可用内存大小及百分比</string>
+    <string name="used_ram">已用内存</string>
+    <string name="used_ram_desc">显示已用内存大小及百分比</string>
+    <string name="ram_format">内存数值格式</string>
+    <string name="ram_format_desc">选择以 GB 显示内存数值或原始数值格式 (MB)</string>
+    <string name="ram_unit_gb">千兆字节 (GB)</string>
+    <string name="ram_unit_mb">兆字节 (MB)</string>
     <string name="single_line_overlay">单行显示悬浮窗</string>
     <string name="single_line_overlay_desc">在单行内横向显示所有指标，适合平板或横屏使用</string>
     <string name="overlay_style">悬浮窗样式</string>

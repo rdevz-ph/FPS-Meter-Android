@@ -20,8 +20,9 @@ import kotlin.math.roundToInt
  */
 class SurfaceFlingerFpsMonitor(
     private var method: SurfaceFlingerMethod = SurfaceFlingerMethod.LATENCY,
-    private val onFpsUpdate: (fps: Int, frameTimeMs: Float, api: GraphicsApi, layerName: String?, foregroundPackage: String?) -> Unit,
-    private val onFallbackNeeded: () -> Unit
+    private val onFpsUpdate: (fps: Int, frameTimeMs: Float, api: GraphicsApi, layerName: String?, foregroundPackage: String?) -> Unit = { _, _, _, _, _ -> },
+    private val onFallbackNeeded: () -> Unit = {},
+    private var useRoot: Boolean = false
 ) {
     companion object {
         private const val TAG = "SurfaceFlingerMonitor"
@@ -55,6 +56,19 @@ class SurfaceFlingerFpsMonitor(
         }
     }
 
+    fun setUseRoot(enabled: Boolean) {
+        useRoot = enabled
+    }
+
+    private fun isPrivilegedReady(): Boolean {
+        if (useRoot && com.rdevzph.fpsmeter.util.ShellHelper.isRootGranted.value) return true
+        return try {
+            Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     fun start() {
         stop()
         Log.d(TAG, "Starting SurfaceFlinger FPS monitor with method: $method")
@@ -73,14 +87,10 @@ class SurfaceFlingerFpsMonitor(
         monitorJob = coroutineScope.launch {
             while (isActive) {
                 try {
-                    val isShizukuReady = try {
-                        Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-                    } catch (e: Exception) {
-                        false
-                    }
+                    val isReady = isPrivilegedReady()
 
-                    if (!isShizukuReady) {
-                        Log.w(TAG, "Shizuku not ready, triggering fallback")
+                    if (!isReady) {
+                        Log.w(TAG, "Privileged provider (Shizuku/Root) not ready, triggering fallback")
                         withContext(Dispatchers.Main) { onFallbackNeeded() }
                         break
                     }
@@ -91,12 +101,8 @@ class SurfaceFlingerFpsMonitor(
                 } catch (e: Exception) {
                     Log.e(TAG, "Error in SurfaceFlinger sampling loop", e)
                     consecutiveFailures++
-                    val isShizukuReady = try {
-                        Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-                    } catch (_: Exception) {
-                        false
-                    }
-                    if (!isShizukuReady && consecutiveFailures >= 3) {
+                    val isReady = isPrivilegedReady()
+                    if (!isReady && consecutiveFailures >= 3) {
                         withContext(Dispatchers.Main) { onFallbackNeeded() }
                         break
                     }
@@ -743,31 +749,9 @@ class SurfaceFlingerFpsMonitor(
     }
 
     /**
-     * Executes a shell command via Shizuku.
+     * Executes a shell command via Root (if enabled) or Shizuku.
      */
-    @Suppress("DEPRECATION")
     private fun runShellCommand(command: String): String {
-        var process: Process? = null
-        return try {
-            process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
-            val output = StringBuilder()
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    output.append(line).append("\n")
-                }
-            }
-            process.waitFor()
-            output.toString()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error running command: $command", e)
-            ""
-        } finally {
-            try {
-                process?.destroy()
-            } catch (e: Exception) {
-                // Ignore
-            }
-        }
+        return com.rdevzph.fpsmeter.util.ShellHelper.runShellCommand(command, useRoot)
     }
 }

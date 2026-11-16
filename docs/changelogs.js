@@ -1,5 +1,10 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 3.4 | Latest Release | November 13, 2026
+window.CHANGELOGS_TEXT = `## Version 3.5 | Latest Release | November 16, 2026
+- Root Mode: Added Root Mode in Settings with automatic root binary detection, allowing rooted devices to run privileged SurfaceFlinger FPS and hardware thermals without Shizuku.
+- Dedicated RAM Overlays & Unit Selection: Added a dedicated RAM Overlays section with separate toggles for Available RAM and Used RAM alongside their percentages, and an option to switch between GB and MB units.
+- Android 9 Compatibility Fix: Fixed a crash on Android 9 caused by an unsupported text view method.
+
+## Version 3.4 | November 13, 2026
 - Battery Current (mA) Toggle: Added a Battery Current (mA) toggle under Battery Wattage in Overlay settings so you can hide the milliamperes value and show only watts.
 - Auto-Hide Bubble & Double-Tap Overlay: Added an Auto-Hide Bubble & Double-Tap Overlay option under Floating Assistive Bubble in Settings to hide the green floating bubble while the overlay is visible and let you double-tap the stats overlay to collapse it back into the floating bubble.
 - Show Chip Name Toggle: Added a Show Chip Name toggle below Overlay Style when RTSS is selected so you can hide the processor name header at the top of the overlay.

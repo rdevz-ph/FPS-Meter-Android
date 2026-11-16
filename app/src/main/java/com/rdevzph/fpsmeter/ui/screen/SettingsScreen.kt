@@ -57,9 +57,12 @@ fun SettingsScreen(
     themeSettings: AppThemeSettings,
     currentLanguage: String,
     startOnBoot: Boolean = false,
+    useRoot: Boolean = false,
+    isRootAvailable: Boolean = false,
     onThemeChange: (AppThemeSettings) -> Unit,
     onLanguageChange: (String) -> Unit,
     onStartOnBootChange: (Boolean) -> Unit = {},
+    onToggleUseRoot: (Boolean) -> Unit = {},
     onOpenDonation: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -302,6 +305,56 @@ fun SettingsScreen(
                     Switch(
                         checked = startOnBoot,
                         onCheckedChange = onStartOnBootChange
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // Section: Root Access
+            SettingsSectionHeader(
+                title = stringResource(R.string.section_root),
+                icon = Icons.Default.Security
+            )
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = isRootAvailable || useRoot) { onToggleUseRoot(!useRoot) }
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.use_root_access),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            stringResource(R.string.use_root_access_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (!isRootAvailable && !useRoot) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                stringResource(R.string.root_unavailable_warning),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = useRoot,
+                        enabled = isRootAvailable || useRoot,
+                        onCheckedChange = onToggleUseRoot
                     )
                 }
             }

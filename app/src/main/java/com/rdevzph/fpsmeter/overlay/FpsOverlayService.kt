@@ -9,7 +9,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -19,6 +21,7 @@ import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
+import android.text.style.ReplacementSpan
 import android.text.style.StyleSpan
 import android.view.Choreographer
 import android.view.Gravity
@@ -35,6 +38,7 @@ import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.GraphicsApi
 import com.rdevzph.fpsmeter.model.OverlayStyle
+import com.rdevzph.fpsmeter.model.RamUnit
 import com.rdevzph.fpsmeter.model.SurfaceFlingerMethod
 import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.util.DeviceHardwareHelper
@@ -86,9 +90,13 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_BATTERY_POWER = "show_battery_power"
         const val EXTRA_SHOW_BATTERY_CURRENT = "show_battery_current"
         const val EXTRA_SHOW_RAM = "show_ram"
+        const val EXTRA_SHOW_AVAILABLE_RAM = "show_available_ram"
+        const val EXTRA_SHOW_USED_RAM = "show_used_ram"
+        const val EXTRA_RAM_UNIT = "ram_unit"
         const val EXTRA_SINGLE_LINE_OVERLAY = "single_line_overlay"
         const val EXTRA_OVERLAY_STYLE = "overlay_style"
         const val EXTRA_SHOW_SOC_NAME = "show_soc_name"
+        const val EXTRA_USE_ROOT = "use_root"
 
         @Volatile
         var instance: FpsOverlayService? = null
@@ -159,12 +167,23 @@ class FpsOverlayService : Service() {
     private var showBatteryPower = false
     private var showBatteryCurrent = true
     private var showRam = false
+    private var showAvailableRam = true
+    private var showUsedRam = true
+    private var ramUnit = RamUnit.GB
     private var singleLineOverlay = false
+    private var isOverlaySingleLineApplied = false
     private var overlayStyle = OverlayStyle.DEFAULT
     private var showSocName = true
+    private var useRoot = false
 
-    private var availableRamGb: Float = 0f
-    private var usedRamPercent: Int = 0
+    data class RamSample(
+        val availBytes: Long = 0L,
+        val usedBytes: Long = 0L,
+        val totalBytes: Long = 0L,
+        val availPercent: Int = 0,
+        val usedPercent: Int = 0
+    )
+    private var lastRamSample = RamSample()
     private var ramMonitorJob: Job? = null
     private var noFpsTickerJob: Job? = null
 
@@ -257,14 +276,16 @@ class FpsOverlayService : Service() {
         showBatteryPower = saved.showBatteryPower
         showBatteryCurrent = saved.showBatteryCurrent
         showRam = saved.showRam
+        showAvailableRam = saved.showAvailableRam
+        showUsedRam = saved.showUsedRam
+        ramUnit = saved.ramUnit
         singleLineOverlay = saved.singleLineOverlay
         overlayStyle = saved.overlayStyle
         showSocName = saved.showSocName
+        useRoot = saved.useRoot
 
         if (showRam) {
-            val (ramGb, ramPercent) = sampleRamUsage()
-            availableRamGb = ramGb
-            usedRamPercent = ramPercent
+            lastRamSample = sampleRamUsage()
         }
         updateRamMonitoring()
         updateSocThermalMonitoring()
@@ -513,13 +534,21 @@ class FpsOverlayService : Service() {
             val newShowRam = intent.getBooleanExtra(EXTRA_SHOW_RAM, showRam)
             if (newShowRam != showRam) {
                 showRam = newShowRam
-                if (showRam && availableRamGb == 0f) {
-                    val (ramGb, ramPercent) = sampleRamUsage()
-                    availableRamGb = ramGb
-                    usedRamPercent = ramPercent
+                if (showRam && lastRamSample.totalBytes == 0L) {
+                    lastRamSample = sampleRamUsage()
                 }
                 updateRamMonitoring()
             }
+        }
+        if (intent.hasExtra(EXTRA_SHOW_AVAILABLE_RAM)) {
+            showAvailableRam = intent.getBooleanExtra(EXTRA_SHOW_AVAILABLE_RAM, showAvailableRam)
+        }
+        if (intent.hasExtra(EXTRA_SHOW_USED_RAM)) {
+            showUsedRam = intent.getBooleanExtra(EXTRA_SHOW_USED_RAM, showUsedRam)
+        }
+        if (intent.hasExtra(EXTRA_RAM_UNIT)) {
+            val unitStr = intent.getStringExtra(EXTRA_RAM_UNIT)
+            ramUnit = RamUnit.fromString(unitStr)
         }
         if (intent.hasExtra(EXTRA_SINGLE_LINE_OVERLAY)) {
             val newSingleLine = intent.getBooleanExtra(EXTRA_SINGLE_LINE_OVERLAY, singleLineOverlay)
@@ -542,6 +571,14 @@ class FpsOverlayService : Service() {
         }
         if (intent.hasExtra(EXTRA_SHOW_SOC_NAME)) {
             showSocName = intent.getBooleanExtra(EXTRA_SHOW_SOC_NAME, showSocName)
+        }
+        if (intent.hasExtra(EXTRA_USE_ROOT)) {
+            val newUseRoot = intent.getBooleanExtra(EXTRA_USE_ROOT, useRoot)
+            if (newUseRoot != useRoot) {
+                useRoot = newUseRoot
+                surfaceFlingerFpsMonitor?.setUseRoot(useRoot)
+                socThermalMonitor?.setUseRoot(useRoot)
+            }
         }
     }
 
@@ -572,11 +609,13 @@ class FpsOverlayService : Service() {
                 overlayView.typeface = Typeface.DEFAULT_BOLD
                 overlayView.gravity = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER && !singleLineOverlay) Gravity.START else Gravity.CENTER
                 if (singleLineOverlay) {
-                    overlayView.isSingleLine = true
+                    overlayView.setSingleLine(true)
                     overlayView.maxLines = 1
+                    isOverlaySingleLineApplied = true
                 } else {
-                    overlayView.isSingleLine = false
+                    overlayView.setSingleLine(false)
                     overlayView.maxLines = Int.MAX_VALUE
+                    isOverlaySingleLineApplied = false
                 }
                 val isMulti = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER) !singleLineOverlay else (lastUseNextLine == true)
                 overlayView.background = createOverlayBackgroundDrawable(isMulti)
@@ -630,11 +669,13 @@ class FpsOverlayService : Service() {
             gravity = if (overlayStyle == OverlayStyle.MSI_AFTERBURNER && !singleLineOverlay) Gravity.START else Gravity.CENTER
             setLineSpacing(4f, 1f)
             if (singleLineOverlay) {
-                isSingleLine = true
+                setSingleLine(true)
                 maxLines = 1
+                isOverlaySingleLineApplied = true
             } else {
-                isSingleLine = false
+                setSingleLine(false)
                 maxLines = Int.MAX_VALUE
+                isOverlaySingleLineApplied = false
             }
             if (overlayStyle == OverlayStyle.MSI_AFTERBURNER) {
                 if (singleLineOverlay) {
@@ -684,7 +725,7 @@ class FpsOverlayService : Service() {
         val hasBattLevel = showBatteryLevel
         val hasBattPower = showBatteryPower
         val hasBattBoth = hasBatt && hasBattLevel
-        val hasRam = showRam
+        val hasRam = showRam && (showAvailableRam || showUsedRam)
 
         val extraOverlayCount = (if (showFps) 1 else 0) +
                 (if (hasApi) 1 else 0) +
@@ -722,11 +763,25 @@ class FpsOverlayService : Service() {
                 Color.parseColor("#2196F3") // Blue for OpenGL ES
             }
 
-            fun appendRow(tag: String, tagColor: Int, cells: List<Pair<String, Int>>) {
+            val standardHeaderWidth = overlayView.paint.measureText("GPU    ").toInt()
+
+            fun appendRow(
+                tag: String,
+                tagColor: Int,
+                cells: List<Pair<String, Int>>,
+                separator: String? = null
+            ) {
                 ssb.append(tag, tagColor, StyleSpan(Typeface.BOLD))
-                val spaceAfterTag = if (singleLineOverlay) "\u00A0" else "    "
-                ssb.append(spaceAfterTag)
-                val spaceBetweenCells = if (singleLineOverlay) " " else "    "
+                if (singleLineOverlay) {
+                    ssb.append("\u00A0")
+                } else {
+                    val tagWidth = overlayView.paint.measureText(tag).toInt()
+                    val gapWidth = (standardHeaderWidth - tagWidth).coerceAtLeast(overlayView.paint.measureText(" ").toInt())
+                    val gapStart = ssb.length
+                    ssb.append(" ")
+                    ssb.setSpan(SpaceSpan(gapWidth), gapStart, ssb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                val spaceBetweenCells = separator ?: (if (singleLineOverlay) " " else "    ")
                 cells.forEachIndexed { index, (value, vColor) ->
                     if (index > 0) {
                         ssb.append(spaceBetweenCells)
@@ -818,18 +873,43 @@ class FpsOverlayService : Service() {
 
             // 6. RAM row (only if RAM overlay enabled)
             if (hasRam) {
-                newLine()
-                val ramGbStr = if (availableRamGb > 0f) {
-                    if (singleLineOverlay) String.format(Locale.US, "%.1fGB", availableRamGb) else String.format(Locale.US, "%.1f GB", availableRamGb)
+                val availStr = if (lastRamSample.totalBytes > 0L) {
+                    "${formatRamValue(lastRamSample.availBytes, ramUnit)} (${lastRamSample.availPercent}%)"
                 } else {
-                    if (singleLineOverlay) "--GB" else "-- GB"
+                    if (ramUnit == RamUnit.MB) "-- MB (--%)" else "-- GB (--%)"
                 }
-                val ramCells = mutableListOf(ramGbStr to colorVal)
-                if (usedRamPercent > 0) {
-                    val ramPctStr = if (singleLineOverlay) "$usedRamPercent%" else "$usedRamPercent %"
-                    ramCells.add(ramPctStr to colorVal)
+                val usedStr = if (lastRamSample.totalBytes > 0L) {
+                    "${formatRamValue(lastRamSample.usedBytes, ramUnit)} (${lastRamSample.usedPercent}%)"
+                } else {
+                    if (ramUnit == RamUnit.MB) "-- MB (--%)" else "-- GB (--%)"
                 }
-                appendRow("RAM", colorRam, ramCells)
+
+                newLine()
+                if (singleLineOverlay) {
+                    if (showAvailableRam && showUsedRam) {
+                        appendRow("RAM", colorRam, listOf(availStr to colorVal, usedStr to colorVal), separator = " | ")
+                    } else if (showAvailableRam) {
+                        appendRow("RAM", colorRam, listOf(availStr to colorVal))
+                    } else if (showUsedRam) {
+                        appendRow("RAM", colorRam, listOf(usedStr to colorVal))
+                    }
+                } else {
+                    if (showAvailableRam && showUsedRam) {
+                        // Line 1: appendRow handles exact alignment to standardHeaderWidth
+                        appendRow("RAM", colorRam, listOf(availStr to colorVal))
+
+                        // Line 2: \n + SpaceSpan(standardHeaderWidth) + usedStr
+                        ssb.append("\n")
+                        val indentStart = ssb.length
+                        ssb.append(" ")
+                        ssb.setSpan(SpaceSpan(standardHeaderWidth), indentStart, ssb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        ssb.append(usedStr, colorVal, StyleSpan(Typeface.BOLD))
+                    } else if (showAvailableRam) {
+                        appendRow("RAM", colorRam, listOf(availStr to colorVal))
+                    } else if (showUsedRam) {
+                        appendRow("RAM", colorRam, listOf(usedStr to colorVal))
+                    }
+                }
             }
 
             // 7. FPS row (only shown if showFps)
@@ -864,14 +944,16 @@ class FpsOverlayService : Service() {
                     }
                 }
                 if (singleLineOverlay) {
-                    if (!overlayView.isSingleLine) {
-                        overlayView.isSingleLine = true
+                    if (!isOverlaySingleLineApplied) {
+                        overlayView.setSingleLine(true)
                         overlayView.maxLines = 1
+                        isOverlaySingleLineApplied = true
                     }
                 } else {
-                    if (overlayView.isSingleLine) {
-                        overlayView.isSingleLine = false
+                    if (isOverlaySingleLineApplied) {
+                        overlayView.setSingleLine(false)
                         overlayView.maxLines = Int.MAX_VALUE
+                        isOverlaySingleLineApplied = false
                     }
                 }
                 overlayView.text = ssb
@@ -961,18 +1043,44 @@ class FpsOverlayService : Service() {
                     ssb.append("\n")
                 }
             }
-            val ramTagSpace = if (singleLineOverlay) "\u00A0" else " "
-            ssb.append("RAM$ramTagSpace", labelColor, StyleSpan(Typeface.BOLD))
-            val ramDisplay = if (availableRamGb > 0f) {
-                if (singleLineOverlay) {
-                    String.format(Locale.US, "%.1f\u00A0GB\u00A0(%d%%)", availableRamGb, usedRamPercent)
-                } else {
-                    String.format(Locale.US, "%.1f GB (%d%%)", availableRamGb, usedRamPercent)
-                }
+
+            val availStr = if (lastRamSample.totalBytes > 0L) {
+                "${formatRamValue(lastRamSample.availBytes, ramUnit)} (${lastRamSample.availPercent}%)"
             } else {
-                if (singleLineOverlay) "--\u00A0GB\u00A0(--%)" else "-- GB (--%)"
+                if (ramUnit == RamUnit.MB) "-- MB (--%)" else "-- GB (--%)"
             }
-            ssb.append(ramDisplay, valueColor, StyleSpan(Typeface.BOLD))
+
+            val usedStr = if (lastRamSample.totalBytes > 0L) {
+                "${formatRamValue(lastRamSample.usedBytes, ramUnit)} (${lastRamSample.usedPercent}%)"
+            } else {
+                if (ramUnit == RamUnit.MB) "-- MB (--%)" else "-- GB (--%)"
+            }
+
+            if (showAvailableRam && showUsedRam) {
+                if (singleLineOverlay) {
+                    ssb.append("RAM:\u00A0", labelColor, StyleSpan(Typeface.BOLD))
+                    ssb.append(availStr, valueColor, StyleSpan(Typeface.BOLD))
+                    ssb.append(" | ", Color.GRAY)
+                    ssb.append(usedStr, valueColor, StyleSpan(Typeface.BOLD))
+                } else {
+                    ssb.append("RAM: ", labelColor, StyleSpan(Typeface.BOLD))
+                    ssb.append(availStr, valueColor, StyleSpan(Typeface.BOLD))
+                    ssb.append("\n")
+                    val indentStart = ssb.length
+                    ssb.append(" ")
+                    val prefixWidth = overlayView.paint.measureText("RAM: ").toInt()
+                    ssb.setSpan(SpaceSpan(prefixWidth), indentStart, ssb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ssb.append(usedStr, valueColor, StyleSpan(Typeface.BOLD))
+                }
+            } else if (showAvailableRam) {
+                val ramTagSpace = if (singleLineOverlay) "\u00A0" else " "
+                ssb.append("RAM:$ramTagSpace", labelColor, StyleSpan(Typeface.BOLD))
+                ssb.append(availStr, valueColor, StyleSpan(Typeface.BOLD))
+            } else if (showUsedRam) {
+                val ramTagSpace = if (singleLineOverlay) "\u00A0" else " "
+                ssb.append("RAM:$ramTagSpace", labelColor, StyleSpan(Typeface.BOLD))
+                ssb.append(usedStr, valueColor, StyleSpan(Typeface.BOLD))
+            }
         }
 
         if (ssb.isEmpty()) {
@@ -990,14 +1098,16 @@ class FpsOverlayService : Service() {
                 }
             }
             if (singleLineOverlay) {
-                if (!overlayView.isSingleLine) {
-                    overlayView.isSingleLine = true
+                if (!isOverlaySingleLineApplied) {
+                    overlayView.setSingleLine(true)
                     overlayView.maxLines = 1
+                    isOverlaySingleLineApplied = true
                 }
             } else {
-                if (overlayView.isSingleLine) {
-                    overlayView.isSingleLine = false
+                if (isOverlaySingleLineApplied) {
+                    overlayView.setSingleLine(false)
                     overlayView.maxLines = Int.MAX_VALUE
+                    isOverlaySingleLineApplied = false
                 }
             }
             overlayView.text = ssb
@@ -1054,18 +1164,14 @@ class FpsOverlayService : Service() {
         stopNoFpsTicker()
 
         if (fpsProvider == FpsProvider.SURFACE_FLINGER) {
-            val isShizukuReady = try {
-                Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-            } catch (e: Exception) {
-                false
-            }
+            val isPrivileged = isPrivilegedAvailable()
 
-            if (isShizukuReady) {
+            if (isPrivileged) {
                 stopChoreographerMeasuring()
                 startSurfaceFlingerMeasuring()
                 return
             } else {
-                android.util.Log.w("FpsOverlayService", "Shizuku not ready for SurfaceFlinger, falling back to Choreographer")
+                android.util.Log.w("FpsOverlayService", "Privileged access (Shizuku/Root) not ready for SurfaceFlinger, falling back to Choreographer")
             }
         }
 
@@ -1115,14 +1221,18 @@ class FpsOverlayService : Service() {
         choreoForegroundPkg = null
     }
 
-    private fun getChoreoForegroundPackage(): String? {
-        val isShizukuReady = try {
+    private fun isPrivilegedAvailable(): Boolean {
+        if (useRoot && com.rdevzph.fpsmeter.util.ShellHelper.isRootGranted.value) return true
+        return try {
             Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
-        if (isShizukuReady) {
-            val windowOutput = runShizukuShellCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'")
+    }
+
+    private fun getChoreoForegroundPackage(): String? {
+        if (isPrivilegedAvailable()) {
+            val windowOutput = runPrivilegedShellCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'")
             for (line in windowOutput.lines()) {
                 val match = Regex("(?:mCurrentFocus|mFocusedApp)=.*?([a-zA-Z0-9._]+)/[a-zA-Z0-9._]+").find(line)
                 if (match != null) {
@@ -1133,7 +1243,7 @@ class FpsOverlayService : Service() {
                 }
             }
 
-            val actOutput = runShizukuShellCommand("dumpsys activity activities | grep -E 'mResumedActivity|ResumedActivity'")
+            val actOutput = runPrivilegedShellCommand("dumpsys activity activities | grep -E 'mResumedActivity|ResumedActivity'")
             for (line in actOutput.lines()) {
                 val match = Regex("([a-zA-Z0-9._]+)/[a-zA-Z0-9._]+").find(line)
                 if (match != null) {
@@ -1148,35 +1258,15 @@ class FpsOverlayService : Service() {
         return FpsAccessibilityService.currentForegroundPackage
     }
 
-    @Suppress("DEPRECATION")
-    private fun runShizukuShellCommand(command: String): String {
-        var process: Process? = null
-        return try {
-            process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
-            val output = StringBuilder()
-            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    output.append(line).append("\n")
-                }
-            }
-            process.waitFor()
-            output.toString()
-        } catch (e: Exception) {
-            ""
-        } finally {
-            try {
-                process?.destroy()
-            } catch (e: Exception) {
-                // Ignore
-            }
-        }
+    private fun runPrivilegedShellCommand(command: String): String {
+        return com.rdevzph.fpsmeter.util.ShellHelper.runShellCommand(command, useRoot)
     }
 
     private fun startSurfaceFlingerMeasuring() {
         if (surfaceFlingerFpsMonitor == null) {
             surfaceFlingerFpsMonitor = SurfaceFlingerFpsMonitor(
                 method = surfaceFlingerMethod,
+                useRoot = useRoot,
                 onFpsUpdate = { fps, _, api, _, fgPkg ->
                     currentFps = fps
                     detectedGraphicsApi = api
@@ -1223,6 +1313,7 @@ class FpsOverlayService : Service() {
         if (anyShizukuTempNeeded) {
             if (socThermalMonitor == null) {
                 socThermalMonitor = SocThermalMonitor(
+                    useRoot = useRoot,
                     onSnapshotUpdate = { snapshot ->
                         socTemp = snapshot.soc ?: 0f
                         cpuTemp = snapshot.cpu ?: 0f
@@ -1255,21 +1346,41 @@ class FpsOverlayService : Service() {
         }
     }
 
-    private fun sampleRamUsage(): Pair<Float, Int> {
+    private fun formatRamValue(bytes: Long, unit: RamUnit): String {
+        return when (unit) {
+            RamUnit.GB -> {
+                val gb = bytes.toFloat() / (1024f * 1024f * 1024f)
+                val formatted = String.format(Locale.US, "%.1f", gb)
+                if (formatted.endsWith(".0")) {
+                    "${formatted.substringBefore(".0")} GB"
+                } else {
+                    "$formatted GB"
+                }
+            }
+            RamUnit.MB -> {
+                val mb = bytes / (1024L * 1024L)
+                "$mb MB"
+            }
+        }
+    }
+
+    private fun sampleRamUsage(): RamSample {
         return try {
             val actManager = getSystemService(ACTIVITY_SERVICE) as? ActivityManager
             val memInfo = ActivityManager.MemoryInfo()
             actManager?.getMemoryInfo(memInfo)
-            val availGb = memInfo.availMem.toFloat() / (1024f * 1024f * 1024f)
-            val usedPercent = if (memInfo.totalMem > 0L) {
-                val usedBytes = (memInfo.totalMem - memInfo.availMem).coerceAtLeast(0L)
-                ((usedBytes.toDouble() / memInfo.totalMem.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
-            } else {
-                0
-            }
-            Pair(availGb, usedPercent)
+            val totalBytes = memInfo.totalMem
+            val availBytes = memInfo.availMem
+            val usedBytes = (totalBytes - availBytes).coerceAtLeast(0L)
+            val availPercent = if (totalBytes > 0L) {
+                ((availBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
+            } else 0
+            val usedPercent = if (totalBytes > 0L) {
+                ((usedBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
+            } else 0
+            RamSample(availBytes, usedBytes, totalBytes, availPercent, usedPercent)
         } catch (e: Exception) {
-            Pair(0f, 0)
+            RamSample()
         }
     }
 
@@ -1278,10 +1389,9 @@ class FpsOverlayService : Service() {
             if (ramMonitorJob == null || ramMonitorJob?.isActive != true) {
                 ramMonitorJob = serviceScope.launch(Dispatchers.IO) {
                     while (isActive) {
-                        val (ramGb, ramPercent) = sampleRamUsage()
+                        val sample = sampleRamUsage()
                         withContext(Dispatchers.Main) {
-                            availableRamGb = ramGb
-                            usedRamPercent = ramPercent
+                            lastRamSample = sample
                             if (isOverlayVisible) {
                                 updateOverlayText()
                             }
@@ -1293,8 +1403,7 @@ class FpsOverlayService : Service() {
         } else {
             ramMonitorJob?.cancel()
             ramMonitorJob = null
-            availableRamGb = 0f
-            usedRamPercent = 0
+            lastRamSample = RamSample()
             if (isOverlayVisible) {
                 updateOverlayText()
             }
@@ -1319,6 +1428,16 @@ class FpsOverlayService : Service() {
             .setOngoing(true)
             .setSilent(true)
             .build()
+    }
+
+    private class SpaceSpan(private val widthPx: Int) : ReplacementSpan() {
+        override fun getSize(paint: Paint, text: CharSequence?, start: Int, end: Int, fm: Paint.FontMetricsInt?): Int {
+            return widthPx
+        }
+
+        override fun draw(canvas: Canvas, text: CharSequence?, start: Int, end: Int, x: Float, top: Int, y: Int, bottom: Int, paint: Paint) {
+            // Transparent spacer
+        }
     }
 
     private inner class OverlayTextView(context: Context) : TextView(context) {

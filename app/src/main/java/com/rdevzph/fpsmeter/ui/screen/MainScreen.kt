@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.OverlayStyle
+import com.rdevzph.fpsmeter.model.RamUnit
 import com.rdevzph.fpsmeter.model.SurfaceFlingerMethod
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.util.DeviceHardwareHelper
@@ -95,6 +96,8 @@ fun MainScreen(
 
     val shizukuAvailable by viewModel.shizukuAvailable.collectAsState()
     val shizukuGranted by viewModel.shizukuPermissionGranted.collectAsState()
+    val isRootAvailable by viewModel.isRootAvailable.collectAsState()
+    val isRootGranted by viewModel.isRootGranted.collectAsState()
     val overlayGranted by viewModel.overlayPermissionGranted.collectAsState()
     val overlayRunning by viewModel.isOverlayRunning.collectAsState()
     val settings by viewModel.settings.collectAsState()
@@ -217,9 +220,13 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
+                putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
+                putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, settings.showUsedRam)
+                putExtra(FpsOverlayService.EXTRA_RAM_UNIT, settings.ramUnit.name)
                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, settings.showSocName)
+                putExtra(FpsOverlayService.EXTRA_USE_ROOT, settings.useRoot)
             }
             context.startForegroundService(intent)
             viewModel.setOverlayRunning(true)
@@ -239,10 +246,15 @@ fun MainScreen(
                 themeSettings = themeSettings,
                 currentLanguage = currentLanguage,
                 startOnBoot = settings.startOnBoot,
+                useRoot = settings.useRoot,
+                isRootAvailable = isRootAvailable,
                 onThemeChange = { viewModel.updateThemeSettings(it) },
                 onLanguageChange = onLanguageChange,
                 onStartOnBootChange = { enabled ->
                     viewModel.updateSettings(settings.copy(startOnBoot = enabled))
+                },
+                onToggleUseRoot = { enabled ->
+                    viewModel.toggleUseRoot(enabled)
                 },
                 onOpenDonation = { showDonationDialog = true },
                 onBack = { isSettingsOpen = false }
@@ -358,18 +370,25 @@ fun MainScreen(
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                // === Shizuku Status ===
-                ShizukuCard(
-                    available = shizukuAvailable,
-                    granted = shizukuGranted,
-                    onRequestPermission = { viewModel.requestShizukuPermission() },
-                    onRefresh = { viewModel.checkShizukuStatus() }
-                )
+                // === Privileged Access Status (Root / Shizuku) ===
+                val isOperatingWithRoot = settings.useRoot && isRootGranted
+                if (isOperatingWithRoot) {
+                    RootAccessCard()
+                } else {
+                    ShizukuCard(
+                        available = shizukuAvailable,
+                        granted = shizukuGranted,
+                        onRequestPermission = { viewModel.requestShizukuPermission() },
+                        onRefresh = { viewModel.checkShizukuStatus() }
+                    )
+                }
+
+                val privilegedReady = isOperatingWithRoot || (shizukuAvailable && shizukuGranted)
 
                 // === Overlay Permission ===
                 OverlayPermissionCard(
                     granted = overlayGranted,
-                    shizukuReady = shizukuAvailable && shizukuGranted,
+                    shizukuReady = privilegedReady,
                     onGrantViaShizuku = { viewModel.grantOverlayViaShizuku(context) },
                     onOpenSettings = {
                         context.startActivity(
@@ -385,7 +404,7 @@ fun MainScreen(
                 OverlayControlCard(
                     running = overlayRunning,
                     permissionReady = overlayGranted,
-                    shizukuReady = shizukuAvailable && shizukuGranted,
+                    shizukuReady = privilegedReady,
                     settings = settings,
                     onStart = {
                         val intent = Intent(context, FpsOverlayService::class.java).apply {
@@ -411,9 +430,13 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, settings.showBatteryPower)
                             putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                             putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, settings.showUsedRam)
+                            putExtra(FpsOverlayService.EXTRA_RAM_UNIT, settings.ramUnit.name)
                             putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                             putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
                             putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, settings.showSocName)
+                            putExtra(FpsOverlayService.EXTRA_USE_ROOT, settings.useRoot)
                         }
                         context.startForegroundService(intent)
                         viewModel.setOverlayRunning(true)
@@ -448,9 +471,13 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_POWER, newSettings.showBatteryPower)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_BATTERY_CURRENT, newSettings.showBatteryCurrent)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, newSettings.showRam)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, newSettings.showAvailableRam)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, newSettings.showUsedRam)
+                                putExtra(FpsOverlayService.EXTRA_RAM_UNIT, newSettings.ramUnit.name)
                                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, newSettings.singleLineOverlay)
                                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, newSettings.overlayStyle.name)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_NAME, newSettings.showSocName)
+                                putExtra(FpsOverlayService.EXTRA_USE_ROOT, newSettings.useRoot)
                             }
                             context.startForegroundService(intent)
                         }
@@ -965,6 +992,61 @@ fun SplashOverlay(
                         .navigationBarsPadding()
                         .padding(bottom = 28.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun RootAccessCard() {
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { expanded = !expanded }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Security,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    stringResource(R.string.root_operating_mode),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.weight(1f))
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (expanded) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    stringResource(R.string.root_operating_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StatusChip(stringResource(R.string.root_superuser), true, Modifier.weight(1f))
+                    StatusChip(stringResource(R.string.root_granted), true, Modifier.weight(1f))
+                }
             }
         }
     }
@@ -1813,7 +1895,7 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(8.dp))
 
-        // Remaining RAM toggle (Third line)
+        // RAM Overlays Section
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -1823,10 +1905,10 @@ fun OverlaySettingsPanel(
                     .weight(1f)
                     .padding(end = 8.dp)
             ) {
-                Text(stringResource(R.string.remaining_ram), style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.ram_overlays), style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    stringResource(R.string.remaining_ram_desc),
+                    stringResource(R.string.ram_overlays_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1836,6 +1918,103 @@ fun OverlaySettingsPanel(
                 onCheckedChange = { onChange(settings.copy(showRam = it)) },
                 modifier = Modifier.scale(0.8f)
             )
+        }
+
+        AnimatedVisibility(visible = settings.showRam) {
+            Column(modifier = Modifier.padding(top = 8.dp)) {
+                // Available RAM & Used RAM toggles in a row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Available RAM toggle
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.available_ram), style = MaterialTheme.typography.labelMedium)
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    stringResource(R.string.available_ram_desc),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = settings.showAvailableRam,
+                                onCheckedChange = { onChange(settings.copy(showAvailableRam = it)) },
+                                modifier = Modifier.scale(0.8f)
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.width(16.dp))
+
+                    // Used RAM toggle
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.used_ram), style = MaterialTheme.typography.labelMedium)
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    stringResource(R.string.used_ram_desc),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = settings.showUsedRam,
+                                onCheckedChange = { onChange(settings.copy(showUsedRam = it)) },
+                                modifier = Modifier.scale(0.8f)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                // RAM Value Format (Unit) selection: GB vs MB (Original Raw)
+                Text(stringResource(R.string.ram_format), style = MaterialTheme.typography.labelMedium)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    stringResource(R.string.ram_format_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RamUnit.entries.forEach { unit ->
+                        val isSelected = settings.ramUnit == unit
+                        val label = when (unit) {
+                            RamUnit.GB -> stringResource(R.string.ram_unit_gb)
+                            RamUnit.MB -> stringResource(R.string.ram_unit_mb)
+                        }
+                        OutlinedButton(
+                            onClick = { onChange(settings.copy(ramUnit = unit)) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (isSelected)
+                                    MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                            )
+                        ) {
+                            Text(
+                                label,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(10.dp))
@@ -1999,7 +2178,7 @@ fun OverlaySettingsPanel(
         val hasBattLevel = settings.showBatteryLevel
         val hasBattPower = settings.showBatteryPower
         val hasBattBoth = hasBatt && hasBattLevel
-        val hasRam = settings.showRam
+        val hasRam = settings.showRam && (settings.showAvailableRam || settings.showUsedRam)
 
         val extraOverlayCount = (if (settings.showFps) 1 else 0) +
                 (if (hasApi) 1 else 0) +
@@ -2047,13 +2226,19 @@ fun OverlaySettingsPanel(
                             val colorSoc = Color(0xFFB0BEC5)
                             val colorApi = Color(0xFFFF5722) // Distinct orange for Vulkan
 
-                            fun appendPreviewRow(tag: String, tagColor: Color, cells: List<Pair<String, Color>>) {
+                            fun appendPreviewRow(
+                                tag: String,
+                                tagColor: Color,
+                                cells: List<Pair<String, Color>>,
+                                separator: String? = null,
+                                customSpaceAfterTag: String? = null
+                            ) {
                                 withStyle(SpanStyle(color = tagColor, fontWeight = FontWeight.Bold)) {
                                     append(tag)
                                 }
-                                val spaceAfterTag = if (settings.singleLineOverlay) "\u00A0" else "    "
+                                val spaceAfterTag = customSpaceAfterTag ?: (if (settings.singleLineOverlay) "\u00A0" else "    ")
                                 append(spaceAfterTag)
-                                val spaceBetweenCells = if (settings.singleLineOverlay) " " else "    "
+                                val spaceBetweenCells = separator ?: (if (settings.singleLineOverlay) " " else "    ")
                                 cells.forEachIndexed { index, (value, vColor) ->
                                     if (index > 0) {
                                         append(spaceBetweenCells)
@@ -2123,15 +2308,30 @@ fun OverlaySettingsPanel(
                                     }
                                     batCells.add(powerStr to colorVal)
                                 }
-                                appendPreviewRow("BAT", colorBat, batCells)
+                                appendPreviewRow("BAT", colorBat, batCells, customSpaceAfterTag = if (settings.singleLineOverlay) "\u00A0" else "     ")
                             }
 
                             // 6. RAM row (only if RAM overlay enabled)
                             if (hasRam) {
+                                val availPreview = if (settings.ramUnit == RamUnit.MB) "1843 MB (45%)" else "1.8 GB (45%)"
+                                val usedPreview = if (settings.ramUnit == RamUnit.MB) "2252 MB (55%)" else "2.2 GB (55%)"
+                                val ramSpace = if (settings.singleLineOverlay) "\u00A0" else "   "
                                 newPreviewLine()
-                                val ramGbStr = if (settings.singleLineOverlay) "4.2GB" else "4.2 GB"
-                                val ramPctStr = if (settings.singleLineOverlay) "58%" else "58 %"
-                                appendPreviewRow("RAM", colorRam, listOf(ramGbStr to colorVal, ramPctStr to colorVal))
+                                if (settings.showAvailableRam && settings.showUsedRam) {
+                                    if (settings.singleLineOverlay) {
+                                        appendPreviewRow("RAM", colorRam, listOf(availPreview to colorVal, usedPreview to colorVal), separator = " | ")
+                                    } else {
+                                        appendPreviewRow("RAM", colorRam, listOf(availPreview to colorVal), customSpaceAfterTag = ramSpace)
+                                        append("\n          ")
+                                        withStyle(SpanStyle(color = colorVal, fontWeight = FontWeight.Bold)) {
+                                            append(usedPreview)
+                                        }
+                                    }
+                                } else if (settings.showAvailableRam) {
+                                    appendPreviewRow("RAM", colorRam, listOf(availPreview to colorVal), customSpaceAfterTag = ramSpace)
+                                } else if (settings.showUsedRam) {
+                                    appendPreviewRow("RAM", colorRam, listOf(usedPreview to colorVal), customSpaceAfterTag = ramSpace)
+                                }
                             }
 
                             // 7. FPS row (only shown if showFps)
@@ -2227,11 +2427,47 @@ fun OverlaySettingsPanel(
                                         append("\n")
                                     }
                                 }
-                                withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
-                                    append("RAM ")
-                                }
-                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
-                                    append("4.2 GB (58%)")
+                                val availPreview = if (settings.ramUnit == RamUnit.MB) "1843 MB (45%)" else "1.8 GB (45%)"
+                                val usedPreview = if (settings.ramUnit == RamUnit.MB) "2252 MB (55%)" else "2.2 GB (55%)"
+
+                                if (settings.showAvailableRam && settings.showUsedRam) {
+                                    if (settings.singleLineOverlay) {
+                                        withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                            append("RAM: ")
+                                        }
+                                        withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                            append(availPreview)
+                                        }
+                                        withStyle(SpanStyle(color = Color.Gray)) { append(" | ") }
+                                        withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                            append(usedPreview)
+                                        }
+                                    } else {
+                                        withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                            append("RAM: ")
+                                        }
+                                        withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                            append(availPreview)
+                                        }
+                                        append("\n           ")
+                                        withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                            append(usedPreview)
+                                        }
+                                    }
+                                } else if (settings.showAvailableRam) {
+                                    withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                        append("RAM: ")
+                                    }
+                                    withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                        append(availPreview)
+                                    }
+                                } else if (settings.showUsedRam) {
+                                    withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                        append("RAM: ")
+                                    }
+                                    withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                        append(usedPreview)
+                                    }
                                 }
                             }
 

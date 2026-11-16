@@ -1,11 +1,9 @@
-# FPS Meter Android v3.4
+# FPS Meter Android v3.5
 
 ### What's Changed
-- Added a Battery Current (mA) toggle under Battery Wattage in Overlay settings so you can hide the milliamperes value and show only watts
-- Added an Auto-Hide Bubble & Double-Tap Overlay option under Floating Assistive Bubble in Settings to hide the green floating bubble while the overlay is visible and let you double-tap the stats overlay to collapse it back into the floating bubble
-- Added a Show Chip Name toggle below Overlay Style when RTSS is selected so you can hide the processor name header at the top of the overlay
-
-Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
+- Added Root Mode in Settings with automatic root binary detection, allowing rooted devices to run privileged SurfaceFlinger FPS and hardware thermals without Shizuku
+- Added a dedicated RAM Overlays section with separate toggles for Available RAM and Used RAM alongside their percentages, and an option to switch between GB and MB units
+- Fixed a crash on Android 9 caused by an unsupported text view method ([#52](https://github.com/rdevz-ph/FPS-Meter-Android/issues/52))
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 
@@ -23,13 +21,13 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Light and dark mode themes
 - Multi-language support (English and Simplified Chinese) with in-app language switcher
 - Adjustable text size and overlay opacity
-- Optional Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and hardware thermal monitoring
+- Optional Root Mode and Shizuku integration for one-tap permission grant, SurfaceFlinger game FPS, and hardware thermal monitoring
 - Quick Settings status bar tile and automated game detection via Accessibility Service
 
 ### Requirements
 - Android 8.0+ (API 26)
 - Overlay Permission (SYSTEM_ALERT_WINDOW)
-- Shizuku (optional, required for SurfaceFlinger real game FPS and SoC temperature monitoring)
+- Shizuku or Root (optional, required for SurfaceFlinger real game FPS and SoC temperature monitoring)
 
 ### Installation & Setup Guides
 Download the APK from the assets below and enable the "Display over other apps" permission when prompted.

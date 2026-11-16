@@ -23,6 +23,7 @@ import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.model.FpsProvider
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
 import com.rdevzph.fpsmeter.model.OverlayStyle
+import com.rdevzph.fpsmeter.model.RamUnit
 import com.rdevzph.fpsmeter.model.SurfaceFlingerMethod
 import com.rdevzph.fpsmeter.recording.FpsRecordingManager
 import com.rdevzph.fpsmeter.shizuku.ShizukuHelper
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.rdevzph.fpsmeter.util.ShellHelper
 
 data class OverlaySettings(
     val color: Int = AUTO_COLOR,
@@ -59,10 +61,14 @@ data class OverlaySettings(
     val showBatteryPower: Boolean = false,
     val showBatteryCurrent: Boolean = true,
     val showRam: Boolean = false,
+    val showAvailableRam: Boolean = true,
+    val showUsedRam: Boolean = true,
+    val ramUnit: RamUnit = RamUnit.GB,
     val singleLineOverlay: Boolean = false,
     val overlayStyle: OverlayStyle = OverlayStyle.DEFAULT,
     val showSocName: Boolean = true,
-    val startOnBoot: Boolean = false
+    val startOnBoot: Boolean = false,
+    val useRoot: Boolean = false
 ) {
     companion object {
         const val AUTO_COLOR = 0 // Sentinel value for automatic coloring
@@ -94,10 +100,14 @@ data class OverlaySettings(
         private const val KEY_SHOW_BATTERY_POWER = "show_battery_power"
         private const val KEY_SHOW_BATTERY_CURRENT = "show_battery_current"
         private const val KEY_SHOW_RAM = "show_ram"
+        private const val KEY_SHOW_AVAILABLE_RAM = "show_available_ram"
+        private const val KEY_SHOW_USED_RAM = "show_used_ram"
+        private const val KEY_RAM_UNIT = "ram_unit"
         private const val KEY_SINGLE_LINE_OVERLAY = "single_line_overlay"
         private const val KEY_OVERLAY_STYLE = "overlay_style"
         private const val KEY_SHOW_SOC_NAME = "show_soc_name"
         private const val KEY_START_ON_BOOT = "start_on_boot"
+        private const val KEY_USE_ROOT = "use_root"
 
         fun load(context: Context): OverlaySettings {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -129,10 +139,14 @@ data class OverlaySettings(
                 showBatteryPower = prefs.getBoolean(KEY_SHOW_BATTERY_POWER, defaultSettings.showBatteryPower),
                 showBatteryCurrent = prefs.getBoolean(KEY_SHOW_BATTERY_CURRENT, defaultSettings.showBatteryCurrent),
                 showRam = prefs.getBoolean(KEY_SHOW_RAM, defaultSettings.showRam),
+                showAvailableRam = prefs.getBoolean(KEY_SHOW_AVAILABLE_RAM, defaultSettings.showAvailableRam),
+                showUsedRam = prefs.getBoolean(KEY_SHOW_USED_RAM, defaultSettings.showUsedRam),
+                ramUnit = RamUnit.fromString(prefs.getString(KEY_RAM_UNIT, defaultSettings.ramUnit.name)),
                 singleLineOverlay = prefs.getBoolean(KEY_SINGLE_LINE_OVERLAY, defaultSettings.singleLineOverlay),
                 overlayStyle = OverlayStyle.fromString(prefs.getString(KEY_OVERLAY_STYLE, defaultSettings.overlayStyle.name)),
                 showSocName = prefs.getBoolean(KEY_SHOW_SOC_NAME, defaultSettings.showSocName),
-                startOnBoot = prefs.getBoolean(KEY_START_ON_BOOT, defaultSettings.startOnBoot)
+                startOnBoot = prefs.getBoolean(KEY_START_ON_BOOT, defaultSettings.startOnBoot),
+                useRoot = prefs.getBoolean(KEY_USE_ROOT, defaultSettings.useRoot)
             )
         }
 
@@ -164,10 +178,14 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_BATTERY_POWER, settings.showBatteryPower)
                 putBoolean(KEY_SHOW_BATTERY_CURRENT, settings.showBatteryCurrent)
                 putBoolean(KEY_SHOW_RAM, settings.showRam)
+                putBoolean(KEY_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
+                putBoolean(KEY_SHOW_USED_RAM, settings.showUsedRam)
+                putString(KEY_RAM_UNIT, settings.ramUnit.name)
                 putBoolean(KEY_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putString(KEY_OVERLAY_STYLE, settings.overlayStyle.name)
                 putBoolean(KEY_SHOW_SOC_NAME, settings.showSocName)
                 putBoolean(KEY_START_ON_BOOT, settings.startOnBoot)
+                putBoolean(KEY_USE_ROOT, settings.useRoot)
                 apply()
             }
         }
@@ -183,6 +201,9 @@ class FpsViewModel(
 
     val shizukuAvailable: StateFlow<Boolean> = shizukuHelper.shizukuAvailable
     val shizukuPermissionGranted: StateFlow<Boolean> = shizukuHelper.shizukuPermissionGranted
+
+    val isRootAvailable: StateFlow<Boolean> = ShellHelper.isRootAvailable
+    val isRootGranted: StateFlow<Boolean> = ShellHelper.isRootGranted
 
     private val _overlayPermissionGranted = MutableStateFlow(false)
     val overlayPermissionGranted: StateFlow<Boolean> = _overlayPermissionGranted.asStateFlow()
@@ -212,12 +233,24 @@ class FpsViewModel(
             }
         }
         shizukuHelper.updateAvailability(packageManager)
+        ShellHelper.checkSuBinaryAvailable()
+        if (_settings.value.useRoot) {
+            viewModelScope.launch {
+                ShellHelper.checkOrRequestRootAccess(requestPrompt = false)
+            }
+        }
         refreshSessions()
     }
 
     fun refreshStatus() {
         _isOverlayRunning.value = FpsOverlayService.isRunning
         shizukuHelper.updateAvailability(packageManager)
+        ShellHelper.checkSuBinaryAvailable()
+        if (_settings.value.useRoot) {
+            viewModelScope.launch {
+                ShellHelper.checkOrRequestRootAccess(requestPrompt = false)
+            }
+        }
         _settings.value = OverlaySettings.load(context)
         _themeSettings.value = AppThemeSettings.load(context)
         checkOverlayPermission(context)
@@ -235,22 +268,54 @@ class FpsViewModel(
         return granted
     }
 
+    fun toggleUseRoot(enabled: Boolean, onResult: ((Boolean) -> Unit)? = null) {
+        viewModelScope.launch {
+            if (enabled) {
+                val hasSu = ShellHelper.checkSuBinaryAvailable()
+                if (!hasSu) {
+                    onResult?.invoke(false)
+                    return@launch
+                }
+                val granted = ShellHelper.checkOrRequestRootAccess(requestPrompt = true)
+                if (granted) {
+                    val updated = _settings.value.copy(useRoot = true)
+                    updateSettings(updated)
+                    onResult?.invoke(true)
+                } else {
+                    val updated = _settings.value.copy(useRoot = false)
+                    updateSettings(updated)
+                    onResult?.invoke(false)
+                }
+            } else {
+                val updated = _settings.value.copy(useRoot = false)
+                updateSettings(updated)
+                onResult?.invoke(true)
+            }
+        }
+    }
+
     /**
-     * Grant SYSTEM_ALERT_WINDOW via Shizuku (appops set <pkg> SYSTEM_ALERT_WINDOW allow)
+     * Grant SYSTEM_ALERT_WINDOW via Shizuku or Root (appops set <pkg> SYSTEM_ALERT_WINDOW allow)
      */
     fun grantOverlayViaShizuku(context: Context) {
-        if (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value) {
+        val useRoot = _settings.value.useRoot && ShellHelper.isRootGranted.value
+        if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             _statusMessage.value = context.getString(R.string.shizuku_not_ready)
             return
         }
         viewModelScope.launch {
             try {
                 val pkg = context.packageName
-                val process = rikka.shizuku.Shizuku.newProcess(
-                    arrayOf("appops", "set", pkg, "SYSTEM_ALERT_WINDOW", "allow"),
-                    null, null
-                )
-                val exit = process.waitFor()
+                val exit = if (useRoot) {
+                    val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "appops set $pkg SYSTEM_ALERT_WINDOW allow"))
+                    process.waitFor()
+                } else {
+                    val process = rikka.shizuku.Shizuku.newProcess(
+                        arrayOf("appops", "set", pkg, "SYSTEM_ALERT_WINDOW", "allow"),
+                        null, null
+                    )
+                    process.waitFor()
+                }
                 if (exit == 0) {
                     _overlayPermissionGranted.value = Settings.canDrawOverlays(context)
                     _statusMessage.value = if (_overlayPermissionGranted.value)
@@ -290,7 +355,8 @@ class FpsViewModel(
         val current = _settings.value
         updateSettings(current.copy(autoStartEnabled = false))
 
-        if (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value) {
+        val useRoot = current.useRoot && ShellHelper.isRootGranted.value
+        if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             val intent = Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:${context.packageName}")
@@ -311,10 +377,15 @@ class FpsViewModel(
             """.trimIndent()
 
             try {
-                rikka.shizuku.Shizuku.newProcess(
-                    arrayOf("sh", "-c", script),
-                    null, null
-                )
+                if (useRoot) {
+                    val p = Runtime.getRuntime().exec(arrayOf("su", "-c", script))
+                    p.waitFor()
+                } else {
+                    rikka.shizuku.Shizuku.newProcess(
+                        arrayOf("sh", "-c", script),
+                        null, null
+                    )
+                }
             } catch (e: Exception) {
                 val intent = Intent(
                     Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -330,7 +401,8 @@ class FpsViewModel(
         restartAccessibilityViaShizuku(context, isEnabling = true, onComplete = onComplete)
 
     fun disableAccessibilityViaShizuku(context: Context, onComplete: ((Boolean) -> Unit)? = null) {
-        if (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value) {
+        val useRoot = _settings.value.useRoot && ShellHelper.isRootGranted.value
+        if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             onComplete?.invoke(false)
             return
         }
@@ -350,11 +422,16 @@ class FpsViewModel(
             """.trimIndent()
 
             try {
-                val process = rikka.shizuku.Shizuku.newProcess(
-                    arrayOf("sh", "-c", script),
-                    null, null
-                )
-                val exitCode = process.waitFor()
+                val exitCode = if (useRoot) {
+                    val process = Runtime.getRuntime().exec(arrayOf("su", "-c", script))
+                    process.waitFor()
+                } else {
+                    val process = rikka.shizuku.Shizuku.newProcess(
+                        arrayOf("sh", "-c", script),
+                        null, null
+                    )
+                    process.waitFor()
+                }
                 kotlinx.coroutines.delay(400)
                 FpsAccessibilityService.isServiceRunning = false
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
@@ -378,7 +455,8 @@ class FpsViewModel(
         isEnabling: Boolean = false,
         onComplete: ((Boolean) -> Unit)? = null
     ) {
-        if (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value) {
+        val useRoot = _settings.value.useRoot && ShellHelper.isRootGranted.value
+        if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             _statusMessage.value = context.getString(R.string.shizuku_not_ready)
             onComplete?.invoke(false)
             return
@@ -413,11 +491,16 @@ class FpsViewModel(
             """.trimIndent()
 
             try {
-                val process = rikka.shizuku.Shizuku.newProcess(
-                    arrayOf("sh", "-c", script),
-                    null, null
-                )
-                val exitCode = process.waitFor()
+                val exitCode = if (useRoot) {
+                    val process = Runtime.getRuntime().exec(arrayOf("su", "-c", script))
+                    process.waitFor()
+                } else {
+                    val process = rikka.shizuku.Shizuku.newProcess(
+                        arrayOf("sh", "-c", script),
+                        null, null
+                    )
+                    process.waitFor()
+                }
                 kotlinx.coroutines.delay(800)
                 val alive = FpsAccessibilityService.isServiceRunning
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {

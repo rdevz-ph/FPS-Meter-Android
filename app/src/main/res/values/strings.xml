@@ -41,6 +41,18 @@
     <string name="shizuku_service">Service</string>
     <string name="shizuku_permission">Permission</string>
 
+    <!-- Root access card -->
+    <string name="root_operating_mode">Root Mode</string>
+    <string name="root_operating_desc">Root access is granted. Privileged SurfaceFlinger game FPS monitoring and hardware thermals operate directly via root without Shizuku.</string>
+    <string name="root_granted">Granted</string>
+    <string name="root_superuser">Superuser</string>
+
+    <!-- Settings Root section -->
+    <string name="section_root">Root Access</string>
+    <string name="use_root_access">Use Root Access</string>
+    <string name="use_root_access_desc">Run privileged commands (SurfaceFlinger FPS and hardware thermals) directly with root instead of Shizuku.</string>
+    <string name="root_unavailable_warning">No su binary detected on this device.</string>
+
     <!-- Overlay permission card -->
     <string name="overlay_permission">Overlay Permission</string>
     <string name="overlay_granted_desc">SYSTEM_ALERT_WINDOW is granted — overlay can appear over any app.</string>
@@ -86,6 +98,16 @@
     <string name="battery_current_desc">Show live current in milliamperes (mA) alongside battery wattage</string>
     <string name="remaining_ram">Remaining RAM</string>
     <string name="remaining_ram_desc">Display available memory and occupied RAM percentage on a third overlay line</string>
+    <string name="ram_overlays">RAM Overlays</string>
+    <string name="ram_overlays_desc">Display device memory usage on the overlay</string>
+    <string name="available_ram">Available RAM</string>
+    <string name="available_ram_desc">Display available memory alongside its percentage</string>
+    <string name="used_ram">Used RAM</string>
+    <string name="used_ram_desc">Display actual RAM usage alongside its percentage</string>
+    <string name="ram_format">RAM Value Format</string>
+    <string name="ram_format_desc">Choose between displaying raw RAM values in GB or their original raw numeric format</string>
+    <string name="ram_unit_gb">Gigabytes (GB)</string>
+    <string name="ram_unit_mb">Megabytes (MB)</string>
     <string name="single_line_overlay">Single-line overlay</string>
     <string name="single_line_overlay_desc">Display all metrics on one horizontal line for tablets or landscape view</string>
     <string name="overlay_style">Overlay Style</string>

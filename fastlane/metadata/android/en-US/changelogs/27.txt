@@ -1,0 +1,3 @@
+- Added Root Mode in Settings with automatic root binary detection, allowing rooted devices to run privileged SurfaceFlinger FPS and hardware thermals without Shizuku.
+- Added a dedicated RAM Overlays section with separate toggles for Available RAM and Used RAM alongside their percentages, and an option to switch between GB and MB units.
+- Fixed a crash on Android 9 caused by an unsupported text view method.
