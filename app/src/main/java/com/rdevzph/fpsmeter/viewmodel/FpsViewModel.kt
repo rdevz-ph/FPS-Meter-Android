@@ -63,6 +63,7 @@ data class OverlaySettings(
     val showRam: Boolean = false,
     val showAvailableRam: Boolean = true,
     val showUsedRam: Boolean = true,
+    val showSwap: Boolean = false,
     val ramUnit: RamUnit = RamUnit.GB,
     val singleLineOverlay: Boolean = false,
     val overlayStyle: OverlayStyle = OverlayStyle.DEFAULT,
@@ -102,6 +103,7 @@ data class OverlaySettings(
         private const val KEY_SHOW_RAM = "show_ram"
         private const val KEY_SHOW_AVAILABLE_RAM = "show_available_ram"
         private const val KEY_SHOW_USED_RAM = "show_used_ram"
+        private const val KEY_SHOW_SWAP = "show_swap"
         private const val KEY_RAM_UNIT = "ram_unit"
         private const val KEY_SINGLE_LINE_OVERLAY = "single_line_overlay"
         private const val KEY_OVERLAY_STYLE = "overlay_style"
@@ -141,6 +143,7 @@ data class OverlaySettings(
                 showRam = prefs.getBoolean(KEY_SHOW_RAM, defaultSettings.showRam),
                 showAvailableRam = prefs.getBoolean(KEY_SHOW_AVAILABLE_RAM, defaultSettings.showAvailableRam),
                 showUsedRam = prefs.getBoolean(KEY_SHOW_USED_RAM, defaultSettings.showUsedRam),
+                showSwap = prefs.getBoolean(KEY_SHOW_SWAP, defaultSettings.showSwap),
                 ramUnit = RamUnit.fromString(prefs.getString(KEY_RAM_UNIT, defaultSettings.ramUnit.name)),
                 singleLineOverlay = prefs.getBoolean(KEY_SINGLE_LINE_OVERLAY, defaultSettings.singleLineOverlay),
                 overlayStyle = OverlayStyle.fromString(prefs.getString(KEY_OVERLAY_STYLE, defaultSettings.overlayStyle.name)),
@@ -180,6 +183,7 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_RAM, settings.showRam)
                 putBoolean(KEY_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
                 putBoolean(KEY_SHOW_USED_RAM, settings.showUsedRam)
+                putBoolean(KEY_SHOW_SWAP, settings.showSwap)
                 putString(KEY_RAM_UNIT, settings.ramUnit.name)
                 putBoolean(KEY_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putString(KEY_OVERLAY_STYLE, settings.overlayStyle.name)

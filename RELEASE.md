@@ -1,9 +1,9 @@
-# FPS Meter Android v3.5
+# FPS Meter Android v3.6
 
 ### What's Changed
-- Added Root Mode in Settings with automatic root binary detection, allowing rooted devices to run privileged SurfaceFlinger FPS and hardware thermals without Shizuku
-- Added a dedicated RAM Overlays section with separate toggles for Available RAM and Used RAM alongside their percentages, and an option to switch between GB and MB units
-- Fixed a crash on Android 9 caused by an unsupported text view method ([#52](https://github.com/rdevz-ph/FPS-Meter-Android/issues/52))
+- Added Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting ([#53](https://github.com/rdevz-ph/FPS-Meter-Android/issues/53))
+- Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly
+- Extended Device Diagnostics to show the active operating mode (Root vs Shizuku), detected root manager, su binary location, and version for easier debugging
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 

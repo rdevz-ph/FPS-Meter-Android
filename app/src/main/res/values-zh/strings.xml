@@ -104,6 +104,8 @@
     <string name="available_ram_desc">显示可用内存大小及百分比</string>
     <string name="used_ram">已用内存</string>
     <string name="used_ram_desc">显示已用内存大小及百分比</string>
+    <string name="show_swap">Swap (虚拟内存)</string>
+    <string name="show_swap_desc">显示已用 Swap 内存大小及百分比</string>
     <string name="ram_format">内存数值格式</string>
     <string name="ram_format_desc">选择以 GB 显示内存数值或原始数值格式 (MB)</string>
     <string name="ram_unit_gb">千兆字节 (GB)</string>
@@ -200,8 +202,10 @@
     <string name="diag_section_soc">处理器与 GPU</string>
     <string name="diag_section_thermals">发热与电池</string>
     <string name="diag_section_shizuku">Shizuku 特权原始数据</string>
+    <string name="diag_section_privileged">特权访问与原始数据 (Root / Shizuku)</string>
     <string name="diag_section_permissions">权限与服务状态</string>
     <string name="diag_shizuku_not_connected">Shizuku 未运行或未授权。启动 Shizuku 可查看更深层的硬件传感器数据。</string>
+    <string name="diag_privileged_not_connected">未连接 Root 权限或 Shizuku。开启 Root 模式或启动 Shizuku 可查看更深层的硬件传感器数据。</string>
     <string name="diag_thermal_dump_title">内核温度分区转储</string>
     <string name="diag_thermal_dump_desc">将 Linux sysfs 温度分区及实时温度导出为文本文件以供硬件诊断。</string>
     <string name="diag_save_dump_txt">保存 .txt</string>

@@ -59,6 +59,7 @@ fun SettingsScreen(
     startOnBoot: Boolean = false,
     useRoot: Boolean = false,
     isRootAvailable: Boolean = false,
+    snackbarHostState: SnackbarHostState? = null,
     onThemeChange: (AppThemeSettings) -> Unit,
     onLanguageChange: (String) -> Unit,
     onStartOnBootChange: (Boolean) -> Unit = {},
@@ -79,6 +80,11 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        snackbarHost = {
+            if (snackbarHostState != null) {
+                SnackbarHost(snackbarHostState)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -341,15 +347,6 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        if (useRoot) {
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                stringResource(R.string.root_operating_mode) + " • " + stringResource(R.string.root_granted),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
                     }
                     Spacer(Modifier.width(12.dp))
                     Switch(

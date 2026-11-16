@@ -222,6 +222,7 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                 putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
                 putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, settings.showUsedRam)
+                putExtra(FpsOverlayService.EXTRA_SHOW_SWAP, settings.showSwap)
                 putExtra(FpsOverlayService.EXTRA_RAM_UNIT, settings.ramUnit.name)
                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
@@ -248,6 +249,7 @@ fun MainScreen(
                 startOnBoot = settings.startOnBoot,
                 useRoot = settings.useRoot,
                 isRootAvailable = isRootAvailable,
+                snackbarHostState = snackbarHostState,
                 onThemeChange = { viewModel.updateThemeSettings(it) },
                 onLanguageChange = onLanguageChange,
                 onStartOnBootChange = { enabled ->
@@ -432,6 +434,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                             putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
                             putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, settings.showUsedRam)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_SWAP, settings.showSwap)
                             putExtra(FpsOverlayService.EXTRA_RAM_UNIT, settings.ramUnit.name)
                             putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                             putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
@@ -473,6 +476,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_SHOW_RAM, newSettings.showRam)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, newSettings.showAvailableRam)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, newSettings.showUsedRam)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_SWAP, newSettings.showSwap)
                                 putExtra(FpsOverlayService.EXTRA_RAM_UNIT, newSettings.ramUnit.name)
                                 putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, newSettings.singleLineOverlay)
                                 putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, newSettings.overlayStyle.name)
@@ -1972,6 +1976,29 @@ fun OverlaySettingsPanel(
 
                 Spacer(Modifier.height(8.dp))
 
+                // Swap (Virtual RAM) toggle
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.show_swap), style = MaterialTheme.typography.labelMedium)
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            stringResource(R.string.show_swap_desc),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = settings.showSwap,
+                        onCheckedChange = { onChange(settings.copy(showSwap = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+
+                Spacer(Modifier.height(8.dp))
+
                 // RAM Value Format (Unit) selection: GB vs MB (Original Raw)
                 Text(stringResource(R.string.ram_format), style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.height(2.dp))
@@ -2179,6 +2206,7 @@ fun OverlaySettingsPanel(
         val hasBattPower = settings.showBatteryPower
         val hasBattBoth = hasBatt && hasBattLevel
         val hasRam = settings.showRam && (settings.showAvailableRam || settings.showUsedRam)
+        val hasSwap = settings.showRam && settings.showSwap
 
         val extraOverlayCount = (if (settings.showFps) 1 else 0) +
                 (if (hasApi) 1 else 0) +
@@ -2187,11 +2215,12 @@ fun OverlaySettingsPanel(
                 (if (hasGpu) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
                 (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0))) +
-                (if (hasBattPower) 1 else 0)
+                (if (hasBattPower) 1 else 0) +
+                (if (hasSwap) 1 else 0)
 
         val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower
-        val useNextLine = !settings.singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals))
-        val isMultiLine = !settings.singleLineOverlay && (useNextLine || hasRam)
+        val useNextLine = !settings.singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals) || (hasSwap && hasThermals))
+        val isMultiLine = !settings.singleLineOverlay && (useNextLine || hasRam || hasSwap)
         val isAfterburner = settings.overlayStyle == OverlayStyle.MSI_AFTERBURNER
         val previewIsMultiLine = if (isAfterburner) !settings.singleLineOverlay else isMultiLine
 
@@ -2220,6 +2249,7 @@ fun OverlaySettingsPanel(
                             val colorSocTag = Color(0xFF00E5FF)
                             val colorBat = Color(0xFFFFA000)
                             val colorRam = Color(0xFFBA68C8)
+                            val colorSwap = Color(0xFFE040FB)
                             val colorFps = Color(0xFFFF8A80)
                             val colorVal = Color(0xFFFF7A00)
                             val colorNa = Color(0xFF808080)
@@ -2334,7 +2364,15 @@ fun OverlaySettingsPanel(
                                 }
                             }
 
-                            // 7. FPS row (only shown if showFps)
+                            // 7. SWP row (only if swap enabled)
+                            if (hasSwap) {
+                                val swapPreview = if (settings.ramUnit == RamUnit.MB) "1024 MB (25%)" else "1.0 GB (25%)"
+                                val swapSpace = if (settings.singleLineOverlay) "\u00A0" else "   "
+                                newPreviewLine()
+                                appendPreviewRow("SWP", colorSwap, listOf(swapPreview to colorVal), customSpaceAfterTag = swapSpace)
+                            }
+
+                            // 8. FPS row (only shown if showFps)
                             if (settings.showFps) {
                                 newPreviewLine()
                                 val fpsCells = mutableListOf("60 FPS" to colorVal)
@@ -2468,6 +2506,25 @@ fun OverlaySettingsPanel(
                                     withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
                                         append(usedPreview)
                                     }
+                                }
+                            }
+
+                            // === Swap Group (SWP) ===
+                            if (hasSwap) {
+                                if (length > 0) {
+                                    if (settings.singleLineOverlay) {
+                                        withStyle(SpanStyle(color = Color.Gray)) { append("  |  ") }
+                                    } else {
+                                        append("\n")
+                                    }
+                                }
+                                val swapPreview = if (settings.ramUnit == RamUnit.MB) "1024 MB (25%)" else "1.0 GB (25%)"
+                                val swapTagSpace = if (settings.singleLineOverlay) "\u00A0" else " "
+                                withStyle(SpanStyle(color = labelColor, fontWeight = FontWeight.Bold)) {
+                                    append("SWP:$swapTagSpace")
+                                }
+                                withStyle(SpanStyle(color = valueColor, fontWeight = FontWeight.Bold)) {
+                                    append(swapPreview)
                                 }
                             }
 

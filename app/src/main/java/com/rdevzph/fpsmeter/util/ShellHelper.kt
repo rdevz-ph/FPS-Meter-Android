@@ -10,6 +10,14 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
+data class RootDiagnosticsInfo(
+    val isAvailable: Boolean = false,
+    val isGranted: Boolean = false,
+    val rootManager: String = "None",
+    val suPath: String = "None",
+    val suVersion: String = "N/A"
+)
+
 object ShellHelper {
     private const val TAG = "ShellHelper"
 
@@ -92,6 +100,171 @@ object ShellHelper {
         }
 
         return _isRootAvailable.value
+    }
+
+    /**
+     * Inspects root environment to identify the active root manager, su binary path, and version.
+     */
+    fun detectRootDiagnostics(): RootDiagnosticsInfo {
+        var suPath = ""
+        var suVersion = ""
+        var mountsRootHint = ""
+        var isAvailable = checkSuBinaryAvailable()
+        var isGranted = _isRootGranted.value
+
+        // 1. Locate su path via `which su`
+        var whichProcess: Process? = null
+        try {
+            whichProcess = Runtime.getRuntime().exec(arrayOf("which", "su"))
+            val path = BufferedReader(InputStreamReader(whichProcess.inputStream)).readLine()?.trim() ?: ""
+            whichProcess.waitFor()
+            if (path.isNotEmpty() && path.contains("/")) {
+                suPath = path
+                isAvailable = true
+            }
+        } catch (_: Exception) {
+        } finally {
+            try { whichProcess?.destroy() } catch (_: Exception) {}
+        }
+
+        // Fallback: check static locations
+        if (suPath.isEmpty()) {
+            val candidatePaths = arrayOf(
+                "/system/bin/su",
+                "/system/xbin/su",
+                "/sbin/su",
+                "/data/local/xbin/su",
+                "/data/local/bin/su",
+                "/data/local/su",
+                "/su/bin/su",
+                "/data/adb/ksu/bin/su",
+                "/data/adb/ap/bin/su",
+                "/apex/com.android.runtime/bin/su"
+            )
+            for (p in candidatePaths) {
+                try {
+                    if (File(p).exists()) {
+                        suPath = p
+                        isAvailable = true
+                        break
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+
+        // 2. Read /proc/self/mounts for root manager signatures
+        try {
+            val mountsFile = File("/proc/self/mounts")
+            if (mountsFile.exists() && mountsFile.canRead()) {
+                mountsFile.useLines { lines ->
+                    for (line in lines) {
+                        val lower = line.lowercase()
+                        if (lower.contains("kernelsu") || lower.contains("/data/adb/ksu") || lower.contains(" ksu ")) {
+                            mountsRootHint = "KernelSU"
+                            isAvailable = true
+                            break
+                        } else if (lower.contains("apatch") || lower.contains("/data/adb/ap")) {
+                            mountsRootHint = "APatch"
+                            isAvailable = true
+                            break
+                        } else if (lower.contains("magisk") || lower.contains("/sbin/.magisk")) {
+                            mountsRootHint = "Magisk"
+                            isAvailable = true
+                            break
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        // 3. Test `su -v` or `su -V` for version and manager signature
+        var vProcess: Process? = null
+        try {
+            vProcess = Runtime.getRuntime().exec(arrayOf("su", "-v"))
+            val vOutput = BufferedReader(InputStreamReader(vProcess.inputStream)).readLine()?.trim() ?: ""
+            vProcess.waitFor()
+            if (vOutput.isNotEmpty()) {
+                suVersion = vOutput
+                isAvailable = true
+            }
+        } catch (_: Exception) {
+        } finally {
+            try { vProcess?.destroy() } catch (_: Exception) {}
+        }
+
+        if (suVersion.isEmpty()) {
+            var vCapProcess: Process? = null
+            try {
+                vCapProcess = Runtime.getRuntime().exec(arrayOf("su", "-V"))
+                val vOutput = BufferedReader(InputStreamReader(vCapProcess.inputStream)).readLine()?.trim() ?: ""
+                vCapProcess.waitFor()
+                if (vOutput.isNotEmpty()) {
+                    suVersion = vOutput
+                    isAvailable = true
+                }
+            } catch (_: Exception) {
+            } finally {
+                try { vCapProcess?.destroy() } catch (_: Exception) {}
+            }
+        }
+
+        // 4. Test root permission if not yet confirmed
+        if (!isGranted && isAvailable) {
+            var idProcess: Process? = null
+            try {
+                idProcess = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
+                val idOutput = BufferedReader(InputStreamReader(idProcess.inputStream)).readLine()?.trim() ?: ""
+                val exitCode = idProcess.waitFor()
+                if (exitCode == 0 && (idOutput.contains("uid=0") || idOutput.contains("root"))) {
+                    isGranted = true
+                    _isRootGranted.value = true
+                }
+            } catch (_: Exception) {
+            } finally {
+                try { idProcess?.destroy() } catch (_: Exception) {}
+            }
+        }
+
+        // If granted and suPath still empty, try su -c "which su"
+        if (isGranted && suPath.isEmpty()) {
+            var rootWhichProcess: Process? = null
+            try {
+                rootWhichProcess = Runtime.getRuntime().exec(arrayOf("su", "-c", "which su"))
+                val path = BufferedReader(InputStreamReader(rootWhichProcess.inputStream)).readLine()?.trim() ?: ""
+                rootWhichProcess.waitFor()
+                if (path.isNotEmpty() && path.contains("/")) {
+                    suPath = path
+                }
+            } catch (_: Exception) {
+            } finally {
+                try { rootWhichProcess?.destroy() } catch (_: Exception) {}
+            }
+        }
+
+        // 5. Determine Root Manager
+        val combined = "$suVersion $suPath $mountsRootHint".lowercase()
+        val rootManager = when {
+            combined.contains("kernelsu") || combined.contains("ksu") -> "KernelSU"
+            combined.contains("apatch") -> "APatch"
+            combined.contains("magisk") -> "Magisk"
+            combined.contains("supersu") -> "SuperSU"
+            mountsRootHint.isNotEmpty() -> mountsRootHint
+            isGranted || suPath.isNotEmpty() || suVersion.isNotEmpty() -> "Generic SU / Userdebug"
+            isAvailable -> "Unknown Root"
+            else -> "None"
+        }
+
+        if (suPath.isEmpty() && (rootManager == "KernelSU" || rootManager == "APatch")) {
+            suPath = "Kernel Syscall Hook"
+        }
+
+        return RootDiagnosticsInfo(
+            isAvailable = isAvailable,
+            isGranted = isGranted,
+            rootManager = rootManager,
+            suPath = if (suPath.isNotEmpty()) suPath else if (isAvailable) "Not in standard PATH" else "None",
+            suVersion = if (suVersion.isNotEmpty()) suVersion else "N/A"
+        )
     }
 
     /**

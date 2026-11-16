@@ -104,6 +104,8 @@
     <string name="available_ram_desc">Display available memory alongside its percentage</string>
     <string name="used_ram">Used RAM</string>
     <string name="used_ram_desc">Display actual RAM usage alongside its percentage</string>
+    <string name="show_swap">Swap (Virtual RAM)</string>
+    <string name="show_swap_desc">Display used swap memory alongside its percentage</string>
     <string name="ram_format">RAM Value Format</string>
     <string name="ram_format_desc">Choose between displaying raw RAM values in GB or their original raw numeric format</string>
     <string name="ram_unit_gb">Gigabytes (GB)</string>
@@ -200,8 +202,10 @@
     <string name="diag_section_soc">Processor &amp; GPU</string>
     <string name="diag_section_thermals">Thermals &amp; Battery</string>
     <string name="diag_section_shizuku">Shizuku &amp; Privileged Raw Data</string>
+    <string name="diag_section_privileged">Privileged Access (Root / Shizuku)</string>
     <string name="diag_section_permissions">Permissions &amp; Services</string>
     <string name="diag_shizuku_not_connected">Shizuku is not running or permission is not granted. Start Shizuku to view elevated hardware sensors.</string>
+    <string name="diag_privileged_not_connected">Neither Root access nor Shizuku is active. Enable Root Mode or start Shizuku to view elevated hardware sensors.</string>
     <string name="diag_thermal_dump_title">Kernel Thermal Zones Dump</string>
     <string name="diag_thermal_dump_desc">Dump Linux sysfs thermal zones and temperatures to a text file for hardware diagnostics.</string>
     <string name="diag_save_dump_txt">Save .txt</string>

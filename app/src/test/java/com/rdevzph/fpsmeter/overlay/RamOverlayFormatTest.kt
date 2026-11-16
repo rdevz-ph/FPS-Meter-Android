@@ -86,4 +86,43 @@ class RamOverlayFormatTest {
         val expected = "RAM: 1 GB (25%)\n     2 GB (50%)"
         assertEquals(expected, multiLine)
     }
+
+    @Test
+    fun testSwapOverlayFormat() {
+        val totalBytes = 4L * 1024L * 1024L * 1024L // 4 GB swap
+        val freeBytes = 3L * 1024L * 1024L * 1024L  // 3 GB free -> 1 GB used (25%)
+        val usedBytes = totalBytes - freeBytes
+        val usedPct = ((usedBytes.toDouble() / totalBytes) * 100.0).toInt()
+
+        val swapStrGb = "${formatRamValue(usedBytes, RamUnit.GB)} ($usedPct%)"
+        val swapStrMb = "${formatRamValue(usedBytes, RamUnit.MB)} ($usedPct%)"
+
+        assertEquals("1 GB (25%)", swapStrGb)
+        assertEquals("1024 MB (25%)", swapStrMb)
+
+        val rtssRow = "SWP: $swapStrGb"
+        assertEquals("SWP: 1 GB (25%)", rtssRow)
+    }
+
+    @Test
+    fun testSwapFormattingWhenZero() {
+        val totalBytes = 0L
+        val usedBytes = 0L
+        val usedPercent = if (totalBytes > 0L) ((usedBytes.toDouble() / totalBytes) * 100.0).toInt() else 0
+
+        val formattedGb = if (totalBytes > 0L) {
+            "${formatRamValue(usedBytes, RamUnit.GB)} ($usedPercent%)"
+        } else {
+            "0.0 GB (0%)"
+        }
+
+        val formattedMb = if (totalBytes > 0L) {
+            "${formatRamValue(usedBytes, RamUnit.MB)} ($usedPercent%)"
+        } else {
+            "0 MB (0%)"
+        }
+
+        assertEquals("0.0 GB (0%)", formattedGb)
+        assertEquals("0 MB (0%)", formattedMb)
+    }
 }

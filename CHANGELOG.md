@@ -4,6 +4,17 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.6] - 2026-11-16
+
+### Added
+- **Swap (Virtual RAM) Overlay**: Added a Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting ([#53](https://github.com/rdevz-ph/FPS-Meter-Android/issues/53)).
+- **Root and Privileged Diagnostics**: Extended Device Diagnostics to show the active operating mode (Root vs Shizuku), detected root manager (KernelSU, APatch, Magisk, or SuperSU), su binary location, and version for easier debugging.
+
+### Fixed
+- **Root Detection on KernelSU and APatch**: Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly.
+
+---
+
 ## [v3.5] - 2026-11-16
 
 ### Added
@@ -356,6 +367,7 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v3.6]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.6
 [v3.5]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.5
 [v3.4]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.4
 [v3.3]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.3

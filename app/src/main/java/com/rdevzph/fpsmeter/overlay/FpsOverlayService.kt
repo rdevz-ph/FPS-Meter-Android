@@ -92,6 +92,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_RAM = "show_ram"
         const val EXTRA_SHOW_AVAILABLE_RAM = "show_available_ram"
         const val EXTRA_SHOW_USED_RAM = "show_used_ram"
+        const val EXTRA_SHOW_SWAP = "show_swap"
         const val EXTRA_RAM_UNIT = "ram_unit"
         const val EXTRA_SINGLE_LINE_OVERLAY = "single_line_overlay"
         const val EXTRA_OVERLAY_STYLE = "overlay_style"
@@ -169,6 +170,7 @@ class FpsOverlayService : Service() {
     private var showRam = false
     private var showAvailableRam = true
     private var showUsedRam = true
+    private var showSwap = false
     private var ramUnit = RamUnit.GB
     private var singleLineOverlay = false
     private var isOverlaySingleLineApplied = false
@@ -184,6 +186,14 @@ class FpsOverlayService : Service() {
         val usedPercent: Int = 0
     )
     private var lastRamSample = RamSample()
+
+    data class SwapSample(
+        val totalBytes: Long = 0L,
+        val freeBytes: Long = 0L,
+        val usedBytes: Long = 0L,
+        val usedPercent: Int = 0
+    )
+    private var lastSwapSample = SwapSample()
     private var ramMonitorJob: Job? = null
     private var noFpsTickerJob: Job? = null
 
@@ -278,6 +288,7 @@ class FpsOverlayService : Service() {
         showRam = saved.showRam
         showAvailableRam = saved.showAvailableRam
         showUsedRam = saved.showUsedRam
+        showSwap = saved.showSwap
         ramUnit = saved.ramUnit
         singleLineOverlay = saved.singleLineOverlay
         overlayStyle = saved.overlayStyle
@@ -291,6 +302,9 @@ class FpsOverlayService : Service() {
 
         if (showRam) {
             lastRamSample = sampleRamUsage()
+            if (showSwap) {
+                lastSwapSample = sampleSwapUsage()
+            }
         }
         updateRamMonitoring()
         updateSocThermalMonitoring()
@@ -551,6 +565,16 @@ class FpsOverlayService : Service() {
         if (intent.hasExtra(EXTRA_SHOW_USED_RAM)) {
             showUsedRam = intent.getBooleanExtra(EXTRA_SHOW_USED_RAM, showUsedRam)
         }
+        if (intent.hasExtra(EXTRA_SHOW_SWAP)) {
+            val newShowSwap = intent.getBooleanExtra(EXTRA_SHOW_SWAP, showSwap)
+            if (newShowSwap != showSwap) {
+                showSwap = newShowSwap
+                if (showSwap && lastSwapSample.totalBytes == 0L) {
+                    lastSwapSample = sampleSwapUsage()
+                }
+                updateRamMonitoring()
+            }
+        }
         if (intent.hasExtra(EXTRA_RAM_UNIT)) {
             val unitStr = intent.getStringExtra(EXTRA_RAM_UNIT)
             ramUnit = RamUnit.fromString(unitStr)
@@ -731,6 +755,7 @@ class FpsOverlayService : Service() {
         val hasBattPower = showBatteryPower
         val hasBattBoth = hasBatt && hasBattLevel
         val hasRam = showRam && (showAvailableRam || showUsedRam)
+        val hasSwap = showRam && showSwap
 
         val extraOverlayCount = (if (showFps) 1 else 0) +
                 (if (hasApi) 1 else 0) +
@@ -739,13 +764,14 @@ class FpsOverlayService : Service() {
                 (if (hasGpu) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
                 (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0))) +
-                (if (hasBattPower) 1 else 0)
+                (if (hasBattPower) 1 else 0) +
+                (if (hasSwap) 1 else 0)
 
         val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower
         // Wrap thermals to next line if more than 3 extra overlays are enabled (> 3) OR if RAM overlay is also enabled and thermals are present
         // If singleLineOverlay is enabled, keep all metrics on a single horizontal line.
-        val useNextLine = !singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals))
-        val isMultiLine = !singleLineOverlay && (useNextLine || hasRam)
+        val useNextLine = !singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals) || (hasSwap && hasThermals))
+        val isMultiLine = !singleLineOverlay && (useNextLine || hasRam || hasSwap)
 
         val ssb = SpannableStringBuilder()
 
@@ -758,6 +784,7 @@ class FpsOverlayService : Service() {
             val colorSocTag = Color.parseColor("#00E5FF") // Electric Cyan
             val colorBat = Color.parseColor("#FFA000")   // Amber Gold
             val colorRam = Color.parseColor("#BA68C8")   // Orchid / Violet
+            val colorSwap = Color.parseColor("#E040FB")  // Neon Magenta for SWP
             val colorFps = Color.parseColor("#FF8A80")   // Salmon Coral
             val colorVal = Color.parseColor("#FF7A00")   // Bright Orange for active values
             val colorNa = Color.parseColor("#808080")    // Medium Gray for N/A
@@ -917,7 +944,18 @@ class FpsOverlayService : Service() {
                 }
             }
 
-            // 7. FPS row (only shown if showFps)
+            // 7. SWP row (only if SWAP enabled)
+            if (hasSwap) {
+                val swapStr = if (lastSwapSample.totalBytes > 0L) {
+                    "${formatRamValue(lastSwapSample.usedBytes, ramUnit)} (${lastSwapSample.usedPercent}%)"
+                } else {
+                    if (ramUnit == RamUnit.MB) "0 MB (0%)" else "0.0 GB (0%)"
+                }
+                newLine()
+                appendRow("SWP", colorSwap, listOf(swapStr to colorVal))
+            }
+
+            // 8. FPS row (only shown if showFps)
             if (showFps) {
                 newLine()
                 val fpsStr = "$fps FPS"
@@ -1086,6 +1124,27 @@ class FpsOverlayService : Service() {
                 ssb.append("RAM:$ramTagSpace", labelColor, StyleSpan(Typeface.BOLD))
                 ssb.append(usedStr, valueColor, StyleSpan(Typeface.BOLD))
             }
+        }
+
+        // === Swap Group (SWP) ===
+        if (hasSwap) {
+            if (ssb.isNotEmpty()) {
+                if (singleLineOverlay) {
+                    ssb.append("  |  ", Color.GRAY)
+                } else {
+                    ssb.append("\n")
+                }
+            }
+
+            val swapStr = if (lastSwapSample.totalBytes > 0L) {
+                "${formatRamValue(lastSwapSample.usedBytes, ramUnit)} (${lastSwapSample.usedPercent}%)"
+            } else {
+                if (ramUnit == RamUnit.MB) "0 MB (0%)" else "0.0 GB (0%)"
+            }
+
+            val swapTagSpace = if (singleLineOverlay) "\u00A0" else " "
+            ssb.append("SWP:$swapTagSpace", labelColor, StyleSpan(Typeface.BOLD))
+            ssb.append(swapStr, valueColor, StyleSpan(Typeface.BOLD))
         }
 
         if (ssb.isEmpty()) {
@@ -1389,14 +1448,53 @@ class FpsOverlayService : Service() {
         }
     }
 
+    private fun sampleSwapUsage(): SwapSample {
+        var totalKb = 0L
+        var freeKb = 0L
+        try {
+            val file = java.io.File("/proc/meminfo")
+            if (file.exists() && file.canRead()) {
+                file.useLines { lines ->
+                    for (line in lines) {
+                        if (line.startsWith("SwapTotal:")) {
+                            totalKb = parseMeminfoKb(line)
+                        } else if (line.startsWith("SwapFree:")) {
+                            freeKb = parseMeminfoKb(line)
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {
+        }
+
+        val totalBytes = totalKb * 1024L
+        val freeBytes = freeKb * 1024L
+        val usedBytes = (totalBytes - freeBytes).coerceAtLeast(0L)
+        val usedPercent = if (totalBytes > 0L) {
+            ((usedBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
+        } else 0
+
+        return SwapSample(totalBytes, freeBytes, usedBytes, usedPercent)
+    }
+
+    private fun parseMeminfoKb(line: String): Long {
+        val colonIdx = line.indexOf(':')
+        if (colonIdx == -1) return 0L
+        val kbStr = line.substring(colonIdx + 1).trimStart().substringBefore(' ').trim()
+        return kbStr.toLongOrNull() ?: 0L
+    }
+
     private fun updateRamMonitoring() {
-        if (showRam) {
+        val needsMonitoring = showRam && (showAvailableRam || showUsedRam || showSwap)
+        if (needsMonitoring) {
             if (ramMonitorJob == null || ramMonitorJob?.isActive != true) {
                 ramMonitorJob = serviceScope.launch(Dispatchers.IO) {
                     while (isActive) {
-                        val sample = sampleRamUsage()
+                        val ramSample = if (showAvailableRam || showUsedRam) sampleRamUsage() else RamSample()
+                        val swapSample = if (showSwap) sampleSwapUsage() else SwapSample()
                         withContext(Dispatchers.Main) {
-                            lastRamSample = sample
+                            lastRamSample = ramSample
+                            lastSwapSample = swapSample
                             if (isOverlayVisible) {
                                 updateOverlayText()
                             }
@@ -1409,6 +1507,7 @@ class FpsOverlayService : Service() {
             ramMonitorJob?.cancel()
             ramMonitorJob = null
             lastRamSample = RamSample()
+            lastSwapSample = SwapSample()
             if (isOverlayVisible) {
                 updateOverlayText()
             }

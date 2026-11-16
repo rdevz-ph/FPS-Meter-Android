@@ -1,0 +1,3 @@
+- Added Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting.
+- Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly.
+- Extended Device Diagnostics to show the active operating mode (Root vs Shizuku), detected root manager, su binary location, and version.

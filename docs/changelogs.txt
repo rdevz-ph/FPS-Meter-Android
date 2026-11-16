@@ -1,4 +1,9 @@
-## Version 3.5 | Latest Release | November 16, 2026
+## Version 3.6 | Latest Release | November 16, 2026
+- Swap (Virtual RAM) Overlay: Added a Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting.
+- Root Detection Stability Fix: Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly.
+- Root and Privileged Diagnostics: Extended Device Diagnostics to show the active operating mode (Root vs Shizuku), detected root manager, su binary location, and version.
+
+## Version 3.5 | November 16, 2026
 - Root Mode: Added Root Mode in Settings with automatic root binary detection, allowing rooted devices to run privileged SurfaceFlinger FPS and hardware thermals without Shizuku.
 - Dedicated RAM Overlays & Unit Selection: Added a dedicated RAM Overlays section with separate toggles for Available RAM and Used RAM alongside their percentages, and an option to switch between GB and MB units.
 - Android 9 Compatibility Fix: Fixed a crash on Android 9 caused by an unsupported text view method.

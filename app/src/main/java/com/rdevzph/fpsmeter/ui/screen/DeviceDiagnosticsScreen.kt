@@ -48,6 +48,8 @@ import com.rdevzph.fpsmeter.R
 import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.overlay.SocThermalMonitor
+import com.rdevzph.fpsmeter.util.ShellHelper
+import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,6 +100,13 @@ data class DeviceDiagnosticData(
     val overlayPermission: Boolean = false,
     val accessibilityRunning: Boolean = false,
     val overlayServiceRunning: Boolean = false,
+    val operatingMode: String = "",
+    val rootGranted: Boolean = false,
+    val rootAvailable: Boolean = false,
+    val rootManager: String = "None",
+    val suBinaryPath: String = "",
+    val suVersion: String = "",
+    val privilegedProvider: String = "None",
     val shizukuRunning: Boolean = false,
     val shizukuPermission: Boolean = false,
     val shizukuVersion: Int = 0,
@@ -130,13 +139,21 @@ fun DeviceDiagnosticsScreen(
         }
     }
 
+    fun getShellRunner(): (String) -> String {
+        return if (diagnosticData.privilegedProvider == "Root") {
+            { cmd -> ShellHelper.runShellCommand(cmd, useRoot = true).trim() }
+        } else {
+            ::runShizukuShell
+        }
+    }
+
     val saveDumpLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/plain")
     ) { uri: Uri? ->
         if (uri != null) {
             coroutineScope.launch(Dispatchers.IO) {
                 try {
-                    val dump = generateThermalZoneDump(diagnosticData)
+                    val dump = generateThermalZoneDump(diagnosticData, getShellRunner())
                     context.contentResolver.openOutputStream(uri)?.use { os ->
                         os.write(dump.toByteArray(Charsets.UTF_8))
                     }
@@ -159,7 +176,7 @@ fun DeviceDiagnosticsScreen(
 
     fun triggerShareDump() {
         coroutineScope.launch(Dispatchers.IO) {
-            val dump = generateThermalZoneDump(diagnosticData)
+            val dump = generateThermalZoneDump(diagnosticData, getShellRunner())
             withContext(Dispatchers.Main) {
                 shareThermalDumpFile(context, diagnosticData, dump)
             }
@@ -168,7 +185,7 @@ fun DeviceDiagnosticsScreen(
 
     fun copyDumpToClipboard() {
         coroutineScope.launch(Dispatchers.IO) {
-            val dump = generateThermalZoneDump(diagnosticData)
+            val dump = generateThermalZoneDump(diagnosticData, getShellRunner())
             withContext(Dispatchers.Main) {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                 clipboard?.setPrimaryClip(ClipData.newPlainText("Thermal Zones Dump", dump))
@@ -353,11 +370,12 @@ fun DeviceDiagnosticsScreen(
                     DiagnosticItem("OpenGL ES Version", diagnosticData.glEsVersion),
                     DiagnosticItem("Vulkan Hardware Support", diagnosticData.vulkanSupport)
                 )
+                val providerTag = if (diagnosticData.privilegedProvider != "None") " (${diagnosticData.privilegedProvider})" else ""
                 if (diagnosticData.socModelShizuku.isNotEmpty()) {
-                    socItems.add(DiagnosticItem("SoC Model (Shizuku)", diagnosticData.socModelShizuku))
+                    socItems.add(DiagnosticItem("SoC Model$providerTag", diagnosticData.socModelShizuku))
                 }
                 if (diagnosticData.socPlatformShizuku.isNotEmpty()) {
-                    socItems.add(DiagnosticItem("Platform (Shizuku)", diagnosticData.socPlatformShizuku))
+                    socItems.add(DiagnosticItem("Platform$providerTag", diagnosticData.socPlatformShizuku))
                 }
                 if (diagnosticData.surfaceFlingerGles.isNotEmpty()) {
                     socItems.add(DiagnosticItem("GPU Driver (SurfaceFlinger)", diagnosticData.surfaceFlingerGles))
@@ -384,13 +402,13 @@ fun DeviceDiagnosticsScreen(
                     DiagnosticItem("Power Save Mode", if (diagnosticData.powerSaveMode) "Active" else "Inactive")
                 )
                 if (diagnosticData.shizukuCpuTemp.isNotEmpty()) {
-                    thermalItems.add(DiagnosticItem("CPU Sensor (Shizuku)", diagnosticData.shizukuCpuTemp))
+                    thermalItems.add(DiagnosticItem("CPU Sensor$providerTag", diagnosticData.shizukuCpuTemp))
                 }
                 if (diagnosticData.shizukuGpuTemp.isNotEmpty()) {
-                    thermalItems.add(DiagnosticItem("GPU Sensor (Shizuku)", diagnosticData.shizukuGpuTemp))
+                    thermalItems.add(DiagnosticItem("GPU Sensor$providerTag", diagnosticData.shizukuGpuTemp))
                 }
                 if (diagnosticData.shizukuSocTemp.isNotEmpty()) {
-                    thermalItems.add(DiagnosticItem("SoC Unified (Shizuku)", diagnosticData.shizukuSocTemp))
+                    thermalItems.add(DiagnosticItem("SoC Unified$providerTag", diagnosticData.shizukuSocTemp))
                 }
                 DiagnosticsCard(
                     title = stringResource(R.string.diag_section_thermals),
@@ -400,7 +418,7 @@ fun DeviceDiagnosticsScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Section 5: Shizuku & Privileged Raw Data
+                // Section 5: Privileged Access (Root / Shizuku)
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -409,14 +427,14 @@ fun DeviceDiagnosticsScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_shizuku),
+                                imageVector = if (diagnosticData.privilegedProvider == "Root") Icons.Default.Security else Icons.Default.AdminPanelSettings,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
-                                stringResource(R.string.diag_section_shizuku),
+                                stringResource(R.string.diag_section_privileged),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -425,16 +443,31 @@ fun DeviceDiagnosticsScreen(
 
                         Spacer(Modifier.height(12.dp))
 
-                        DiagnosticRow("Shizuku Binder Running", if (diagnosticData.shizukuRunning) "Yes" else "No")
+                        DiagnosticRow("Operating Mode", diagnosticData.operatingMode)
+                        DiagnosticRow("Root Access", if (diagnosticData.rootGranted) "Granted" else if (diagnosticData.rootAvailable) "Available (Not Granted)" else "Not Available")
+                        if (diagnosticData.rootAvailable || diagnosticData.rootGranted) {
+                            DiagnosticRow("Root Manager", diagnosticData.rootManager)
+                            DiagnosticRow("SU Location", diagnosticData.suBinaryPath)
+                            if (diagnosticData.suVersion != "N/A") {
+                                DiagnosticRow("SU Version", diagnosticData.suVersion)
+                            }
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                        Spacer(Modifier.height(8.dp))
+
+                        DiagnosticRow("Shizuku Service", if (diagnosticData.shizukuRunning) "Running" else "Not Running")
                         DiagnosticRow("Shizuku Permission", if (diagnosticData.shizukuPermission) "Granted" else "Denied")
                         if (diagnosticData.shizukuRunning) {
                             DiagnosticRow("Shizuku API Version", "v${diagnosticData.shizukuVersion}")
                         }
 
-                        if (!diagnosticData.shizukuRunning || !diagnosticData.shizukuPermission) {
+                        val isPrivilegedConnected = diagnosticData.rootGranted || (diagnosticData.shizukuRunning && diagnosticData.shizukuPermission)
+                        if (!isPrivilegedConnected) {
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                stringResource(R.string.diag_shizuku_not_connected),
+                                stringResource(R.string.diag_privileged_not_connected),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -444,7 +477,7 @@ fun DeviceDiagnosticsScreen(
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                                 Spacer(Modifier.height(10.dp))
                                 Text(
-                                    "Raw Thermal HAL Readings:",
+                                    "Raw Thermal HAL Readings (${diagnosticData.privilegedProvider}):",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -752,12 +785,42 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
     val accessibilityRunning = FpsAccessibilityService.isServiceRunning
     val overlayServiceRunning = FpsOverlayService.isRunning
 
+    val settings = OverlaySettings.load(context)
+
+    // Root diagnostics
+    val rootInfo = ShellHelper.detectRootDiagnostics()
+
     // Shizuku diagnostics
     val isShizukuRunning = try { Shizuku.pingBinder() } catch (_: Exception) { false }
     val isShizukuPermission = try {
         isShizukuRunning && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
     } catch (_: Exception) { false }
     val shizukuVersion = try { if (isShizukuRunning) Shizuku.getVersion() else 0 } catch (_: Exception) { 0 }
+
+    val isUsingRoot = settings.useRoot && rootInfo.isGranted
+    val isUsingShizuku = !isUsingRoot && isShizukuPermission
+
+    val operatingMode = when {
+        isUsingRoot -> "Root Mode (Active)"
+        isUsingShizuku -> "Shizuku Mode (Active)"
+        rootInfo.isGranted -> "Unprivileged (Root granted, disabled in settings)"
+        rootInfo.isAvailable -> "Unprivileged (Root binary detected, not granted)"
+        isShizukuRunning -> "Unprivileged (Shizuku running, permission denied)"
+        else -> "Unprivileged (Standard)"
+    }
+
+    val privilegedProvider = if (isUsingRoot) "Root" else if (isUsingShizuku) "Shizuku" else "None"
+    val isPrivilegedActive = isUsingRoot || isUsingShizuku
+
+    fun runPrivilegedShell(command: String): String {
+        return if (isUsingRoot) {
+            ShellHelper.runShellCommand(command, useRoot = true).trim()
+        } else if (isUsingShizuku) {
+            runShizukuShell(command)
+        } else {
+            ""
+        }
+    }
 
     var socModelShizuku = ""
     var socPlatformShizuku = ""
@@ -768,11 +831,11 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
     var shizukuSocTemp = ""
     val rawHalThermals = mutableListOf<String>()
 
-    if (isShizukuPermission) {
-        socModelShizuku = runShizukuShell("getprop ro.soc.model").trim()
-        socPlatformShizuku = runShizukuShell("getprop ro.board.platform").trim()
+    if (isPrivilegedActive) {
+        socModelShizuku = runPrivilegedShell("getprop ro.soc.model").trim()
+        socPlatformShizuku = runPrivilegedShell("getprop ro.board.platform").trim()
 
-        val sfOutput = runShizukuShell("dumpsys SurfaceFlinger")
+        val sfOutput = runPrivilegedShell("dumpsys SurfaceFlinger")
         if (sfOutput.isNotEmpty()) {
             val glesLine = sfOutput.lines().firstOrNull { it.contains("GLES:") }?.trim() ?: ""
             surfaceFlingerGles = glesLine.removePrefix("GLES:").trim()
@@ -780,7 +843,7 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
             surfaceFlingerRefreshRate = refreshLine
         }
 
-        val thermalOutput = runShizukuShell("dumpsys thermalservice")
+        val thermalOutput = runPrivilegedShell("dumpsys thermalservice")
         if (thermalOutput.isNotEmpty()) {
             thermalOutput.lines().forEach { line ->
                 if (line.contains("Temperature{mValue=")) {
@@ -797,7 +860,7 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         }
 
         if (snapshot == null || snapshot.gpu == null || snapshot.cpu == null) {
-            val sysfsOutput = runShizukuShell(
+            val sysfsOutput = runPrivilegedShell(
                 "for f in /sys/class/thermal/thermal_zone*; do echo \"$(cat \$f/type 2>/dev/null):$(cat \$f/temp 2>/dev/null)\"; done"
             )
             if (sysfsOutput.isNotEmpty()) {
@@ -849,6 +912,13 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         overlayPermission = overlayPermission,
         accessibilityRunning = accessibilityRunning,
         overlayServiceRunning = overlayServiceRunning,
+        operatingMode = operatingMode,
+        rootGranted = rootInfo.isGranted,
+        rootAvailable = rootInfo.isAvailable,
+        rootManager = rootInfo.rootManager,
+        suBinaryPath = rootInfo.suPath,
+        suVersion = rootInfo.suVersion,
+        privilegedProvider = privilegedProvider,
         shizukuRunning = isShizukuRunning,
         shizukuPermission = isShizukuPermission,
         shizukuVersion = shizukuVersion,
@@ -909,11 +979,12 @@ private fun formatMarkdownReport(d: DeviceDiagnosticData): String {
     sb.appendLine("- **CPU Cores & Arch:** ${d.cpuCores} cores (${d.cpuArch})")
     sb.appendLine("- **OpenGL ES Version:** ${d.glEsVersion}")
     sb.appendLine("- **Vulkan Hardware:** ${d.vulkanSupport}")
+    val providerTag = if (d.privilegedProvider != "None") " (${d.privilegedProvider})" else ""
     if (d.socModelShizuku.isNotEmpty()) {
-        sb.appendLine("- **SoC Model (Shizuku):** ${d.socModelShizuku}")
+        sb.appendLine("- **SoC Model$providerTag:** ${d.socModelShizuku}")
     }
     if (d.socPlatformShizuku.isNotEmpty()) {
-        sb.appendLine("- **Platform (Shizuku):** ${d.socPlatformShizuku}")
+        sb.appendLine("- **Platform$providerTag:** ${d.socPlatformShizuku}")
     }
     if (d.surfaceFlingerGles.isNotEmpty()) {
         sb.appendLine("- **GPU Driver (SurfaceFlinger):** ${d.surfaceFlingerGles}")
@@ -928,17 +999,31 @@ private fun formatMarkdownReport(d: DeviceDiagnosticData): String {
     sb.appendLine("- **System Thermal Status:** ${d.systemThermalStatus}")
     sb.appendLine("- **Thermal Headroom:** ${d.thermalHeadroom}")
     sb.appendLine("- **Power Save Mode:** ${if (d.powerSaveMode) "Active" else "Inactive"}")
-    if (d.shizukuCpuTemp.isNotEmpty()) sb.appendLine("- **CPU Temp (HAL):** ${d.shizukuCpuTemp}")
-    if (d.shizukuGpuTemp.isNotEmpty()) sb.appendLine("- **GPU Temp (HAL):** ${d.shizukuGpuTemp}")
-    if (d.shizukuSocTemp.isNotEmpty()) sb.appendLine("- **SoC Temp (HAL):** ${d.shizukuSocTemp}")
+    if (d.shizukuCpuTemp.isNotEmpty()) sb.appendLine("- **CPU Temp$providerTag:** ${d.shizukuCpuTemp}")
+    if (d.shizukuGpuTemp.isNotEmpty()) sb.appendLine("- **GPU Temp$providerTag:** ${d.shizukuGpuTemp}")
+    if (d.shizukuSocTemp.isNotEmpty()) sb.appendLine("- **SoC Temp$providerTag:** ${d.shizukuSocTemp}")
     sb.appendLine()
-    sb.appendLine("### Permissions & Shizuku Status")
+    sb.appendLine("### Privileged Access & Operating Mode")
+    sb.appendLine("- **Operating Mode:** ${d.operatingMode}")
+    sb.appendLine("- **Active Privileged Provider:** ${d.privilegedProvider}")
+    sb.appendLine("- **Root Access:** ${if (d.rootGranted) "Granted" else if (d.rootAvailable) "Available (Not Granted)" else "Not Available"}")
+    if (d.rootAvailable || d.rootGranted) {
+        sb.appendLine("- **Root Manager:** ${d.rootManager}")
+        sb.appendLine("- **SU Location:** ${d.suBinaryPath}")
+        sb.appendLine("- **SU Version:** ${d.suVersion}")
+    }
+    sb.appendLine("- **Shizuku Service:** ${if (d.shizukuRunning) "Running (Permission: ${if (d.shizukuPermission) "Granted" else "Denied"})" else "Not Running"}")
+    if (d.shizukuRunning) {
+        sb.appendLine("- **Shizuku API Version:** v${d.shizukuVersion}")
+    }
+    sb.appendLine()
+    sb.appendLine("### Permissions & Services")
     sb.appendLine("- **Overlay Permission:** ${if (d.overlayPermission) "Granted" else "Denied"}")
     sb.appendLine("- **Accessibility Service:** ${if (d.accessibilityRunning) "Active" else "Inactive"}")
-    sb.appendLine("- **Shizuku Service:** ${if (d.shizukuRunning) "Running (Permission: ${if (d.shizukuPermission) "Granted" else "Denied"})" else "Not Running"}")
+    sb.appendLine("- **Overlay Service Running:** ${if (d.overlayServiceRunning) "Running" else "Stopped"}")
     if (d.rawHalThermals.isNotEmpty()) {
         sb.appendLine()
-        sb.appendLine("### Raw Thermal HAL Dump")
+        sb.appendLine("### Raw Thermal HAL Dump$providerTag")
         sb.appendLine("```text")
         d.rawHalThermals.forEach { sb.appendLine(it) }
         sb.appendLine("```")

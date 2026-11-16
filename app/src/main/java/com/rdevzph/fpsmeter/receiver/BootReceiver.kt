@@ -63,6 +63,7 @@ class BootReceiver : BroadcastReceiver() {
                     putExtra(FpsOverlayService.EXTRA_SHOW_RAM, settings.showRam)
                     putExtra(FpsOverlayService.EXTRA_SHOW_AVAILABLE_RAM, settings.showAvailableRam)
                     putExtra(FpsOverlayService.EXTRA_SHOW_USED_RAM, settings.showUsedRam)
+                    putExtra(FpsOverlayService.EXTRA_SHOW_SWAP, settings.showSwap)
                     putExtra(FpsOverlayService.EXTRA_RAM_UNIT, settings.ramUnit.name)
                     putExtra(FpsOverlayService.EXTRA_SINGLE_LINE_OVERLAY, settings.singleLineOverlay)
                     putExtra(FpsOverlayService.EXTRA_OVERLAY_STYLE, settings.overlayStyle.name)
