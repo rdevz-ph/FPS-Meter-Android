@@ -283,6 +283,11 @@ class FpsOverlayService : Service() {
         overlayStyle = saved.overlayStyle
         showSocName = saved.showSocName
         useRoot = saved.useRoot
+        if (useRoot && !com.rdevzph.fpsmeter.util.ShellHelper.isRootGranted.value) {
+            serviceScope.launch(Dispatchers.IO) {
+                com.rdevzph.fpsmeter.util.ShellHelper.checkOrRequestRootAccess(requestPrompt = false)
+            }
+        }
 
         if (showRam) {
             lastRamSample = sampleRamUsage()

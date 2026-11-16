@@ -61,7 +61,7 @@ class SurfaceFlingerFpsMonitor(
     }
 
     private fun isPrivilegedReady(): Boolean {
-        if (useRoot && com.rdevzph.fpsmeter.util.ShellHelper.isRootGranted.value) return true
+        if (useRoot) return true
         return try {
             Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
         } catch (_: Exception) {

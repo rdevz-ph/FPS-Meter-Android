@@ -271,11 +271,6 @@ class FpsViewModel(
     fun toggleUseRoot(enabled: Boolean, onResult: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
             if (enabled) {
-                val hasSu = ShellHelper.checkSuBinaryAvailable()
-                if (!hasSu) {
-                    onResult?.invoke(false)
-                    return@launch
-                }
                 val granted = ShellHelper.checkOrRequestRootAccess(requestPrompt = true)
                 if (granted) {
                     val updated = _settings.value.copy(useRoot = true)
@@ -284,6 +279,7 @@ class FpsViewModel(
                 } else {
                     val updated = _settings.value.copy(useRoot = false)
                     updateSettings(updated)
+                    _statusMessage.value = context.getString(R.string.root_unavailable_warning)
                     onResult?.invoke(false)
                 }
             } else {
@@ -298,7 +294,7 @@ class FpsViewModel(
      * Grant SYSTEM_ALERT_WINDOW via Shizuku or Root (appops set <pkg> SYSTEM_ALERT_WINDOW allow)
      */
     fun grantOverlayViaShizuku(context: Context) {
-        val useRoot = _settings.value.useRoot && ShellHelper.isRootGranted.value
+        val useRoot = _settings.value.useRoot
         if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             _statusMessage.value = context.getString(R.string.shizuku_not_ready)
             return
@@ -355,7 +351,7 @@ class FpsViewModel(
         val current = _settings.value
         updateSettings(current.copy(autoStartEnabled = false))
 
-        val useRoot = current.useRoot && ShellHelper.isRootGranted.value
+        val useRoot = current.useRoot
         if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             val intent = Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -401,7 +397,7 @@ class FpsViewModel(
         restartAccessibilityViaShizuku(context, isEnabling = true, onComplete = onComplete)
 
     fun disableAccessibilityViaShizuku(context: Context, onComplete: ((Boolean) -> Unit)? = null) {
-        val useRoot = _settings.value.useRoot && ShellHelper.isRootGranted.value
+        val useRoot = _settings.value.useRoot
         if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             onComplete?.invoke(false)
             return
@@ -455,7 +451,7 @@ class FpsViewModel(
         isEnabling: Boolean = false,
         onComplete: ((Boolean) -> Unit)? = null
     ) {
-        val useRoot = _settings.value.useRoot && ShellHelper.isRootGranted.value
+        val useRoot = _settings.value.useRoot
         if (!useRoot && (!shizukuHelper.shizukuAvailable.value || !shizukuHelper.shizukuPermissionGranted.value)) {
             _statusMessage.value = context.getString(R.string.shizuku_not_ready)
             onComplete?.invoke(false)

@@ -20,9 +20,15 @@ object ShellHelper {
     val isRootGranted: StateFlow<Boolean> = _isRootGranted.asStateFlow()
 
     /**
-     * Checks if a su binary exists in common system paths.
+     * Checks if a su binary exists in common system paths, mounts, or PATH environment.
+     * Supports Magisk, KernelSU, APatch, and traditional su setups.
      */
     fun checkSuBinaryAvailable(): Boolean {
+        if (_isRootGranted.value) {
+            _isRootAvailable.value = true
+            return true
+        }
+
         val paths = arrayOf(
             "/system/bin/su",
             "/system/xbin/su",
@@ -45,38 +51,65 @@ object ShellHelper {
             }
         }
 
+        // Check PATH directories
+        try {
+            val pathEnv = System.getenv("PATH") ?: ""
+            for (dir in pathEnv.split(":")) {
+                if (File(dir, "su").exists()) {
+                    _isRootAvailable.value = true
+                    return true
+                }
+            }
+        } catch (_: Exception) {
+        }
+
         // Fallback: which su
-        return try {
+        try {
             val process = Runtime.getRuntime().exec(arrayOf("which", "su"))
             val exitCode = process.waitFor()
-            val available = exitCode == 0
-            _isRootAvailable.value = available
-            available
+            if (exitCode == 0) {
+                _isRootAvailable.value = true
+                return true
+            }
         } catch (_: Exception) {
-            _isRootAvailable.value = false
-            false
         }
+
+        // KernelSU / APatch / Magisk mount inspection (/proc/self/mounts)
+        try {
+            val mountsFile = File("/proc/self/mounts")
+            if (mountsFile.exists() && mountsFile.canRead()) {
+                val hasRootMount = mountsFile.useLines { lines ->
+                    lines.any { line ->
+                        line.contains("ksu") || line.contains("kernelsu") || line.contains("magisk") || line.contains("apatch")
+                    }
+                }
+                if (hasRootMount) {
+                    _isRootAvailable.value = true
+                    return true
+                }
+            }
+        } catch (_: Exception) {
+        }
+
+        return _isRootAvailable.value
     }
 
     /**
-     * Tests if root permission is granted by running `su -c id` or `su -c echo test`.
+     * Tests if root permission is granted by running `su -c id`.
      */
     suspend fun checkOrRequestRootAccess(requestPrompt: Boolean = false): Boolean = withContext(Dispatchers.IO) {
-        if (!checkSuBinaryAvailable() && !requestPrompt) {
-            _isRootGranted.value = false
-            return@withContext false
-        }
-
         var process: Process? = null
         try {
             process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             val output = reader.readLine() ?: ""
-            process.waitFor()
+            val exitCode = process.waitFor()
 
-            val granted = process.exitValue() == 0 && (output.contains("uid=0") || output.contains("root"))
+            val granted = exitCode == 0 && (output.contains("uid=0") || output.contains("root"))
             _isRootGranted.value = granted
-            _isRootAvailable.value = true
+            if (granted) {
+                _isRootAvailable.value = true
+            }
             granted
         } catch (e: Exception) {
             Log.e(TAG, "Root check failed", e)
@@ -94,7 +127,7 @@ object ShellHelper {
      * Executes a shell command, choosing root (su -c) if useRoot is true, otherwise Shizuku if available.
      */
     fun runShellCommand(command: String, useRoot: Boolean = false): String {
-        if (useRoot && _isRootGranted.value) {
+        if (useRoot) {
             var process: Process? = null
             return try {
                 process = Runtime.getRuntime().exec(arrayOf("su", "-c", command))
@@ -105,11 +138,20 @@ object ShellHelper {
                         output.append(line).append("\n")
                     }
                 }
-                process.waitFor()
-                output.toString()
+                val exitCode = process.waitFor()
+                if (exitCode == 0) {
+                    _isRootGranted.value = true
+                    _isRootAvailable.value = true
+                    return output.toString()
+                }
+                if (output.isNotEmpty()) {
+                    return output.toString()
+                }
+                // If root command returned non-zero with no output, fall back to Shizuku
+                runShizukuProcess(command)
             } catch (e: Exception) {
                 Log.e(TAG, "Error running root command: $command", e)
-                ""
+                runShizukuProcess(command)
             } finally {
                 try {
                     process?.destroy()

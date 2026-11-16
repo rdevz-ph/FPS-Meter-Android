@@ -326,7 +326,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(enabled = isRootAvailable || useRoot) { onToggleUseRoot(!useRoot) }
+                        .clickable { onToggleUseRoot(!useRoot) }
                         .padding(horizontal = 14.dp, vertical = 12.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -341,19 +341,19 @@ fun SettingsScreen(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        if (!isRootAvailable && !useRoot) {
+                        if (useRoot) {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                stringResource(R.string.root_unavailable_warning),
+                                stringResource(R.string.root_operating_mode) + " • " + stringResource(R.string.root_granted),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
                     Spacer(Modifier.width(12.dp))
                     Switch(
                         checked = useRoot,
-                        enabled = isRootAvailable || useRoot,
                         onCheckedChange = onToggleUseRoot
                     )
                 }
