@@ -11,6 +11,8 @@ KNOWN_REPORT_HEADERS = {
     "display & screen",
     "cpu & graphics",
     "thermals & battery",
+    "privileged access & operating mode",
+    "permissions & services",
     "permissions & shizuku status",
     "raw thermal hal dump"
 }
@@ -32,7 +34,7 @@ def clean_body(body: str) -> str:
         # Ignore standard report section headers
         if line_s.startswith("#"):
             header_text = line_s.lstrip("#").strip().lower()
-            if header_text in KNOWN_REPORT_HEADERS:
+            if any(header_text == h or header_text.startswith(h) for h in KNOWN_REPORT_HEADERS):
                 continue
                 
         # Ignore diagnostic bullet points: e.g. - **App Version:** ...
