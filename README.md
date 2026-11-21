@@ -69,9 +69,9 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 ## Screenshots
 
 ### Application Interface
-| Meter & Telemetry | Games & Auto-Recording | Performance History Logs | Application Settings |
-|:-----------------:|:----------------------:|:------------------------:|:--------------------:|
-| ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_2.jpg) | ![Performance History Logs](./screenshots/Screenshot_3.jpg) | ![Application Settings](./screenshots/Screenshot_4.jpg) |
+| Meter & Telemetry | Games & Auto-Recording | Performance History Logs | Game Performance Analytics | Application Settings |
+|:-----------------:|:----------------------:|:------------------------:|:--------------------------:|:--------------------:|
+| ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_2.jpg) | ![Performance History Logs](./screenshots/3.7/3.7_history_screen.jpg) | ![Game Performance Analytics](./screenshots/3.7/3.7_analytics_screen.jpg) | ![Application Settings](./screenshots/Screenshot_4.jpg) |
 
 > [!TIP]
 > You can customize the interface appearance under App Theme in Settings. Choose between Follow System, Dark, and Light modes, toggle pure black for AMOLED displays, or enable Dynamic Color to adapt UI accents to your device wallpaper.
