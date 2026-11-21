@@ -74,6 +74,46 @@ class BatteryMonitor(private val context: Context) {
     }
 
     /**
+     * Returns the current absolute power output in Watts.
+     */
+    fun getPowerWatts(): Float {
+        val bm = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager ?: return 0f
+        var rawCurrent = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+        if (rawCurrent == Int.MIN_VALUE || rawCurrent == 0) {
+            rawCurrent = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
+        }
+        if (rawCurrent == Int.MIN_VALUE) return 0f
+
+        val absRaw = abs(rawCurrent)
+        val currentMa = when {
+            absRaw >= 10_000 -> rawCurrent / 1000.0
+            absRaw in 1..9_999 -> rawCurrent.toDouble()
+            else -> 0.0
+        }
+
+        if (batteryVoltageMv <= 0) {
+            try {
+                val sticky = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                val volt = sticky?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+                if (volt > 0) batteryVoltageMv = volt
+            } catch (_: Exception) {}
+        }
+
+        val voltageVolts = when {
+            batteryVoltageMv > 20_000 -> batteryVoltageMv / 1_000_000.0
+            batteryVoltageMv in 100..20_000 -> batteryVoltageMv / 1000.0
+            batteryVoltageMv in 1..20 -> batteryVoltageMv.toDouble()
+            else -> 0.0
+        }
+
+        return if (voltageVolts > 0.0 && abs(currentMa) > 0.0) {
+            ((abs(currentMa) / 1000.0) * voltageVolts).toFloat()
+        } else {
+            0f
+        }
+    }
+
+    /**
      * Calculates real-time power consumption or charging rate in Watts.
      * If the calculated power is zero or voltage is missing, falls back to displaying current in mA.
      */

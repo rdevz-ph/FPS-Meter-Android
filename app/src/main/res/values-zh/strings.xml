@@ -392,4 +392,32 @@
     <string name="changelog_title">更新日志</string>
     <string name="changelog_subtitle">本次版本的主要更新与改进</string>
     <string name="changelog_btn_got_it">我知道了</string>
+
+    <!-- Game Analytics & Charts -->
+    <string name="game_analytics_title">游戏性能分析</string>
+    <string name="analytics_max_fps">最大</string>
+    <string name="analytics_min_fps">最小</string>
+    <string name="analytics_avg_fps">平均</string>
+    <string name="analytics_variance">方差</string>
+    <string name="analytics_smoothness">平稳度</string>
+    <string name="analytics_low_5">5% 低帧</string>
+    <string name="analytics_temp_label">电池温度</string>
+    <string name="analytics_cpu_temp_label">CPU温度</string>
+    <string name="analytics_gpu_temp_label">GPU温度</string>
+    <string name="analytics_power_label">平均功耗</string>
+    <string name="analytics_fps_chart">FPS</string>
+    <string name="analytics_temp_chart">温度 (°C)</string>
+    <string name="analytics_frametime_chart">帧时间 (ms)</string>
+    <string name="analytics_export_csv">导出 CSV</string>
+    <string name="analytics_all_sessions">全部会话汇总</string>
+    <string name="analytics_session_selector">选择会话</string>
+    <string name="analytics_recorded_sessions">已记录会话（%d）</string>
+    <string name="share_csv">分享 CSV</string>
+    <string name="save_csv">保存 .csv</string>
+    <string name="csv_saved_toast">CSV 文件已保存</string>
+    <string name="csv_failed_toast">保存 CSV 失败：%s</string>
+    <string name="total_play_time">累计时长：%s</string>
+    <string name="session_count_label">%d 次会话</string>
+    <string name="last_played_label">最近运行：%s</string>
+    <string name="smoothness_score_label">&gt;=45FPS</string>
 </resources>

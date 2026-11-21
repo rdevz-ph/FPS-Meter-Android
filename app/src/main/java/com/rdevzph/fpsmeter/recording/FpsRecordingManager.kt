@@ -3,17 +3,14 @@ package com.rdevzph.fpsmeter.recording
 import android.content.Context
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
 import com.rdevzph.fpsmeter.viewmodel.OverlaySettings
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * Lightweight, in-memory FPS session recording manager.
  *
- * - Zero sample-by-sample logging: only aggregates sum, count, min, and max in memory.
- * - Periodic checkpointing every 60 seconds to minimize disk writes while guarding against app termination.
+ * - Collects second-by-second FPS, temperature, and power samples in memory.
+ * - Periodic checkpointing every 60 seconds to guard against unexpected app termination.
+ * - Computes variance, smoothness, 5% low FPS, peak, average, and temperature statistics.
  * - Auto-finalizes and persists session on app exit, game change, or service stop.
  */
 object FpsRecordingManager {
@@ -38,6 +35,13 @@ object FpsRecordingManager {
     private var lastRecordedAppName: String = ""
     private var userStoppedPackage: String? = null
 
+    // Time-series samples for graphs and CSV export
+    private val currentFpsSamples = mutableListOf<Int>()
+    private val currentTempSamples = mutableListOf<Float>()
+    private val currentPowerSamples = mutableListOf<Float>()
+    private val currentCpuTempSamples = mutableListOf<Float>()
+    private val currentGpuTempSamples = mutableListOf<Float>()
+
     private fun isSystemTransientPackage(pkg: String): Boolean {
         return pkg == "com.android.systemui" ||
                 pkg == "android" ||
@@ -45,7 +49,16 @@ object FpsRecordingManager {
     }
 
     @Synchronized
-    fun onFpsSample(context: Context, currentPackage: String?, fps: Int, appName: String? = null) {
+    fun onFpsSample(
+        context: Context,
+        currentPackage: String?,
+        fps: Int,
+        appName: String? = null,
+        temperature: Float = 0f,
+        powerWatts: Float = 0f,
+        cpuTemp: Float = 0f,
+        gpuTemp: Float = 0f
+    ) {
         val now = System.currentTimeMillis()
         val settings = OverlaySettings.load(context)
 
@@ -73,6 +86,19 @@ object FpsRecordingManager {
                     fpsSum += fps
                     if (fps > highestFps) highestFps = fps
                     if (fps < lowestFps) lowestFps = fps
+                    currentFpsSamples.add(fps)
+                    if (temperature > 0f) {
+                        currentTempSamples.add(temperature)
+                    }
+                    if (powerWatts != 0f) {
+                        currentPowerSamples.add(powerWatts)
+                    }
+                    if (cpuTemp > 0f) {
+                        currentCpuTempSamples.add(cpuTemp)
+                    }
+                    if (gpuTemp > 0f) {
+                        currentGpuTempSamples.add(gpuTemp)
+                    }
                 }
 
                 // Periodic checkpoint save
@@ -109,6 +135,19 @@ object FpsRecordingManager {
             fpsSum = if (fps > 0) fps.toLong() else 0L
             highestFps = if (fps > 0) fps else 0
             lowestFps = if (fps > 0) fps else Int.MAX_VALUE
+
+            currentFpsSamples.clear()
+            currentTempSamples.clear()
+            currentPowerSamples.clear()
+            currentCpuTempSamples.clear()
+            currentGpuTempSamples.clear()
+            if (fps > 0) {
+                currentFpsSamples.add(fps)
+                if (temperature > 0f) currentTempSamples.add(temperature)
+                if (powerWatts != 0f) currentPowerSamples.add(powerWatts)
+                if (cpuTemp > 0f) currentCpuTempSamples.add(cpuTemp)
+                if (gpuTemp > 0f) currentGpuTempSamples.add(gpuTemp)
+            }
         }
     }
 
@@ -152,6 +191,9 @@ object FpsRecordingManager {
         fpsSum = 0L
         highestFps = 0
         lowestFps = Int.MAX_VALUE
+        currentFpsSamples.clear()
+        currentTempSamples.clear()
+        currentPowerSamples.clear()
         return true
     }
 
@@ -180,6 +222,12 @@ object FpsRecordingManager {
         val id = activeSessionId ?: java.util.UUID.randomUUID().toString()
         val name = activeAppName
 
+        val fpsList = currentFpsSamples.toList()
+        val tempList = currentTempSamples.toList()
+        val powerList = currentPowerSamples.toList()
+        val cpuList = currentCpuTempSamples.toList()
+        val gpuList = currentGpuTempSamples.toList()
+
         // Reset in-memory state
         activePackage = null
         activeAppName = ""
@@ -190,25 +238,34 @@ object FpsRecordingManager {
         lowestFps = Int.MAX_VALUE
         activeSessionId = null
         lastPeriodicSaveTime = 0L
+        currentFpsSamples.clear()
+        currentTempSamples.clear()
+        currentPowerSamples.clear()
+        currentCpuTempSamples.clear()
+        currentGpuTempSamples.clear()
 
         // Discard trivial sessions with zero samples or under minimum duration
         if (count == 0L || durationSec < MIN_SESSION_DURATION_SEC) {
-            // If an earlier checkpoint was saved for this ID, remove it
             removeSessionById(context, id)
             return null
         }
 
-        val avgFps = (sum / count).toInt()
-        val record = FpsSessionRecord(
+        val record = buildRecord(
             id = id,
-            packageName = pkg,
+            pkg = pkg,
             appName = name,
             startTime = startTime,
             endTime = now,
-            durationSeconds = durationSec,
-            avgFps = avgFps,
-            maxFps = high,
-            minFps = low
+            durationSec = durationSec,
+            count = count,
+            sum = sum,
+            high = high,
+            low = low,
+            fpsList = fpsList,
+            tempList = tempList,
+            powerList = powerList,
+            cpuList = cpuList,
+            gpuList = gpuList
         )
 
         saveOrUpdateSession(context, record)
@@ -222,24 +279,106 @@ object FpsRecordingManager {
         val startTime = sessionStartTime
         val now = System.currentTimeMillis()
         val durationSec = ((now - startTime) / 1000L).coerceAtLeast(0L)
-        val avgFps = (fpsSum / count).toInt()
         val high = highestFps
         val low = if (lowestFps == Int.MAX_VALUE) high else lowestFps
         val id = activeSessionId ?: return
 
-        val record = FpsSessionRecord(
+        val record = buildRecord(
             id = id,
-            packageName = pkg,
+            pkg = pkg,
             appName = activeAppName,
             startTime = startTime,
             endTime = now,
-            durationSeconds = durationSec,
-            avgFps = avgFps,
-            maxFps = high,
-            minFps = low
+            durationSec = durationSec,
+            count = count,
+            sum = fpsSum,
+            high = high,
+            low = low,
+            fpsList = currentFpsSamples.toList(),
+            tempList = currentTempSamples.toList(),
+            powerList = currentPowerSamples.toList(),
+            cpuList = currentCpuTempSamples.toList(),
+            gpuList = currentGpuTempSamples.toList()
         )
 
         saveOrUpdateSession(context, record)
+    }
+
+    private fun buildRecord(
+        id: String,
+        pkg: String,
+        appName: String,
+        startTime: Long,
+        endTime: Long,
+        durationSec: Long,
+        count: Long,
+        sum: Long,
+        high: Int,
+        low: Int,
+        fpsList: List<Int>,
+        tempList: List<Float>,
+        powerList: List<Float>,
+        cpuList: List<Float> = emptyList(),
+        gpuList: List<Float> = emptyList()
+    ): FpsSessionRecord {
+        val avgFps = if (count > 0L) (sum / count).toInt() else 0
+
+        val variance = if (fpsList.isNotEmpty()) {
+            val mean = fpsList.average()
+            val sumSquared = fpsList.sumOf { (it - mean) * (it - mean) }
+            String.format(java.util.Locale.US, "%.1f", kotlin.math.sqrt(sumSquared / fpsList.size)).toFloatOrNull() ?: 0f
+        } else 0f
+
+        val targetSmoothFps = if (high >= 90) 60 else 45
+        val smoothCount = fpsList.count { it >= targetSmoothFps }
+        val smoothness = if (fpsList.isNotEmpty()) {
+            String.format(java.util.Locale.US, "%.1f", (smoothCount.toFloat() / fpsList.size * 100f)).toFloatOrNull() ?: 100f
+        } else 100f
+
+        val low5 = if (fpsList.isNotEmpty()) {
+            val sorted = fpsList.sorted()
+            val idx = (sorted.size * 0.05).toInt().coerceIn(0, sorted.lastIndex)
+            sorted[idx].toFloat()
+        } else low.toFloat()
+
+        val maxTemp = if (tempList.isNotEmpty()) {
+            String.format(java.util.Locale.US, "%.1f", tempList.maxOrNull() ?: 0f).toFloatOrNull() ?: 0f
+        } else 0f
+
+        val avgPower = if (powerList.isNotEmpty()) {
+            String.format(java.util.Locale.US, "%.2f", (powerList.sum() / powerList.size)).toFloatOrNull() ?: 0f
+        } else 0f
+
+        val maxCpu = if (cpuList.isNotEmpty()) {
+            String.format(java.util.Locale.US, "%.1f", cpuList.maxOrNull() ?: 0f).toFloatOrNull() ?: 0f
+        } else 0f
+
+        val maxGpu = if (gpuList.isNotEmpty()) {
+            String.format(java.util.Locale.US, "%.1f", gpuList.maxOrNull() ?: 0f).toFloatOrNull() ?: 0f
+        } else 0f
+
+        return FpsSessionRecord(
+            id = id,
+            packageName = pkg,
+            appName = appName,
+            startTime = startTime,
+            endTime = endTime,
+            durationSeconds = durationSec,
+            avgFps = avgFps,
+            maxFps = high,
+            minFps = low,
+            fpsVariance = variance,
+            smoothnessPercent = smoothness,
+            low5PercentFps = low5,
+            maxTemperature = maxTemp,
+            avgPowerWatts = avgPower,
+            maxCpuTemperature = maxCpu,
+            maxGpuTemperature = maxGpu,
+            fpsSamples = fpsList,
+            tempSamples = tempList,
+            cpuTempSamples = cpuList,
+            gpuTempSamples = gpuList
+        )
     }
 
     @Synchronized

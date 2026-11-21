@@ -14,8 +14,8 @@ android {
         applicationId = "com.rdevzph.fpsmeter"
         minSdk = 26
         targetSdk = 36
-        versionCode = 28
-        versionName = "3.6"
+        versionCode = 29
+        versionName = "3.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -72,6 +72,9 @@ android {
         includeInApk = false
         includeInBundle = false
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -92,6 +95,7 @@ dependencies {
     implementation(libs.shizuku.provider)
     
     testImplementation(libs.junit)
+    testImplementation(libs.org.json)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -1,3 +1,8 @@
+## Version 3.7
+- Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart (#62).
+- Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
+- Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.
+
 ## Version 3.6
 - Added Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting (#53).
 - Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly.

@@ -1,0 +1,3 @@
+- Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart.
+- Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
+- Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.

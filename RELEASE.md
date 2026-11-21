@@ -1,9 +1,15 @@
-# FPS Meter Android v3.6
+# FPS Meter Android v3.7
 
 ### What's Changed
-- Added Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting ([#53](https://github.com/rdevz-ph/FPS-Meter-Android/issues/53))
-- Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly
-- Extended Device Diagnostics to show the active operating mode (Root vs Shizuku), detected root manager, su binary location, and version for easier debugging
+- Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart ([#62](https://github.com/rdevz-ph/FPS-Meter-Android/issues/62)).
+- Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
+- Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.
+
+### Release Highlights
+
+| Game History Screen | Game Analytics Screen |
+| :---: | :---: |
+| ![Game History Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.7/3.7_history_screen.jpg) | ![Game Analytics Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.7/3.7_analytics_screen.jpg) |
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 

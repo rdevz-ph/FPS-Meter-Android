@@ -1,9 +1,7 @@
 package com.rdevzph.fpsmeter.ui.screen
 
-import androidx.compose.ui.res.stringResource
-import com.rdevzph.fpsmeter.R
-
 import android.util.LruCache
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,23 +10,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import com.rdevzph.fpsmeter.R
 import com.rdevzph.fpsmeter.model.FpsSessionRecord
 import com.rdevzph.fpsmeter.util.BenchmarkCardGenerator
 import kotlinx.coroutines.Dispatchers
@@ -38,8 +40,53 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Dedicated Material 3 full-page screen for reviewing FPS gameplay history,
- * aggregated performance analytics (Avg, Peak, Low FPS), and managing session logs.
+ * Consolidated performance record for a single game/app across all its recorded sessions.
+ */
+data class GroupedGameRecord(
+    val packageName: String,
+    val appName: String,
+    val sessionCount: Int,
+    val totalDurationSeconds: Long,
+    val overallAvgFps: Int,
+    val peakFps: Int,
+    val lowestFps: Int,
+    val lastPlayedTime: Long,
+    val sessions: List<FpsSessionRecord>
+)
+
+fun groupSessionsByApp(sessions: List<FpsSessionRecord>): List<GroupedGameRecord> {
+    return sessions.groupBy { it.packageName }
+        .map { (pkg, appSessions) ->
+            val sorted = appSessions.sortedByDescending { it.startTime }
+            val first = sorted.first()
+            val totalSeconds = sorted.sumOf { it.durationSeconds }
+            val totalFrames = sorted.sumOf { it.avgFps * it.durationSeconds }
+            val overallAvg = if (totalSeconds > 0) {
+                (totalFrames / totalSeconds).toInt()
+            } else {
+                sorted.map { it.avgFps }.average().toInt()
+            }
+            val peak = sorted.maxOfOrNull { it.maxFps } ?: 0
+            val low = sorted.minOfOrNull { it.minFps } ?: 0
+            GroupedGameRecord(
+                packageName = pkg,
+                appName = first.appName,
+                sessionCount = sorted.size,
+                totalDurationSeconds = totalSeconds,
+                overallAvgFps = overallAvg,
+                peakFps = peak,
+                lowestFps = low,
+                lastPlayedTime = first.startTime,
+                sessions = sorted
+            )
+        }
+        .sortedByDescending { it.lastPlayedTime }
+}
+
+/**
+ * Dedicated Material 3 full-page screen for reviewing FPS gameplay history.
+ * Groups multiple sessions of the same game into a single consolidated card.
+ * Clicking a card redirects to the detailed analytics and graphs screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,30 +95,61 @@ fun HistoryScreen(
     onDeleteSession: (String) -> Unit,
     onClearAllSessions: () -> Unit,
     onNavigateToGames: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedGamePackage: String? = null,
+    onSelectGamePackage: (String?) -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
     var confirmClearAll by remember { mutableStateOf(false) }
-    var sessionToDelete by remember { mutableStateOf<FpsSessionRecord?>(null) }
+    var gameToDelete by remember { mutableStateOf<GroupedGameRecord?>(null) }
     var sessionToPreview by remember { mutableStateOf<FpsSessionRecord?>(null) }
+    var internalSelectedGamePackage by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val filteredSessions = remember(searchQuery, sessions) {
-        if (searchQuery.isBlank()) {
-            sessions
+    val effectiveSelectedGamePackage = selectedGamePackage ?: internalSelectedGamePackage
+    val updateSelectedGamePackage: (String?) -> Unit = { pkg ->
+        internalSelectedGamePackage = pkg
+        onSelectGamePackage(pkg)
+    }
+
+    val groupedGames = remember(sessions) { groupSessionsByApp(sessions) }
+
+    // If a game is selected, show its full Analytics screen
+    if (effectiveSelectedGamePackage != null) {
+        val selectedGame = groupedGames.firstOrNull { it.packageName == effectiveSelectedGamePackage }
+        if (selectedGame != null) {
+            BackHandler {
+                updateSelectedGamePackage(null)
+            }
+            GameAnalyticsScreen(
+                game = selectedGame,
+                onNavigateBack = { updateSelectedGamePackage(null) },
+                onDeleteSession = onDeleteSession,
+                modifier = modifier
+            )
+            return
         } else {
-            sessions.filter {
+            // Selected game has no sessions left
+            updateSelectedGamePackage(null)
+        }
+    }
+
+    val filteredGames = remember(searchQuery, groupedGames) {
+        if (searchQuery.isBlank()) {
+            groupedGames
+        } else {
+            groupedGames.filter {
                 it.appName.contains(searchQuery, ignoreCase = true) ||
                         it.packageName.contains(searchQuery, ignoreCase = true)
             }
         }
     }
 
-    // Delete single session confirmation dialog
-    sessionToDelete?.let { session ->
+    // Delete all sessions for a specific game confirmation
+    gameToDelete?.let { game ->
         AlertDialog(
-            onDismissRequest = { sessionToDelete = null },
+            onDismissRequest = { gameToDelete = null },
             icon = {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
@@ -84,13 +162,13 @@ fun HistoryScreen(
                 Text(stringResource(R.string.delete_session_title), fontWeight = FontWeight.Bold)
             },
             text = {
-                Text(stringResource(R.string.delete_session_msg, session.appName))
+                Text(stringResource(R.string.delete_session_msg, game.appName))
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        onDeleteSession(session.id)
-                        sessionToDelete = null
+                        game.sessions.forEach { s -> onDeleteSession(s.id) }
+                        gameToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     shape = RoundedCornerShape(10.dp)
@@ -100,7 +178,7 @@ fun HistoryScreen(
             },
             dismissButton = {
                 OutlinedButton(
-                    onClick = { sessionToDelete = null },
+                    onClick = { gameToDelete = null },
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(stringResource(R.string.common_cancel))
@@ -109,7 +187,7 @@ fun HistoryScreen(
         )
     }
 
-    // Live benchmark scorecard preview dialog with Share action
+    // Benchmark scorecard preview dialog
     sessionToPreview?.let { session ->
         AlertDialog(
             onDismissRequest = { sessionToPreview = null },
@@ -133,8 +211,7 @@ fun HistoryScreen(
                             try {
                                 val bmp = BenchmarkCardGenerator.generateCardBitmap(context, session)
                                 previewBitmap = bmp.asImageBitmap()
-                            } catch (e: Exception) {
-                                // Ignore
+                            } catch (_: Exception) {
                             } finally {
                                 isGenerating = false
                             }
@@ -247,6 +324,7 @@ fun HistoryScreen(
     ) {
         // Summary Performance Banner
         if (sessions.isNotEmpty()) {
+            val totalGames = groupedGames.size
             val totalSessions = sessions.size
             val overallAvgFps = (sessions.map { it.avgFps }.average()).toInt()
             val peakFpsOverall = sessions.maxOfOrNull { it.maxFps } ?: 0
@@ -305,6 +383,7 @@ fun HistoryScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            SummaryStatItem(label = "Games", value = "$totalGames")
                             SummaryStatItem(label = stringResource(R.string.summary_sessions), value = "$totalSessions")
                             SummaryStatItem(label = stringResource(R.string.summary_avg_fps), value = "$overallAvgFps")
                             SummaryStatItem(label = stringResource(R.string.summary_peak_fps), value = "$peakFpsOverall")
@@ -337,7 +416,7 @@ fun HistoryScreen(
         }
 
         // List or Empty State
-        if (sessions.isEmpty()) {
+        if (groupedGames.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -391,7 +470,7 @@ fun HistoryScreen(
                     }
                 }
             }
-        } else if (filteredSessions.isEmpty()) {
+        } else if (filteredGames.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -407,14 +486,19 @@ fun HistoryScreen(
                 }
             }
         } else {
-            items(filteredSessions, key = { it.id }) { session ->
-                SessionCard(
-                    session = session,
-                    formattedDate = dateFormat.format(Date(session.startTime)),
-                    onShare = {
-                        sessionToPreview = session
+            items(filteredGames, key = { it.packageName }) { game ->
+                GroupedGameCard(
+                    game = game,
+                    formattedLastPlayed = dateFormat.format(Date(game.lastPlayedTime)),
+                    onClick = {
+                        updateSelectedGamePackage(game.packageName)
                     },
-                    onDelete = { sessionToDelete = session }
+                    onShareLatest = {
+                        sessionToPreview = game.sessions.firstOrNull()
+                    },
+                    onDeleteAll = {
+                        gameToDelete = game
+                    }
                 )
             }
         }
@@ -438,7 +522,7 @@ private fun SummaryStatItem(label: String, value: String) {
     }
 }
 
-private object AppIconCache {
+internal object AppIconCache {
     private val cache = LruCache<String, androidx.compose.ui.graphics.ImageBitmap>(100)
 
     fun get(pkg: String): androidx.compose.ui.graphics.ImageBitmap? = cache.get(pkg)
@@ -448,7 +532,7 @@ private object AppIconCache {
 }
 
 @Composable
-private fun AppIconImage(
+internal fun AppIconImage(
     packageName: String,
     appName: String,
     modifier: Modifier = Modifier
@@ -462,7 +546,7 @@ private fun AppIconImage(
                 try {
                     val drawable = context.packageManager.getApplicationIcon(packageName)
                     drawable.toBitmap(width = 120, height = 120).asImageBitmap()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
@@ -498,17 +582,18 @@ private fun AppIconImage(
 }
 
 @Composable
-private fun SessionCard(
-    session: FpsSessionRecord,
-    formattedDate: String,
-    onShare: () -> Unit,
-    onDelete: () -> Unit
+private fun GroupedGameCard(
+    game: GroupedGameRecord,
+    formattedLastPlayed: String,
+    onClick: () -> Unit,
+    onShareLatest: () -> Unit,
+    onDeleteAll: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onShare),
-        shape = RoundedCornerShape(16.dp),
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -522,29 +607,30 @@ private fun SessionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIconImage(
-                    packageName = session.packageName,
-                    appName = session.appName,
-                    modifier = Modifier.size(42.dp)
+                    packageName = game.packageName,
+                    appName = game.appName,
+                    modifier = Modifier.size(46.dp)
                 )
 
                 Spacer(Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = session.appName,
-                        style = MaterialTheme.typography.titleSmall,
+                        text = game.appName,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = formattedDate,
+                        text = stringResource(R.string.last_played_label, formattedLastPlayed),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
                 IconButton(
-                    onClick = onShare,
+                    onClick = onShareLatest,
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -554,9 +640,9 @@ private fun SessionCard(
                         modifier = Modifier.size(18.dp)
                     )
                 }
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(2.dp))
                 IconButton(
-                    onClick = onDelete,
+                    onClick = onDeleteAll,
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -566,19 +652,26 @@ private fun SessionCard(
                         modifier = Modifier.size(18.dp)
                     )
                 }
+                Spacer(Modifier.width(2.dp))
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(20.dp)
+                )
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // Metrics row
-            val durationMin = session.durationSeconds / 60
-            val durationSec = session.durationSeconds % 60
-            val durationText = if (durationMin > 0) "${durationMin}m ${durationSec}s" else "${durationSec}s"
+            // Metrics row: Duration, Session count, Avg FPS, Peak/Low
+            val totalMin = game.totalDurationSeconds / 60
+            val totalSec = game.totalDurationSeconds % 60
+            val durationText = if (totalMin > 0) "${totalMin}m ${totalSec}s" else "${totalSec}s"
 
             val avgColor = when {
-                session.avgFps >= 60 -> Color(0xFF4CAF50)
-                session.avgFps >= 45 -> Color(0xFFFBC02D)
-                session.avgFps >= 30 -> Color(0xFFFF9800)
+                game.overallAvgFps >= 60 -> Color(0xFF4CAF50)
+                game.overallAvgFps >= 45 -> Color(0xFFFBC02D)
+                game.overallAvgFps >= 30 -> Color(0xFFFF9800)
                 else -> Color(0xFFF44336)
             }
 
@@ -589,7 +682,32 @@ private fun SessionCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Duration Chip
+                // Session Count Pill
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Analytics,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.session_count_label, game.sessionCount),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                // Total Playtime Pill
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(8.dp)
@@ -606,7 +724,7 @@ private fun SessionCard(
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            durationText,
+                            stringResource(R.string.total_play_time, durationText),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium
                         )
@@ -628,7 +746,7 @@ private fun SessionCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            "${session.avgFps} FPS",
+                            "${game.overallAvgFps} FPS",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = avgColor
@@ -642,7 +760,7 @@ private fun SessionCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        stringResource(R.string.peak_low, session.maxFps, session.minFps),
+                        stringResource(R.string.peak_low, game.peakFps, game.lowestFps),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,

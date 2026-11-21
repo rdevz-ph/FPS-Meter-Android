@@ -4,6 +4,17 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.7] - 2026-11-21
+
+### Added
+- Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart ([#62](https://github.com/rdevz-ph/FPS-Meter-Android/issues/62)).
+- Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
+
+### Fixed
+- Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.
+
+---
+
 ## [v3.6] - 2026-11-16
 
 ### Added
@@ -367,6 +378,7 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v3.7]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.7
 [v3.6]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.6
 [v3.5]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.5
 [v3.4]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.4

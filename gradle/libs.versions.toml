@@ -12,8 +12,10 @@ kotlin = "2.2.10"
 composeBom = "2024.09.00"
 material3 = "1.5.0-alpha15"
 shizuku = "13.0.0"
+json = "20240303"
 
 [libraries]
+org-json = { group = "org.json", name = "json", version.ref = "json" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

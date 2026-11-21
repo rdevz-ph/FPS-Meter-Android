@@ -237,7 +237,18 @@ class FpsOverlayService : Service() {
                 }
                 val samplePkg = fgPkg ?: lastDetectedPackage ?: FpsRecordingManager.getActivePackage()
                 val appName = samplePkg?.let { getAppNameForPackage(it) }
-                FpsRecordingManager.onFpsSample(this@FpsOverlayService, samplePkg, currentFps, appName)
+                val batTemp = batteryMonitor?.getTemperature() ?: 0f
+                val batWatts = batteryMonitor?.getPowerWatts() ?: 0f
+                FpsRecordingManager.onFpsSample(
+                    this@FpsOverlayService,
+                    samplePkg,
+                    currentFps,
+                    appName,
+                    batTemp,
+                    batWatts,
+                    cpuTemp = cpuTemp,
+                    gpuTemp = gpuTemp
+                )
 
                 val recActive = FpsRecordingManager.isRecordingActive()
                 if (recActive != lastRecordingState || fgPkg != lastForegroundPkgForAssistive) {
@@ -1345,7 +1356,18 @@ class FpsOverlayService : Service() {
                     }
                     val samplePkg = activePkg ?: lastDetectedPackage ?: FpsRecordingManager.getActivePackage()
                     val appName = samplePkg?.let { getAppNameForPackage(it) }
-                    FpsRecordingManager.onFpsSample(this@FpsOverlayService, samplePkg, currentFps, appName)
+                    val batTemp = batteryMonitor?.getTemperature() ?: 0f
+                    val batWatts = batteryMonitor?.getPowerWatts() ?: 0f
+                    FpsRecordingManager.onFpsSample(
+                        this@FpsOverlayService,
+                        samplePkg,
+                        currentFps,
+                        appName,
+                        batTemp,
+                        batWatts,
+                        cpuTemp = cpuTemp,
+                        gpuTemp = gpuTemp
+                    )
 
                     val recActive = FpsRecordingManager.isRecordingActive()
                     if (recActive != lastRecordingState || activePkg != lastForegroundPkgForAssistive) {
@@ -1373,7 +1395,7 @@ class FpsOverlayService : Service() {
     }
 
     private fun updateSocThermalMonitoring() {
-        val anyShizukuTempNeeded = showSocTemp || showCpuTemp || showGpuTemp
+        val anyShizukuTempNeeded = showSocTemp || showCpuTemp || showGpuTemp || FpsRecordingManager.isRecordingActive()
         if (anyShizukuTempNeeded) {
             if (socThermalMonitor == null) {
                 socThermalMonitor = SocThermalMonitor(

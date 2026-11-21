@@ -2,4 +2,5 @@
 <paths>
     <cache-path name="shared_cards" path="shared_cards/" />
     <cache-path name="shared_diagnostics" path="shared_diagnostics/" />
+    <cache-path name="csv_exports" path="csv_exports/" />
 </paths>

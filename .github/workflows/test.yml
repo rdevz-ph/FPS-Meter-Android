@@ -1,0 +1,63 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "app/**"
+      - "build.gradle"
+      - "build.gradle.kts"
+      - "settings.gradle"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - "gradle/**"
+      - "gradlew"
+      - "gradlew.bat"
+      - ".github/workflows/test.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "app/**"
+      - "build.gradle"
+      - "build.gradle.kts"
+      - "settings.gradle"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - "gradle/**"
+      - "gradlew"
+      - "gradlew.bat"
+      - ".github/workflows/test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run unit tests
+        run: bash ./gradlew test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/reports/tests/testDebugUnitTest/

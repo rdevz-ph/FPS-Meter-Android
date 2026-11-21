@@ -118,6 +118,8 @@ fun MainScreen(
 
     val sessions by viewModel.sessions.collectAsState()
     var currentTab by rememberSaveable { mutableStateOf(MainNavTab.METER) }
+    var selectedAnalyticsGamePackage by rememberSaveable { mutableStateOf<String?>(null) }
+    val isViewingAnalytics = currentTab == MainNavTab.HISTORY && selectedAnalyticsGamePackage != null
 
     // Check overlay permission & accessibility on composition
     LaunchedEffect(Unit) {
@@ -265,99 +267,101 @@ fun MainScreen(
             Scaffold(
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 topBar = {
-                    TopAppBar(
-                        title = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = currentTab.icon,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        stringResource(R.string.app_name),
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Text(
-                                        when (currentTab) {
-                                            MainNavTab.METER -> stringResource(R.string.subtitle_meter)
-                                            MainNavTab.GAMES -> stringResource(R.string.subtitle_games)
-                                            MainNavTab.HISTORY -> stringResource(R.string.subtitle_history)
-                                        },
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                            }
-                        },
-                        actions = {
-                            Box {
-                                IconButton(onClick = { showOverflowMenu = true }) {
+                    if (!isViewingAnalytics) {
+                        TopAppBar(
+                            title = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = stringResource(R.string.common_more_options)
+                                        imageVector = currentTab.icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(28.dp)
                                     )
+                                    Spacer(Modifier.width(10.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            stringResource(R.string.app_name),
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            when (currentTab) {
+                                                MainNavTab.METER -> stringResource(R.string.subtitle_meter)
+                                                MainNavTab.GAMES -> stringResource(R.string.subtitle_games)
+                                                MainNavTab.HISTORY -> stringResource(R.string.subtitle_history)
+                                            },
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
-                                DropdownMenu(
-                                    expanded = showOverflowMenu,
-                                    onDismissRequest = { showOverflowMenu = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.changelog_title)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.AutoAwesome, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showOverflowMenu = false
-                                            showChangelogSheet = true
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.common_about)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Info, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showOverflowMenu = false
-                                            showAboutDialog = true
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.common_settings)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Settings, contentDescription = null)
-                                        },
-                                        onClick = {
-                                            showOverflowMenu = false
-                                            isSettingsOpen = true
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.common_donate)) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFE91E63))
-                                        },
-                                        onClick = {
-                                            showOverflowMenu = false
-                                            showDonationDialog = true
-                                        }
-                                    )
-                            }
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
-            }
-        ) { padding ->
+                            },
+                            actions = {
+                                Box {
+                                    IconButton(onClick = { showOverflowMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = stringResource(R.string.common_more_options)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showOverflowMenu,
+                                        onDismissRequest = { showOverflowMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.changelog_title)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showOverflowMenu = false
+                                                showChangelogSheet = true
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.common_about)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Info, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showOverflowMenu = false
+                                                showAboutDialog = true
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.common_settings)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Settings, contentDescription = null)
+                                            },
+                                            onClick = {
+                                                showOverflowMenu = false
+                                                isSettingsOpen = true
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.common_donate)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFE91E63))
+                                            },
+                                            onClick = {
+                                                showOverflowMenu = false
+                                                showDonationDialog = true
+                                            }
+                                        )
+                                    }
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
+                        )
+                    }
+                }
+            ) { padding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -716,6 +720,8 @@ fun MainScreen(
         MainNavTab.HISTORY -> {
             HistoryScreen(
                 sessions = sessions,
+                selectedGamePackage = selectedAnalyticsGamePackage,
+                onSelectGamePackage = { selectedAnalyticsGamePackage = it },
                 onDeleteSession = { sessionId ->
                     viewModel.deleteSession(sessionId)
                 },
@@ -738,7 +744,7 @@ fun MainScreen(
             .navigationBarsPadding()
             .padding(bottom = 16.dp)
     ) {
-        if (!isImeVisible && maxHeight >= 80.dp) {
+        if (!isImeVisible && maxHeight >= 80.dp && !isViewingAnalytics) {
             HorizontalFloatingToolbar(
                 expanded = true,
                 floatingActionButton = {

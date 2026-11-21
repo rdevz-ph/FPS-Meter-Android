@@ -1,5 +1,10 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 3.6 | Latest Release | November 16, 2026
+window.CHANGELOGS_TEXT = `## Version 3.7 | Latest Release | November 21, 2026
+- Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart (#62).
+- Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
+- Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.
+
+## Version 3.6 | November 16, 2026
 - Swap (Virtual RAM) Overlay: Added a Swap (Virtual RAM) overlay toggle under the RAM Overlays section with usage percentage and GB or MB unit formatting.
 - Root Detection Stability Fix: Fixed root mode detection and switch lockout on KernelSU and APatch by inspecting mounts and requesting root execution directly.
 - Root and Privileged Diagnostics: Extended Device Diagnostics to show the active operating mode (Root vs Shizuku), detected root manager, su binary location, and version.
