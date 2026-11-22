@@ -54,6 +54,7 @@ class BootReceiver : BroadcastReceiver() {
                     putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                     putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                     putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
+                    putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, settings.floatingBubbleAlpha)
                     putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                     putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                     putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)

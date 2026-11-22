@@ -52,12 +52,14 @@ class FloatingToggleButton(
         } catch (e: Exception) {
             // Ignore
         }
-    }
+    },
+    initialAlpha: Float = 0.8f
 ) {
 
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val displayMetrics = context.resources.displayMetrics
     private var isAttached = false
+    private var bubbleAlpha = initialAlpha.coerceIn(0.1f, 1.0f)
 
     private val buttonSize = (46 * displayMetrics.density).toInt()
     private val wmLayoutParams = WindowManager.LayoutParams(
@@ -75,7 +77,9 @@ class FloatingToggleButton(
         y = (displayMetrics.heightPixels * 0.4f).toInt()
     }
 
-    private val bubbleView = BubbleView(context)
+    private val bubbleView = BubbleView(context).apply {
+        alpha = bubbleAlpha
+    }
 
     // Menu overlay state
     private var menuView: View? = null
@@ -107,6 +111,15 @@ class FloatingToggleButton(
             } catch (e: Exception) {
                 // Ignore
             }
+        }
+    }
+
+    fun setAlpha(alpha: Float) {
+        bubbleAlpha = alpha.coerceIn(0.1f, 1.0f)
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            bubbleView.alpha = bubbleAlpha
+        } else {
+            bubbleView.post { bubbleView.alpha = bubbleAlpha }
         }
     }
 

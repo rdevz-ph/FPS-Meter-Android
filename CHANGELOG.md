@@ -4,6 +4,14 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.8] - 2026-11-22
+
+### Added
+- Added a bubble opacity slider under Floating Assistive Bubble in Quick Access settings to adjust the transparency of the floating on-screen bubble, including its inactive OFF state ([#65](https://github.com/rdevz-ph/FPS-Meter-Android/issues/65)).
+- Added dynamic Celsius scale labels with degree symbols to the right vertical axis of the temperature chart in game analytics.
+
+---
+
 ## [v3.7] - 2026-11-21
 
 ### Added
@@ -378,6 +386,7 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v3.8]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.8
 [v3.7]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.7
 [v3.6]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.6
 [v3.5]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.5

@@ -1,15 +1,14 @@
-# FPS Meter Android v3.7
+# FPS Meter Android v3.8
 
 ### What's Changed
-- Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart ([#62](https://github.com/rdevz-ph/FPS-Meter-Android/issues/62)).
-- Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
-- Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.
+- Added a bubble opacity slider under Floating Assistive Bubble in Quick Access settings to adjust the transparency of the floating on-screen bubble, including its inactive OFF state ([#65](https://github.com/rdevz-ph/FPS-Meter-Android/issues/65)).
+- Added dynamic Celsius scale labels with degree symbols to the right vertical axis of the temperature chart in game analytics.
 
 ### Release Highlights
 
 | Game History Screen | Game Analytics Screen |
 | :---: | :---: |
-| ![Game History Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.7/3.7_history_screen.jpg) | ![Game Analytics Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.7/3.7_analytics_screen.jpg) |
+| ![Game History Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.8/3.8_history_screen.jpg) | ![Game Analytics Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.8/3.8_analytics_screen.jpg) |
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 
@@ -22,7 +21,7 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Adaptive layout dynamically scaling across lines, with a single-line mode option for tablets and landscape gaming
 - Dynamic FPS color coding (green, yellow, orange, red) based on performance thresholds
 - In-memory per-game FPS session recording with dedicated History screen
-- Interactive floating assistive bubble with in-game quick control menu
+- Interactive floating assistive bubble with in-game quick control menu and adjustable bubble opacity
 - Six preset positions (top/bottom left/center/right) with manual drag support
 - Light and dark mode themes
 - Multi-language support (English and Simplified Chinese) with in-app language switcher

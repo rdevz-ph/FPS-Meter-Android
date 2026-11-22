@@ -148,6 +148,7 @@
     <string name="quick_access">Quick Access &amp; Toggles</string>
     <string name="floating_bubble">Floating Assistive Bubble</string>
     <string name="floating_bubble_desc">Draggable on-screen bubble with a quick menu to start/stop game FPS recording and toggle HUD visibility from any app.</string>
+    <string name="bubble_opacity">Bubble Opacity</string>
     <string name="auto_hide_floating_bubble">Auto-Hide Bubble &amp; Double-Tap Overlay</string>
     <string name="auto_hide_floating_bubble_desc">Hide the floating bubble while the overlay is visible. Double-tap the stats overlay to hide it and show the floating bubble on the side of the screen.</string>
     <string name="start_on_boot">Start on Boot</string>

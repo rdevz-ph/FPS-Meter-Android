@@ -1,5 +1,9 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 3.7 | Latest Release | November 21, 2026
+window.CHANGELOGS_TEXT = `## Version 3.8 | Latest Release | November 22, 2026
+- Added a bubble opacity slider under Floating Assistive Bubble in Quick Access settings to adjust the transparency of the floating on-screen bubble, including its inactive OFF state (#65).
+- Added dynamic Celsius scale labels with degree symbols to the right vertical axis of the temperature chart in game analytics.
+
+## Version 3.7 | November 21, 2026
 - Added a game analytics screen in History with a ten-metric summary card, an interactive framerate and temperature chart, and a frame time chart (#62).
 - Added a CSV export button in game analytics to save performance records to local storage or share them with other applications.
 - Fixed an issue where Magisk was misidentified as KernelSU due to version string matching.

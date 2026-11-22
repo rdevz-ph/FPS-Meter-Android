@@ -215,6 +215,7 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
+                putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, settings.floatingBubbleAlpha)
                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                 putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                 putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
@@ -429,6 +430,7 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                             putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
+                            putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, settings.floatingBubbleAlpha)
                             putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, settings.fpsProvider.name)
                             putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, settings.surfaceFlingerMethod.name)
                             putExtra(FpsOverlayService.EXTRA_SHOW_API, settings.showGraphicsApi)
@@ -471,6 +473,7 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
+                                putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, newSettings.floatingBubbleAlpha)
                                 putExtra(FpsOverlayService.EXTRA_FPS_PROVIDER, newSettings.fpsProvider.name)
                                 putExtra(FpsOverlayService.EXTRA_SURFACE_FLINGER_METHOD, newSettings.surfaceFlingerMethod.name)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_API, newSettings.showGraphicsApi)
@@ -505,6 +508,7 @@ fun MainScreen(
                             val intent = Intent(context, FpsOverlayService::class.java).apply {
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
+                                putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, newSettings.floatingBubbleAlpha)
                             }
                             context.startForegroundService(intent)
                         }
@@ -519,6 +523,17 @@ fun MainScreen(
                             val intent = Intent(context, FpsOverlayService::class.java).apply {
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
+                                putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, newSettings.floatingBubbleAlpha)
+                            }
+                            context.startForegroundService(intent)
+                        }
+                    },
+                    onBubbleAlphaChange = { alpha ->
+                        val newSettings = settings.copy(floatingBubbleAlpha = alpha)
+                        viewModel.updateSettings(newSettings)
+                        if (overlayRunning) {
+                            val intent = Intent(context, FpsOverlayService::class.java).apply {
+                                putExtra(FpsOverlayService.EXTRA_FLOATING_BUBBLE_ALPHA, newSettings.floatingBubbleAlpha)
                             }
                             context.startForegroundService(intent)
                         }
@@ -2757,7 +2772,8 @@ fun DeveloperCard() {
 fun QuickAccessCard(
     settings: OverlaySettings,
     onToggleFloatingButton: (Boolean) -> Unit,
-    onToggleAutoHideBubble: (Boolean) -> Unit
+    onToggleAutoHideBubble: (Boolean) -> Unit,
+    onBubbleAlphaChange: (Float) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -2833,6 +2849,30 @@ fun QuickAccessCard(
                         Switch(
                             checked = settings.autoHideFloatingBubble,
                             onCheckedChange = onToggleAutoHideBubble
+                        )
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.bubble_opacity),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.width(95.dp)
+                        )
+                        Slider(
+                            value = settings.floatingBubbleAlpha,
+                            onValueChange = onBubbleAlphaChange,
+                            valueRange = 0.1f..1.0f,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            "${(settings.floatingBubbleAlpha * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.width(36.dp),
+                            fontFamily = FontFamily.Monospace
                         )
                     }
                 }

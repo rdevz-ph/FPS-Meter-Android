@@ -9,7 +9,7 @@
   [![API](https://img.shields.io/badge/API-26%2B-10b981?style=for-the-badge)](https://android.com)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
   [![License](https://img.shields.io/badge/license-MIT-4f46e5?style=for-the-badge)](./LICENSE)
-  [![Version](https://img.shields.io/badge/version-3.7-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
+  [![Version](https://img.shields.io/badge/version-3.8-f59e0b?style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases/latest)
   [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmy-release-badge-api.netlify.app%2Fapi%2Fbadge%3Fowner%3Drdevz-ph%26repo%3DFPS-Meter-Android%26mode%3Djson&query=%24.downloads&label=downloads&color=2563eb&style=for-the-badge)](https://github.com/rdevz-ph/FPS-Meter-Android/releases)
   [![Telegram](https://img.shields.io/badge/Telegram-@fpsmeterandroid-24A1DE?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/fpsmeterandroid)
   [![F-Droid](https://img.shields.io/f-droid/v/com.rdevzph.fpsmeter?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org/en/packages/com.rdevzph.fpsmeter/)
@@ -71,7 +71,7 @@ Visit the [Official Website & Showcase](https://rdevz-ph.github.io/FPS-Meter-And
 ### Application Interface
 | Meter & Telemetry | Games & Auto-Recording | Performance History Logs | Game Performance Analytics | Application Settings |
 |:-----------------:|:----------------------:|:------------------------:|:--------------------------:|:--------------------:|
-| ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_2.jpg) | ![Performance History Logs](./screenshots/3.7/3.7_history_screen.jpg) | ![Game Performance Analytics](./screenshots/3.7/3.7_analytics_screen.jpg) | ![Application Settings](./screenshots/Screenshot_4.jpg) |
+| ![Meter & Telemetry](./screenshots/Screenshot_1.jpg) | ![Games & Auto-Recording](./screenshots/Screenshot_2.jpg) | ![Performance History Logs](./screenshots/3.8/3.8_history_screen.jpg) | ![Game Performance Analytics](./screenshots/3.8/3.8_analytics_screen.jpg) | ![Application Settings](./screenshots/Screenshot_4.jpg) |
 
 > [!TIP]
 > You can customize the interface appearance under App Theme in Settings. Choose between Follow System, Dark, and Light modes, toggle pure black for AMOLED displays, or enable Dynamic Color to adapt UI accents to your device wallpaper.

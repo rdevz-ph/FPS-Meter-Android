@@ -825,6 +825,15 @@ private fun FpsTemperatureChartCard(stats: AnalyticsData) {
 
             val maxFpsVal = max(120, ((stats.maxFps + 9) / 10) * 10)
 
+            val minTemp = 30f
+            val peakObservedTemp = maxOf(
+                tempSamples.maxOrNull() ?: 0f,
+                cpuSamples.maxOrNull() ?: 0f,
+                gpuSamples.maxOrNull() ?: 0f,
+                45f
+            )
+            val maxTemp = max(50f, peakObservedTemp + 2f)
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -896,14 +905,6 @@ private fun FpsTemperatureChartCard(stats: AnalyticsData) {
 
                     // 3. Draw Temperature Paths (Battery, CPU, GPU) on shared temperature axis
                     if (hasAnyTemp) {
-                        val minTemp = 30f
-                        val peakObservedTemp = maxOf(
-                            tempSamples.maxOrNull() ?: 0f,
-                            cpuSamples.maxOrNull() ?: 0f,
-                            gpuSamples.maxOrNull() ?: 0f,
-                            45f
-                        )
-                        val maxTemp = max(50f, peakObservedTemp + 2f)
                         val tempRange = max(1f, maxTemp - minTemp)
 
                         // Helper function to draw a temperature line
@@ -944,7 +945,7 @@ private fun FpsTemperatureChartCard(stats: AnalyticsData) {
                     }
                 }
 
-                // Left Y-Axis labels (120, 90, 60, 30, 0)
+                // Left Y-Axis labels (FPS: 120, 90, 60, 30, 0)
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -956,6 +957,25 @@ private fun FpsTemperatureChartCard(stats: AnalyticsData) {
                     Text("${maxFpsVal / 2}", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${maxFpsVal / 4}", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("0", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+
+                // Right Y-Axis labels (Temperature in °C when present)
+                if (hasAnyTemp) {
+                    val tempStep = (maxTemp - minTemp) / 4f
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .align(Alignment.TopEnd)
+                            .padding(bottom = 24.dp),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text("${maxTemp.toInt()}°", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${(minTemp + tempStep * 3).toInt()}°", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${(minTemp + tempStep * 2).toInt()}°", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${(minTemp + tempStep).toInt()}°", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${minTemp.toInt()}°", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
 
                 // Touch tooltip display

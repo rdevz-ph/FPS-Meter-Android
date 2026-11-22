@@ -83,6 +83,7 @@ class FpsOverlayService : Service() {
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
         const val EXTRA_AUTO_HIDE_FLOATING_BUBBLE = "auto_hide_floating_bubble"
+        const val EXTRA_FLOATING_BUBBLE_ALPHA = "floating_bubble_alpha"
         const val EXTRA_FPS_PROVIDER = "fps_provider"
         const val EXTRA_SURFACE_FLINGER_METHOD = "surface_flinger_method"
         const val EXTRA_SHOW_API = "show_api"
@@ -161,6 +162,7 @@ class FpsOverlayService : Service() {
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
     private var autoHideFloatingBubble = false
+    private var floatingBubbleAlpha = 0.8f
     private var fpsProvider = FpsProvider.CHOREOGRAPHER
     private var surfaceFlingerMethod = SurfaceFlingerMethod.LATENCY
     private var showGraphicsApi = true
@@ -290,6 +292,7 @@ class FpsOverlayService : Service() {
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
         autoHideFloatingBubble = saved.autoHideFloatingBubble
+        floatingBubbleAlpha = saved.floatingBubbleAlpha
         fpsProvider = saved.fpsProvider
         surfaceFlingerMethod = saved.surfaceFlingerMethod
         showGraphicsApi = saved.showGraphicsApi
@@ -429,9 +432,11 @@ class FpsOverlayService : Service() {
                     isOverlayVisible = { isOverlayVisible },
                     getActiveGameName = { getActiveGameName() },
                     isGameRecordingConfigured = { isGameRecordingConfigured() },
-                    onReturnToApp = { returnToApp() }
+                    onReturnToApp = { returnToApp() },
+                    initialAlpha = floatingBubbleAlpha
                 )
             }
+            floatingToggleButton?.setAlpha(floatingBubbleAlpha)
             floatingToggleButton?.updateState()
             if (autoHideFloatingBubble && isOverlayVisible) {
                 floatingToggleButton?.hide()
@@ -529,6 +534,10 @@ class FpsOverlayService : Service() {
         }
         if (intent.hasExtra(EXTRA_AUTO_HIDE_FLOATING_BUBBLE)) {
             autoHideFloatingBubble = intent.getBooleanExtra(EXTRA_AUTO_HIDE_FLOATING_BUBBLE, autoHideFloatingBubble)
+        }
+        if (intent.hasExtra(EXTRA_FLOATING_BUBBLE_ALPHA)) {
+            floatingBubbleAlpha = intent.getFloatExtra(EXTRA_FLOATING_BUBBLE_ALPHA, floatingBubbleAlpha)
+            floatingToggleButton?.setAlpha(floatingBubbleAlpha)
         }
         if (intent.hasExtra(EXTRA_FPS_PROVIDER)) {
             val providerName = intent.getStringExtra(EXTRA_FPS_PROVIDER)

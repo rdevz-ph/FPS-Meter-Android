@@ -148,6 +148,7 @@
     <string name="quick_access">快捷访问与开关</string>
     <string name="floating_bubble">悬浮辅助球</string>
     <string name="floating_bubble_desc">可在任意应用上拖动的悬浮球，通过快捷菜单启动/停止游戏帧率记录并切换 HUD 显示。</string>
+    <string name="bubble_opacity">悬浮球不透明度</string>
     <string name="auto_hide_floating_bubble">自动隐藏悬浮球与双击收起悬浮窗</string>
     <string name="auto_hide_floating_bubble_desc">显示悬浮窗时自动隐藏悬浮球，双击数据悬浮窗可将其隐藏并在屏幕侧边显示悬浮球。</string>
     <string name="start_on_boot">开机自启</string>

@@ -50,6 +50,7 @@ data class OverlaySettings(
     val gravity: Int = Gravity.TOP or Gravity.START,
     val floatingToggleEnabled: Boolean = false,
     val autoHideFloatingBubble: Boolean = false,
+    val floatingBubbleAlpha: Float = 0.8f,
     val autoStartEnabled: Boolean = false,
     val autoStartPackages: Set<String> = emptySet(),
     val recordingPackages: Set<String> = emptySet(),
@@ -90,6 +91,7 @@ data class OverlaySettings(
         private const val KEY_GRAVITY = "gravity"
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
         private const val KEY_AUTO_HIDE_FLOATING_BUBBLE = "auto_hide_floating_bubble"
+        private const val KEY_FLOATING_BUBBLE_ALPHA = "floating_bubble_alpha"
         private const val KEY_AUTO_START = "auto_start"
         private const val KEY_AUTO_PACKAGES = "auto_packages"
         private const val KEY_RECORDING_PACKAGES = "recording_packages"
@@ -130,6 +132,7 @@ data class OverlaySettings(
                 gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
                 autoHideFloatingBubble = prefs.getBoolean(KEY_AUTO_HIDE_FLOATING_BUBBLE, defaultSettings.autoHideFloatingBubble),
+                floatingBubbleAlpha = prefs.getFloat(KEY_FLOATING_BUBBLE_ALPHA, defaultSettings.floatingBubbleAlpha),
                 autoStartEnabled = prefs.getBoolean(KEY_AUTO_START, defaultSettings.autoStartEnabled),
                 autoStartPackages = prefs.getStringSet(KEY_AUTO_PACKAGES, defaultSettings.autoStartPackages) ?: emptySet(),
                 recordingPackages = prefs.getStringSet(KEY_RECORDING_PACKAGES, defaultSettings.recordingPackages) ?: emptySet(),
@@ -170,6 +173,7 @@ data class OverlaySettings(
                 putInt(KEY_GRAVITY, settings.gravity)
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putBoolean(KEY_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
+                putFloat(KEY_FLOATING_BUBBLE_ALPHA, settings.floatingBubbleAlpha)
                 putBoolean(KEY_AUTO_START, settings.autoStartEnabled)
                 putStringSet(KEY_AUTO_PACKAGES, settings.autoStartPackages)
                 putStringSet(KEY_RECORDING_PACKAGES, settings.recordingPackages)
