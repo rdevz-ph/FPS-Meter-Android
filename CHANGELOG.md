@@ -4,6 +4,15 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v3.9] - 2026-11-24
+
+### Added
+- Added CPU Load (%) and GPU Load (%) toggles in Display Elements to show live CPU utilization and GPU activity on both the Pill and RTSS overlays ([#59](https://github.com/rdevz-ph/FPS-Meter-Android/issues/59)).
+- Added a Hide Floating Bubble button to the assistive popup menu so you can dismiss the floating assistive bubble and its dialog at the same time ([#67](https://github.com/rdevz-ph/FPS-Meter-Android/issues/67)).
+- Added raw CPU and GPU load readings to Device Diagnostics and include them in diagnostic reports and exported thermal dumps.
+
+---
+
 ## [v3.8] - 2026-11-22
 
 ### Added
@@ -386,6 +395,7 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v3.9]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.9
 [v3.8]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.8
 [v3.7]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.7
 [v3.6]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.6

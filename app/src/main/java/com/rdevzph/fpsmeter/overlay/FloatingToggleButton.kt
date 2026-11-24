@@ -53,6 +53,7 @@ class FloatingToggleButton(
             // Ignore
         }
     },
+    private val onHideBubble: () -> Unit = {},
     initialAlpha: Float = 0.8f
 ) {
 
@@ -520,7 +521,35 @@ class FloatingToggleButton(
         }
         root.addView(returnAppBtn)
 
-        // 5. Close Row
+        // 5. Hide Floating Bubble Button
+        val hideBubbleBtn = TextView(context).apply {
+            val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            lp.topMargin = (8 * dp).toInt()
+            layoutParams = lp
+
+            val padH = (12 * dp).toInt()
+            val padV = (9 * dp).toInt()
+            setPadding(padH, padV, padH, padV)
+            textSize = 12f
+            gravity = Gravity.CENTER
+            typeface = Typeface.DEFAULT_BOLD
+            text = context.getString(R.string.floating_hide_bubble)
+            setTextColor(Color.parseColor("#94A3B8"))
+
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#1E293B"))
+                cornerRadius = 10 * dp
+                setStroke((1 * dp).toInt(), Color.parseColor("#334155"))
+            }
+
+            setOnClickListener {
+                hideMenu()
+                onHideBubble()
+            }
+        }
+        root.addView(hideBubbleBtn)
+
+        // 6. Close Row
         val closeBtn = TextView(context).apply {
             val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             lp.topMargin = (6 * dp).toInt()

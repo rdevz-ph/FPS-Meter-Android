@@ -90,6 +90,8 @@
     <string name="battery_temp">Battery Temp</string>
     <string name="cpu_temp">CPU Temp</string>
     <string name="gpu_temp">GPU Temp</string>
+    <string name="cpu_load">CPU Load (%)</string>
+    <string name="gpu_load">GPU Load (%)</string>
     <string name="soc_temp">SoC Temp</string>
     <string name="battery_level">Battery Level</string>
     <string name="battery_power">Battery Wattage</string>
@@ -346,6 +348,7 @@
     <string name="floating_hide_overlay">Hide Overlay</string>
     <string name="floating_show_overlay">Show Overlay</string>
     <string name="floating_return_to_app">Return to App</string>
+    <string name="floating_hide_bubble">Hide Floating Bubble</string>
     <string name="floating_enable_rec_first">Enable recording for this game in Games list first</string>
     <string name="notif_status_visible">Overlay visible &amp; measuring</string>
     <string name="notif_status_hidden">Overlay hidden (minimized)</string>

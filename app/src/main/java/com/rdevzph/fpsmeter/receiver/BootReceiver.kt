@@ -51,6 +51,8 @@ class BootReceiver : BroadcastReceiver() {
                     putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
                     putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, settings.showCpuTemp)
                     putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
+                    putExtra(FpsOverlayService.EXTRA_SHOW_CPU_LOAD, settings.showCpuLoad)
+                    putExtra(FpsOverlayService.EXTRA_SHOW_GPU_LOAD, settings.showGpuLoad)
                     putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                     putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                     putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)

@@ -80,6 +80,8 @@ class FpsOverlayService : Service() {
         const val EXTRA_SHOW_SOC_TEMP = "show_soc_temp"
         const val EXTRA_SHOW_CPU_TEMP = "show_cpu_temp"
         const val EXTRA_SHOW_GPU_TEMP = "show_gpu_temp"
+        const val EXTRA_SHOW_CPU_LOAD = "show_cpu_load"
+        const val EXTRA_SHOW_GPU_LOAD = "show_gpu_load"
         const val EXTRA_GRAVITY = "gravity"
         const val EXTRA_FLOATING_TOGGLE = "floating_toggle"
         const val EXTRA_AUTO_HIDE_FLOATING_BUBBLE = "auto_hide_floating_bubble"
@@ -159,6 +161,8 @@ class FpsOverlayService : Service() {
     private var showSocTemp = false
     private var showCpuTemp = false
     private var showGpuTemp = false
+    private var showCpuLoad = false
+    private var showGpuLoad = false
     private var overlayGravity = Gravity.TOP or Gravity.START
     private var floatingToggleEnabled = false
     private var autoHideFloatingBubble = false
@@ -203,7 +207,10 @@ class FpsOverlayService : Service() {
     private var socTemp: Float = 0f
     private var cpuTemp: Float = 0f
     private var gpuTemp: Float = 0f
+    private var cpuLoad: Float = -1f
+    private var gpuLoad: Float = -1f
     private var socThermalMonitor: SocThermalMonitor? = null
+    private var cpuGpuLoadMonitor: CpuGpuLoadMonitor? = null
 
     private fun getAppNameForPackage(pkg: String): String {
         return try {
@@ -289,6 +296,8 @@ class FpsOverlayService : Service() {
         showSocTemp = saved.showSocTemp
         showCpuTemp = saved.showCpuTemp
         showGpuTemp = saved.showGpuTemp
+        showCpuLoad = saved.showCpuLoad
+        showGpuLoad = saved.showGpuLoad
         overlayGravity = saved.gravity
         floatingToggleEnabled = saved.floatingToggleEnabled
         autoHideFloatingBubble = saved.autoHideFloatingBubble
@@ -322,6 +331,7 @@ class FpsOverlayService : Service() {
         }
         updateRamMonitoring()
         updateSocThermalMonitoring()
+        updateDeviceLoadMonitoring()
 
         FpsTileService.updateTile(this)
     }
@@ -433,6 +443,13 @@ class FpsOverlayService : Service() {
                     getActiveGameName = { getActiveGameName() },
                     isGameRecordingConfigured = { isGameRecordingConfigured() },
                     onReturnToApp = { returnToApp() },
+                    onHideBubble = {
+                        floatingToggleEnabled = false
+                        floatingToggleButton?.hide()
+                        floatingToggleButton = null
+                        val saved = OverlaySettings.load(this)
+                        OverlaySettings.save(this, saved.copy(floatingToggleEnabled = false))
+                    },
                     initialAlpha = floatingBubbleAlpha
                 )
             }
@@ -524,6 +541,20 @@ class FpsOverlayService : Service() {
             if (newShowGpu != showGpuTemp) {
                 showGpuTemp = newShowGpu
                 updateSocThermalMonitoring()
+            }
+        }
+        if (intent.hasExtra(EXTRA_SHOW_CPU_LOAD)) {
+            val newShowCpuLoad = intent.getBooleanExtra(EXTRA_SHOW_CPU_LOAD, showCpuLoad)
+            if (newShowCpuLoad != showCpuLoad) {
+                showCpuLoad = newShowCpuLoad
+                updateDeviceLoadMonitoring()
+            }
+        }
+        if (intent.hasExtra(EXTRA_SHOW_GPU_LOAD)) {
+            val newShowGpuLoad = intent.getBooleanExtra(EXTRA_SHOW_GPU_LOAD, showGpuLoad)
+            if (newShowGpuLoad != showGpuLoad) {
+                showGpuLoad = newShowGpuLoad
+                updateDeviceLoadMonitoring()
             }
         }
         if (intent.hasExtra(EXTRA_GRAVITY)) {
@@ -627,6 +658,7 @@ class FpsOverlayService : Service() {
                 useRoot = newUseRoot
                 surfaceFlingerFpsMonitor?.setUseRoot(useRoot)
                 socThermalMonitor?.setUseRoot(useRoot)
+                cpuGpuLoadMonitor?.setUseRoot(useRoot)
             }
         }
     }
@@ -769,6 +801,8 @@ class FpsOverlayService : Service() {
         val hasMs = showFps && showMs && fps > 0
         val hasCpu = showCpuTemp
         val hasGpu = showGpuTemp
+        val hasCpuLoad = showCpuLoad
+        val hasGpuLoad = showGpuLoad
         val hasSoc = showSocTemp
         val hasBatt = showTemp
         val hasBattLevel = showBatteryLevel
@@ -780,14 +814,14 @@ class FpsOverlayService : Service() {
         val extraOverlayCount = (if (showFps) 1 else 0) +
                 (if (hasApi) 1 else 0) +
                 (if (hasMs) 1 else 0) +
-                (if (hasCpu) 1 else 0) +
-                (if (hasGpu) 1 else 0) +
+                (if (hasCpu || hasCpuLoad) 1 else 0) +
+                (if (hasGpu || hasGpuLoad) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
                 (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0))) +
                 (if (hasBattPower) 1 else 0) +
                 (if (hasSwap) 1 else 0)
 
-        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower
+        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower || hasCpuLoad || hasGpuLoad
         // Wrap thermals to next line if more than 3 extra overlays are enabled (> 3) OR if RAM overlay is also enabled and thermals are present
         // If singleLineOverlay is enabled, keep all metrics on a single horizontal line.
         val useNextLine = !singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals) || (hasSwap && hasThermals))
@@ -860,26 +894,41 @@ class FpsOverlayService : Service() {
                 ssb.append(socModel, colorSoc, StyleSpan(Typeface.BOLD))
             }
 
-            // 2. GPU row (only if GPU temp enabled)
-            if (hasGpu) {
+            // 2. GPU row (if GPU temp or GPU load enabled)
+            if (hasGpu || hasGpuLoad) {
                 newLine()
-                val gpuTempStr = if (gpuTemp > 0f) {
-                    if (singleLineOverlay) String.format(Locale.US, "%.1f°C", gpuTemp) else String.format(Locale.US, "%.1f °C", gpuTemp)
-                } else {
-                    if (singleLineOverlay) "--°C" else "-- °C"
+                val gpuCells = mutableListOf<Pair<String, Int>>()
+                if (hasGpu) {
+                    val gpuTempStr = if (gpuTemp > 0f) {
+                        if (singleLineOverlay) String.format(Locale.US, "%.1f°C", gpuTemp) else String.format(Locale.US, "%.1f °C", gpuTemp)
+                    } else {
+                        if (singleLineOverlay) "--°C" else "-- °C"
+                    }
+                    gpuCells.add(gpuTempStr to colorVal)
                 }
-                appendRow("GPU", colorGpu, listOf(gpuTempStr to colorVal))
+                if (hasGpuLoad) {
+                    val gpuLoadStr = if (gpuLoad >= 0f) "${gpuLoad.roundToInt()}%" else "--%"
+                    gpuCells.add(gpuLoadStr to colorVal)
+                }
+                appendRow("GPU", colorGpu, gpuCells)
             }
 
-            // 3. CPU row (only if CPU temp enabled)
-            if (hasCpu) {
+            // 3. CPU row (if CPU temp or CPU load enabled)
+            if (hasCpu || hasCpuLoad) {
                 newLine()
-                val cpuTempStr = if (cpuTemp > 0f) {
-                    if (singleLineOverlay) String.format(Locale.US, "%.1f°C", cpuTemp) else String.format(Locale.US, "%.1f °C", cpuTemp)
-                } else {
-                    if (singleLineOverlay) "--°C" else "-- °C"
+                val cpuCells = mutableListOf<Pair<String, Int>>()
+                if (hasCpu) {
+                    val cpuTempStr = if (cpuTemp > 0f) {
+                        if (singleLineOverlay) String.format(Locale.US, "%.1f°C", cpuTemp) else String.format(Locale.US, "%.1f °C", cpuTemp)
+                    } else {
+                        if (singleLineOverlay) "--°C" else "-- °C"
+                    }
+                    cpuCells.add(cpuTempStr to colorVal)
                 }
-                val cpuCells = mutableListOf(cpuTempStr to colorVal)
+                if (hasCpuLoad) {
+                    val cpuLoadStr = if (cpuLoad >= 0f) "${cpuLoad.roundToInt()}%" else "--%"
+                    cpuCells.add(cpuLoadStr to colorVal)
+                }
                 if (cpuFreq > 0) {
                     val freqStr = if (singleLineOverlay) "${cpuFreq}MHz" else "$cpuFreq MHz"
                     cpuCells.add(freqStr to colorVal)
@@ -1064,12 +1113,28 @@ class FpsOverlayService : Service() {
                 isFirstThermalOnLine = false
             }
 
-            if (hasCpu) {
-                val cpuDisplay = if (cpuTemp > 0f) "${cpuTemp}°C" else "--°C"
+            if (hasCpu || hasCpuLoad) {
+                val cpuDisplay = when {
+                    hasCpu && hasCpuLoad -> {
+                        val tempStr = if (cpuTemp > 0f) "${cpuTemp}°C" else "--°C"
+                        val loadStr = if (cpuLoad >= 0f) "${cpuLoad.roundToInt()}%" else "--%"
+                        "$tempStr$tagSpace$loadStr"
+                    }
+                    hasCpuLoad -> if (cpuLoad >= 0f) "${cpuLoad.roundToInt()}%" else "--%"
+                    else -> if (cpuTemp > 0f) "${cpuTemp}°C" else "--°C"
+                }
                 appendThermal("CPU", cpuDisplay)
             }
-            if (hasGpu) {
-                val gpuDisplay = if (gpuTemp > 0f) "${gpuTemp}°C" else "--°C"
+            if (hasGpu || hasGpuLoad) {
+                val gpuDisplay = when {
+                    hasGpu && hasGpuLoad -> {
+                        val tempStr = if (gpuTemp > 0f) "${gpuTemp}°C" else "--°C"
+                        val loadStr = if (gpuLoad >= 0f) "${gpuLoad.roundToInt()}%" else "--%"
+                        "$tempStr$tagSpace$loadStr"
+                    }
+                    hasGpuLoad -> if (gpuLoad >= 0f) "${gpuLoad.roundToInt()}%" else "--%"
+                    else -> if (gpuTemp > 0f) "${gpuTemp}°C" else "--°C"
+                }
                 appendThermal("GPU", gpuDisplay)
             }
             if (hasSoc) {
@@ -1441,6 +1506,47 @@ class FpsOverlayService : Service() {
         }
     }
 
+    /**
+     * This code is the property of Romel Brosas (https://github.com/rdevz-ph/FPS-Meter-Android).
+     * If you modify or reuse this code, please give appropriate credit to the author.
+     */
+    private fun updateDeviceLoadMonitoring() {
+        val needed = showCpuLoad || showGpuLoad
+        if (needed) {
+            if (cpuGpuLoadMonitor == null) {
+                cpuGpuLoadMonitor = CpuGpuLoadMonitor(
+                    useRoot = useRoot,
+                    needCpu = { showCpuLoad },
+                    needGpu = { showGpuLoad },
+                    onSnapshotUpdate = { snapshot ->
+                        cpuLoad = snapshot.cpuLoad ?: -1f
+                        gpuLoad = snapshot.gpuLoad ?: -1f
+                        if (isOverlayVisible) {
+                            updateOverlayText()
+                        }
+                    },
+                    onUnavailable = {
+                        var changed = false
+                        if (cpuLoad != -1f) { cpuLoad = -1f; changed = true }
+                        if (gpuLoad != -1f) { gpuLoad = -1f; changed = true }
+                        if (changed && isOverlayVisible) {
+                            updateOverlayText()
+                        }
+                    }
+                )
+            }
+            cpuGpuLoadMonitor?.start()
+        } else {
+            cpuGpuLoadMonitor?.stop()
+            cpuGpuLoadMonitor = null
+            cpuLoad = -1f
+            gpuLoad = -1f
+            if (isOverlayVisible) {
+                updateOverlayText()
+            }
+        }
+    }
+
     private fun formatRamValue(bytes: Long, unit: RamUnit): String {
         return when (unit) {
             RamUnit.GB -> {
@@ -1667,6 +1773,8 @@ class FpsOverlayService : Service() {
         stopSurfaceFlingerMeasuring()
         socThermalMonitor?.stop()
         socThermalMonitor = null
+        cpuGpuLoadMonitor?.stop()
+        cpuGpuLoadMonitor = null
         ramMonitorJob?.cancel()
         ramMonitorJob = null
         FpsRecordingManager.endCurrentSession(this)

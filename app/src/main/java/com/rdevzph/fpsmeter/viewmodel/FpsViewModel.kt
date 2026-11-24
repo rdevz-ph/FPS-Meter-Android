@@ -47,6 +47,8 @@ data class OverlaySettings(
     val showSocTemp: Boolean = false,
     val showCpuTemp: Boolean = false,
     val showGpuTemp: Boolean = false,
+    val showCpuLoad: Boolean = false,
+    val showGpuLoad: Boolean = false,
     val gravity: Int = Gravity.TOP or Gravity.START,
     val floatingToggleEnabled: Boolean = false,
     val autoHideFloatingBubble: Boolean = false,
@@ -88,6 +90,8 @@ data class OverlaySettings(
         private const val KEY_SHOW_SOC_TEMP = "show_soc_temp"
         private const val KEY_SHOW_CPU_TEMP = "show_cpu_temp"
         private const val KEY_SHOW_GPU_TEMP = "show_gpu_temp"
+        private const val KEY_SHOW_CPU_LOAD = "show_cpu_load"
+        private const val KEY_SHOW_GPU_LOAD = "show_gpu_load"
         private const val KEY_GRAVITY = "gravity"
         private const val KEY_FLOATING_TOGGLE = "floating_toggle"
         private const val KEY_AUTO_HIDE_FLOATING_BUBBLE = "auto_hide_floating_bubble"
@@ -129,6 +133,8 @@ data class OverlaySettings(
                 showSocTemp = prefs.getBoolean(KEY_SHOW_SOC_TEMP, defaultSettings.showSocTemp),
                 showCpuTemp = prefs.getBoolean(KEY_SHOW_CPU_TEMP, defaultSettings.showCpuTemp),
                 showGpuTemp = prefs.getBoolean(KEY_SHOW_GPU_TEMP, defaultSettings.showGpuTemp),
+                showCpuLoad = prefs.getBoolean(KEY_SHOW_CPU_LOAD, defaultSettings.showCpuLoad),
+                showGpuLoad = prefs.getBoolean(KEY_SHOW_GPU_LOAD, defaultSettings.showGpuLoad),
                 gravity = prefs.getInt(KEY_GRAVITY, defaultSettings.gravity),
                 floatingToggleEnabled = prefs.getBoolean(KEY_FLOATING_TOGGLE, defaultSettings.floatingToggleEnabled),
                 autoHideFloatingBubble = prefs.getBoolean(KEY_AUTO_HIDE_FLOATING_BUBBLE, defaultSettings.autoHideFloatingBubble),
@@ -170,6 +176,8 @@ data class OverlaySettings(
                 putBoolean(KEY_SHOW_SOC_TEMP, settings.showSocTemp)
                 putBoolean(KEY_SHOW_CPU_TEMP, settings.showCpuTemp)
                 putBoolean(KEY_SHOW_GPU_TEMP, settings.showGpuTemp)
+                putBoolean(KEY_SHOW_CPU_LOAD, settings.showCpuLoad)
+                putBoolean(KEY_SHOW_GPU_LOAD, settings.showGpuLoad)
                 putInt(KEY_GRAVITY, settings.gravity)
                 putBoolean(KEY_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putBoolean(KEY_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)

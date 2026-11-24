@@ -1,14 +1,18 @@
-# FPS Meter Android v3.8
+# FPS Meter Android v3.9
 
 ### What's Changed
-- Added a bubble opacity slider under Floating Assistive Bubble in Quick Access settings to adjust the transparency of the floating on-screen bubble, including its inactive OFF state ([#65](https://github.com/rdevz-ph/FPS-Meter-Android/issues/65)).
-- Added dynamic Celsius scale labels with degree symbols to the right vertical axis of the temperature chart in game analytics.
+- Added CPU Load (%) and GPU Load (%) toggles in Display Elements to show live CPU utilization and GPU activity on both the Pill and RTSS overlays ([#59](https://github.com/rdevz-ph/FPS-Meter-Android/issues/59)).
+- Added a Hide Floating Bubble button to the assistive popup menu so you can dismiss the floating assistive bubble and its dialog at the same time ([#67](https://github.com/rdevz-ph/FPS-Meter-Android/issues/67)).
+- Added raw CPU and GPU load readings to Device Diagnostics and include them in diagnostic reports and exported thermal dumps.
 
 ### Release Highlights
 
-| Game History Screen | Game Analytics Screen |
+| CPU & GPU Load Toggles | Live Overlay Telemetry |
 | :---: | :---: |
-| ![Game History Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.8/3.8_history_screen.jpg) | ![Game Analytics Screen](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.8/3.8_analytics_screen.jpg) |
+| ![CPU & GPU Load Toggles](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.9/3.9_cpu_gpu_load_toggles.jpg) | ![Live Overlay Telemetry](https://raw.githubusercontent.com/rdevz-ph/FPS-Meter-Android/main/screenshots/3.9/3.9_rtss_overlay_sample.jpg) |
+
+> [!NOTE]
+> CPU and GPU load monitoring was tested on MediaTek (MTK) SoC devices only (developer's current device). If your device is not reading CPU or GPU load, open a new issue on GitHub with your device diagnostics (`Settings` > `Device Diagnostics` > `Report on GitHub`) and clearly state your issue so the automated bot does not flag it as spam.
 
 For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/CHANGELOG.md). For known Android system behaviors and limitations, see [KNOWN_ISSUES_AND_LIMITATIONS.md](https://github.com/rdevz-ph/FPS-Meter-Android/blob/main/KNOWN_ISSUES_AND_LIMITATIONS.md).
 
@@ -18,10 +22,11 @@ For the complete release history, see [CHANGELOG.md](https://github.com/rdevz-ph
 - Two overlay styles: default compact pill and multi-row MSI Afterburner Style (RTSS) telemetry layout
 - Samsung-style pill-shaped overlay with cyan labels and white values
 - Real-time FPS, frame time (MS), RAM usage, battery power (watts and current), and multi-metric temperature monitoring (CPU, GPU, SoC, and Battery)
+- Live CPU and GPU load percentage monitoring
 - Adaptive layout dynamically scaling across lines, with a single-line mode option for tablets and landscape gaming
 - Dynamic FPS color coding (green, yellow, orange, red) based on performance thresholds
 - In-memory per-game FPS session recording with dedicated History screen
-- Interactive floating assistive bubble with in-game quick control menu and adjustable bubble opacity
+- Interactive floating assistive bubble with in-game quick control menu, dismiss action, and adjustable bubble opacity
 - Six preset positions (top/bottom left/center/right) with manual drag support
 - Light and dark mode themes
 - Multi-language support (English and Simplified Chinese) with in-app language switcher

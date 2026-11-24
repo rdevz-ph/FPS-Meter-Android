@@ -212,6 +212,8 @@ fun MainScreen(
                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
                 putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, settings.showCpuTemp)
                 putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
+                putExtra(FpsOverlayService.EXTRA_SHOW_CPU_LOAD, settings.showCpuLoad)
+                putExtra(FpsOverlayService.EXTRA_SHOW_GPU_LOAD, settings.showGpuLoad)
                 putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                 putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
@@ -427,6 +429,8 @@ fun MainScreen(
                             putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, settings.showSocTemp)
                             putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, settings.showCpuTemp)
                             putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, settings.showGpuTemp)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_CPU_LOAD, settings.showCpuLoad)
+                            putExtra(FpsOverlayService.EXTRA_SHOW_GPU_LOAD, settings.showGpuLoad)
                             putExtra(FpsOverlayService.EXTRA_GRAVITY, settings.gravity)
                             putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, settings.floatingToggleEnabled)
                             putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, settings.autoHideFloatingBubble)
@@ -470,6 +474,8 @@ fun MainScreen(
                                 putExtra(FpsOverlayService.EXTRA_SHOW_SOC_TEMP, newSettings.showSocTemp)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_CPU_TEMP, newSettings.showCpuTemp)
                                 putExtra(FpsOverlayService.EXTRA_SHOW_GPU_TEMP, newSettings.showGpuTemp)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_CPU_LOAD, newSettings.showCpuLoad)
+                                putExtra(FpsOverlayService.EXTRA_SHOW_GPU_LOAD, newSettings.showGpuLoad)
                                 putExtra(FpsOverlayService.EXTRA_GRAVITY, newSettings.gravity)
                                 putExtra(FpsOverlayService.EXTRA_FLOATING_TOGGLE, newSettings.floatingToggleEnabled)
                                 putExtra(FpsOverlayService.EXTRA_AUTO_HIDE_FLOATING_BUBBLE, newSettings.autoHideFloatingBubble)
@@ -1819,6 +1825,65 @@ fun OverlaySettingsPanel(
 
         Spacer(Modifier.height(8.dp))
 
+        /**
+         * This code is the property of Romel Brosas (https://github.com/rdevz-ph/FPS-Meter-Android).
+         * If you modify or reuse this code, please give appropriate credit to the author.
+         */
+        // CPU & GPU load toggles (Requires Shizuku)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // CPU load toggle
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text(stringResource(R.string.cpu_load), style = MaterialTheme.typography.labelMedium)
+                        if (!shizukuReady) {
+                            Text(
+                                stringResource(R.string.common_requires_shizuku),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = settings.showCpuLoad,
+                        enabled = shizukuReady,
+                        onCheckedChange = { onChange(settings.copy(showCpuLoad = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+
+            // GPU load toggle
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text(stringResource(R.string.gpu_load), style = MaterialTheme.typography.labelMedium)
+                        if (!shizukuReady) {
+                            Text(
+                                stringResource(R.string.common_requires_shizuku),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Switch(
+                        checked = settings.showGpuLoad,
+                        enabled = shizukuReady,
+                        onCheckedChange = { onChange(settings.copy(showGpuLoad = it)) },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
         // SoC temp & Battery level toggles
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -2221,6 +2286,8 @@ fun OverlaySettingsPanel(
         val hasMs = settings.showFps && settings.showMs
         val hasCpu = settings.showCpuTemp
         val hasGpu = settings.showGpuTemp
+        val hasCpuLoad = settings.showCpuLoad
+        val hasGpuLoad = settings.showGpuLoad
         val hasSoc = settings.showSocTemp
         val hasBatt = settings.showTemp
         val hasBattLevel = settings.showBatteryLevel
@@ -2232,14 +2299,14 @@ fun OverlaySettingsPanel(
         val extraOverlayCount = (if (settings.showFps) 1 else 0) +
                 (if (hasApi) 1 else 0) +
                 (if (hasMs) 1 else 0) +
-                (if (hasCpu) 1 else 0) +
-                (if (hasGpu) 1 else 0) +
+                (if (hasCpu || hasCpuLoad) 1 else 0) +
+                (if (hasGpu || hasGpuLoad) 1 else 0) +
                 (if (hasSoc) 1 else 0) +
                 (if (hasBattBoth) 1 else ((if (hasBatt) 1 else 0) + (if (hasBattLevel) 1 else 0))) +
                 (if (hasBattPower) 1 else 0) +
                 (if (hasSwap) 1 else 0)
 
-        val hasThermals = hasCpu || hasGpu || hasSoc || hasBatt || hasBattLevel || hasBattPower
+        val hasThermals = hasCpu || hasGpu || hasCpuLoad || hasGpuLoad || hasSoc || hasBatt || hasBattLevel || hasBattPower
         val useNextLine = !settings.singleLineOverlay && ((extraOverlayCount > 3 && hasThermals) || (hasRam && hasThermals) || (hasSwap && hasThermals))
         val isMultiLine = !settings.singleLineOverlay && (useNextLine || hasRam || hasSwap)
         val isAfterburner = settings.overlayStyle == OverlayStyle.MSI_AFTERBURNER
@@ -2320,22 +2387,34 @@ fun OverlaySettingsPanel(
                                 }
                             }
 
-                            // 2. GPU row (only if GPU temp enabled)
-                            if (hasGpu) {
+                            // 2. GPU row (only if GPU temp or load enabled)
+                            if (hasGpu || hasGpuLoad) {
                                 newPreviewLine()
-                                val gpuTempStr = if (settings.singleLineOverlay) "38.5°C" else "38.5 °C"
-                                appendPreviewRow("GPU", colorGpu, listOf(gpuTempStr to colorVal))
+                                val gpuCells = mutableListOf<Pair<String, Color>>()
+                                if (hasGpu) {
+                                    val gpuTempStr = if (settings.singleLineOverlay) "38.5°C" else "38.5 °C"
+                                    gpuCells.add(gpuTempStr to colorVal)
+                                }
+                                if (hasGpuLoad) {
+                                    gpuCells.add("45%" to colorVal)
+                                }
+                                appendPreviewRow("GPU", colorGpu, gpuCells)
                             }
 
-                            // 3. CPU row (only if CPU temp enabled)
-                            if (hasCpu) {
+                            // 3. CPU row (only if CPU temp or load enabled)
+                            if (hasCpu || hasCpuLoad) {
                                 newPreviewLine()
-                                val cpuTempStr = if (settings.singleLineOverlay) "42.1°C" else "42.1 °C"
+                                val cpuCells = mutableListOf<Pair<String, Color>>()
+                                if (hasCpu) {
+                                    val cpuTempStr = if (settings.singleLineOverlay) "42.1°C" else "42.1 °C"
+                                    cpuCells.add(cpuTempStr to colorVal)
+                                }
+                                if (hasCpuLoad) {
+                                    cpuCells.add("52%" to colorVal)
+                                }
                                 val freqStr = if (settings.singleLineOverlay) "1800MHz" else "1800 MHz"
-                                appendPreviewRow("CPU", colorCpu, listOf(
-                                    cpuTempStr to colorVal,
-                                    freqStr to colorVal
-                                ))
+                                cpuCells.add(freqStr to colorVal)
+                                appendPreviewRow("CPU", colorCpu, cpuCells)
                             }
 
                             // 4. SoC row (only if SoC temp enabled)
@@ -2461,8 +2540,23 @@ fun OverlaySettingsPanel(
                                     isFirstThermalOnLine = false
                                 }
 
-                                if (hasCpu) appendThermal("CPU", "42.1°C")
-                                if (hasGpu) appendThermal("GPU", "38.5°C")
+                                val tagSpace = if (settings.singleLineOverlay) "\u00A0" else " "
+                                if (hasCpu || hasCpuLoad) {
+                                    val cpuDisplay = when {
+                                        hasCpu && hasCpuLoad -> "42.1°C${tagSpace}52%"
+                                        hasCpuLoad -> "52%"
+                                        else -> "42.1°C"
+                                    }
+                                    appendThermal("CPU", cpuDisplay)
+                                }
+                                if (hasGpu || hasGpuLoad) {
+                                    val gpuDisplay = when {
+                                        hasGpu && hasGpuLoad -> "38.5°C${tagSpace}45%"
+                                        hasGpuLoad -> "45%"
+                                        else -> "38.5°C"
+                                    }
+                                    appendThermal("GPU", gpuDisplay)
+                                }
                                 if (hasSoc) appendThermal("SOC", "45.2°C")
                                 val powerPreview = if (settings.showBatteryCurrent) "-2.4W (-600mA)" else "-2.4W"
                                 val powerSuffix = if (hasBattPower) " $powerPreview" else ""

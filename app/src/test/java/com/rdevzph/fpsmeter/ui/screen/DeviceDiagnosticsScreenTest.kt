@@ -22,6 +22,8 @@ class DeviceDiagnosticsScreenTest {
                 cmd.startsWith("id") -> "uid=2000(shell) gid=2000(shell) context=u:r:shell:s0"
                 cmd.contains("dumpsys thermalservice") -> "Temperature{mValue=45.5, mType=0, mName=AP, mStatus=0}"
                 cmd.contains("cat /sys/class/thermal/thermal_zone*/temp") -> "26900\n28400\ncat: /sys/class/thermal/thermal_zone48/temp: Invalid argument"
+                cmd.contains("/proc/stat") -> "cpu  100 20 30 800 50 10 5 5 0 0"
+                cmd.contains("dumpsys gpu") -> "GPU work information.\ngpu_id uid total_active_duration_ns total_inactive_duration_ns\n0 1000 182870922550 9842367474210"
                 else -> "cpu-0-0-usr: 29200\ngpuss-0-usr: 27300"
             }
         }
@@ -42,6 +44,12 @@ class DeviceDiagnosticsScreenTest {
         assertTrue(dump.contains("$ cat /sys/class/thermal/thermal_zone*/temp"))
         assertTrue(dump.contains("26900"))
         assertTrue(dump.contains("cat: /sys/class/thermal/thermal_zone48/temp: Invalid argument"))
+
+        assertTrue(dump.contains("$ grep '^cpu ' /proc/stat"))
+        assertTrue(dump.contains("cpu  100 20 30 800 50 10 5 5 0 0"))
+
+        assertTrue(dump.contains("$ dumpsys gpu (GPU work information)"))
+        assertTrue(dump.contains("182870922550"))
 
         assertTrue(dump.contains("$ for d in /sys/class/thermal/thermal_zone*; do"))
         assertTrue(dump.contains("echo \"\$(cat \$d/type): \$(cat \$d/temp)\""))

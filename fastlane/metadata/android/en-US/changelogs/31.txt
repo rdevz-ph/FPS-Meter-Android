@@ -1,0 +1,3 @@
+- Added CPU Load (%) and GPU Load (%) toggles in Display Elements to show live CPU utilization and GPU activity on both the Pill and RTSS overlays.
+- Added a Hide Floating Bubble button to the assistive popup menu so you can dismiss the floating assistive bubble and its dialog at the same time.
+- Added raw CPU and GPU load readings to Device Diagnostics and included them in exported dumps.

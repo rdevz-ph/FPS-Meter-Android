@@ -117,6 +117,10 @@ data class DeviceDiagnosticData(
     val shizukuCpuTemp: String = "",
     val shizukuGpuTemp: String = "",
     val shizukuSocTemp: String = "",
+    val shizukuCpuLoad: String = "",
+    val shizukuGpuLoad: String = "",
+    val rawCpuStat: String = "",
+    val rawGpuWork: List<String> = emptyList(),
     val rawHalThermals: List<String> = emptyList()
 )
 
@@ -380,6 +384,12 @@ fun DeviceDiagnosticsScreen(
                 if (diagnosticData.surfaceFlingerGles.isNotEmpty()) {
                     socItems.add(DiagnosticItem("GPU Driver (SurfaceFlinger)", diagnosticData.surfaceFlingerGles))
                 }
+                if (diagnosticData.shizukuCpuLoad.isNotEmpty()) {
+                    socItems.add(DiagnosticItem("CPU Load$providerTag", diagnosticData.shizukuCpuLoad))
+                }
+                if (diagnosticData.shizukuGpuLoad.isNotEmpty()) {
+                    socItems.add(DiagnosticItem("GPU Load$providerTag", diagnosticData.shizukuGpuLoad))
+                }
                 DiagnosticsCard(
                     title = stringResource(R.string.diag_section_soc),
                     icon = Icons.Default.Memory,
@@ -472,6 +482,54 @@ fun DeviceDiagnosticsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
+                            if (diagnosticData.rawCpuStat.isNotEmpty() || diagnosticData.rawGpuWork.isNotEmpty()) {
+                                Spacer(Modifier.height(10.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                                Spacer(Modifier.height(10.dp))
+                                Text(
+                                    "Raw Load Readings (${diagnosticData.privilegedProvider}):",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
+                                        .padding(8.dp)
+                                ) {
+                                    if (diagnosticData.rawCpuStat.isNotEmpty()) {
+                                        Text(
+                                            "CPU Stat: ${diagnosticData.rawCpuStat}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    if (diagnosticData.rawGpuWork.isNotEmpty()) {
+                                        if (diagnosticData.rawCpuStat.isNotEmpty()) {
+                                            Spacer(Modifier.height(4.dp))
+                                        }
+                                        Text(
+                                            "GPU Work:",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        diagnosticData.rawGpuWork.forEach { line ->
+                                            Text(
+                                                line,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontFamily = FontFamily.Monospace,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                             if (diagnosticData.rawHalThermals.isNotEmpty()) {
                                 Spacer(Modifier.height(10.dp))
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
@@ -829,11 +887,34 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
     var shizukuCpuTemp = ""
     var shizukuGpuTemp = ""
     var shizukuSocTemp = ""
+    var shizukuCpuLoad = ""
+    var shizukuGpuLoad = ""
+    var rawCpuStat = ""
+    val rawGpuWork = mutableListOf<String>()
     val rawHalThermals = mutableListOf<String>()
 
     if (isPrivilegedActive) {
         socModelShizuku = runPrivilegedShell("getprop ro.soc.model").trim()
         socPlatformShizuku = runPrivilegedShell("getprop ro.board.platform").trim()
+
+        // CPU / GPU raw load readings
+        val loadCmdOutput = runPrivilegedShell("grep -E '^cpu ' /proc/stat; echo '---GPU---'; dumpsys gpu")
+        if (loadCmdOutput.isNotEmpty()) {
+            val parts = loadCmdOutput.split("---GPU---")
+            rawCpuStat = parts.getOrNull(0)?.trim() ?: ""
+            val gpuSection = parts.getOrNull(1) ?: ""
+            var inGpuWork = false
+            for (line in gpuSection.lines()) {
+                val trimmed = line.trim()
+                if (trimmed.contains("GPU work information", ignoreCase = true) || trimmed.startsWith("gpu_id uid") || trimmed.startsWith("gpu_id\tuid")) {
+                    inGpuWork = true
+                }
+                if (inGpuWork && trimmed.isNotEmpty()) {
+                    rawGpuWork.add(trimmed)
+                    if (rawGpuWork.size >= 8) break
+                }
+            }
+        }
 
         val sfOutput = runPrivilegedShell("dumpsys SurfaceFlinger")
         if (sfOutput.isNotEmpty()) {
@@ -929,6 +1010,10 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         shizukuCpuTemp = shizukuCpuTemp,
         shizukuGpuTemp = shizukuGpuTemp,
         shizukuSocTemp = shizukuSocTemp,
+        shizukuCpuLoad = shizukuCpuLoad,
+        shizukuGpuLoad = shizukuGpuLoad,
+        rawCpuStat = rawCpuStat,
+        rawGpuWork = rawGpuWork,
         rawHalThermals = rawHalThermals.take(15)
     )
 }
@@ -989,6 +1074,12 @@ private fun formatMarkdownReport(d: DeviceDiagnosticData): String {
     if (d.surfaceFlingerGles.isNotEmpty()) {
         sb.appendLine("- **GPU Driver (SurfaceFlinger):** ${d.surfaceFlingerGles}")
     }
+    if (d.shizukuCpuLoad.isNotEmpty()) {
+        sb.appendLine("- **CPU Load$providerTag:** ${d.shizukuCpuLoad}")
+    }
+    if (d.shizukuGpuLoad.isNotEmpty()) {
+        sb.appendLine("- **GPU Load$providerTag:** ${d.shizukuGpuLoad}")
+    }
     sb.appendLine()
     sb.appendLine("### Thermals & Battery")
     sb.appendLine("- **Battery Temp:** ${d.batteryTemp}")
@@ -1021,6 +1112,19 @@ private fun formatMarkdownReport(d: DeviceDiagnosticData): String {
     sb.appendLine("- **Overlay Permission:** ${if (d.overlayPermission) "Granted" else "Denied"}")
     sb.appendLine("- **Accessibility Service:** ${if (d.accessibilityRunning) "Active" else "Inactive"}")
     sb.appendLine("- **Overlay Service Running:** ${if (d.overlayServiceRunning) "Running" else "Stopped"}")
+    if (d.rawCpuStat.isNotEmpty() || d.rawGpuWork.isNotEmpty()) {
+        sb.appendLine()
+        sb.appendLine("### Raw Load Readings$providerTag")
+        sb.appendLine("```text")
+        if (d.rawCpuStat.isNotEmpty()) {
+            sb.appendLine("CPU Stat: ${d.rawCpuStat}")
+        }
+        if (d.rawGpuWork.isNotEmpty()) {
+            sb.appendLine("GPU Work:")
+            d.rawGpuWork.forEach { sb.appendLine(it) }
+        }
+        sb.appendLine("```")
+    }
     if (d.rawHalThermals.isNotEmpty()) {
         sb.appendLine()
         sb.appendLine("### Raw Thermal HAL Dump$providerTag")
@@ -1091,6 +1195,14 @@ internal fun generateThermalZoneDump(
     sb.appendLine("$ cat /sys/class/thermal/thermal_zone*/temp")
     val tempsOutput = shellRunner("cat /sys/class/thermal/thermal_zone*/temp 2>&1")
     sb.appendLine(tempsOutput.ifEmpty { "(No output or permission denied)" })
+    sb.appendLine()
+    sb.appendLine("$ grep '^cpu ' /proc/stat")
+    val cpuStatDump = shellRunner("grep -E '^cpu ' /proc/stat 2>&1")
+    sb.appendLine(cpuStatDump.ifEmpty { "(No output or permission denied)" })
+    sb.appendLine()
+    sb.appendLine("$ dumpsys gpu (GPU work information)")
+    val gpuDump = shellRunner("dumpsys gpu 2>&1 | grep -A 8 'GPU work information'")
+    sb.appendLine(gpuDump.ifEmpty { "(No output or permission denied)" })
     sb.appendLine()
     sb.appendLine("$ for d in /sys/class/thermal/thermal_zone*; do")
     sb.appendLine("  echo \"\$(cat \$d/type): \$(cat \$d/temp)\"")

@@ -90,6 +90,8 @@
     <string name="battery_temp">电池温度</string>
     <string name="cpu_temp">CPU 温度</string>
     <string name="gpu_temp">GPU 温度</string>
+    <string name="cpu_load">CPU 占用率 (%)</string>
+    <string name="gpu_load">GPU 占用率 (%)</string>
     <string name="soc_temp">SoC 温度</string>
     <string name="battery_level">电池电量</string>
     <string name="battery_power">电池功率</string>
@@ -346,6 +348,7 @@
     <string name="floating_hide_overlay">隐藏悬浮窗</string>
     <string name="floating_show_overlay">显示悬浮窗</string>
     <string name="floating_return_to_app">返回应用</string>
+    <string name="floating_hide_bubble">隐藏悬浮球</string>
     <string name="floating_enable_rec_first">请先在游戏列表中为此游戏启用记录</string>
     <string name="notif_status_visible">悬浮窗可见并正在测量</string>
     <string name="notif_status_hidden">悬浮窗已隐藏（最小化）</string>

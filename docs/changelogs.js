@@ -1,5 +1,10 @@
 // External changelogs data source (preserves index.html cleanliness and file:// offline support)
-window.CHANGELOGS_TEXT = `## Version 3.8 | Latest Release | November 22, 2026
+window.CHANGELOGS_TEXT = `## Version 3.9 | Latest Release | November 24, 2026
+- Added CPU Load (%) and GPU Load (%) toggles in Display Elements to show live CPU utilization and GPU activity on both the Pill and RTSS overlays (#59).
+- Added a Hide Floating Bubble button to the assistive popup menu so you can dismiss the floating assistive bubble and its dialog at the same time (#67).
+- Added raw CPU and GPU load readings to Device Diagnostics and included them in exported dumps.
+
+## Version 3.8 | November 22, 2026
 - Added a bubble opacity slider under Floating Assistive Bubble in Quick Access settings to adjust the transparency of the floating on-screen bubble, including its inactive OFF state (#65).
 - Added dynamic Celsius scale labels with degree symbols to the right vertical axis of the temperature chart in game analytics.
 
