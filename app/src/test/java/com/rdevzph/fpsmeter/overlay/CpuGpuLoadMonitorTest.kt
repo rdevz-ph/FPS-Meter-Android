@@ -91,4 +91,62 @@ class CpuGpuLoadMonitorTest {
         val map = mapOf(1000 to 100L)
         assertNull(CpuGpuLoadMonitor.calculateGpuLoad(map, map, 0L))
     }
+
+    @Test
+    fun parseGedGpuLoading_validNumber_returnsFloat() {
+        val output = "0\n"
+        val value = CpuGpuLoadMonitor.parseGedGpuLoading(output)
+        assertNotNull(value)
+        assertEquals(0.0f, value!!, 0.01f)
+
+        val output2 = "42\n"
+        val value2 = CpuGpuLoadMonitor.parseGedGpuLoading(output2)
+        assertNotNull(value2)
+        assertEquals(42.0f, value2!!, 0.01f)
+    }
+
+    @Test
+    fun parseGedGpuLoading_withPercentage_returnsFloat() {
+        val output = " 68% \n"
+        val value = CpuGpuLoadMonitor.parseGedGpuLoading(output)
+        assertNotNull(value)
+        assertEquals(68.0f, value!!, 0.01f)
+    }
+
+    @Test
+    fun parseSysfsGpuLoading_qualcommKgslBusyPercentage_returnsFloat() {
+        // Qualcomm Adreno gpu_busy_percentage outputs "X %" with space
+        val output = "25 %\n"
+        val value = CpuGpuLoadMonitor.parseSysfsGpuLoading(output)
+        assertNotNull(value)
+        assertEquals(25.0f, value!!, 0.01f)
+
+        val outputZero = "0 %\n"
+        val valueZero = CpuGpuLoadMonitor.parseSysfsGpuLoading(outputZero)
+        assertNotNull(valueZero)
+        assertEquals(0.0f, valueZero!!, 0.01f)
+
+        val outputMax = "100 %\n"
+        val valueMax = CpuGpuLoadMonitor.parseSysfsGpuLoading(outputMax)
+        assertNotNull(valueMax)
+        assertEquals(100.0f, valueMax!!, 0.01f)
+    }
+
+    @Test
+    fun parseSysfsGpuLoading_multiLine_returnsFirstValidLine() {
+        // When reading multiple paths via cat, multiple outputs may appear
+        val output = "35 %\n35\n"
+        val value = CpuGpuLoadMonitor.parseSysfsGpuLoading(output)
+        assertNotNull(value)
+        assertEquals(35.0f, value!!, 0.01f)
+    }
+
+    @Test
+    fun parseGedGpuLoading_emptyOrInvalid_returnsNull() {
+        assertNull(CpuGpuLoadMonitor.parseGedGpuLoading(""))
+        assertNull(CpuGpuLoadMonitor.parseGedGpuLoading("   "))
+        assertNull(CpuGpuLoadMonitor.parseGedGpuLoading("GPU work information is not available."))
+        assertNull(CpuGpuLoadMonitor.parseGedGpuLoading("-5"))
+        assertNull(CpuGpuLoadMonitor.parseGedGpuLoading("120"))
+    }
 }

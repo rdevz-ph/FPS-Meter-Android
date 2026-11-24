@@ -1,0 +1,4 @@
+- Added fixes for GPU load showing --% on Qualcomm Adreno devices in Root and Shizuku modes by reading KGSL busy percentage through privileged shell.
+- Added direct and privileged sysfs GPU load reading for MediaTek GED devices, falling back to dumpsys gpu only when sysfs is unavailable.
+- Added fixes for inaccurate RAM readings showing 100% available and 0 GB used on custom ROMs and virtual memory setups by reading kernel memory info and preventing available memory from exceeding total memory.
+- Updated Device Diagnostics to detect and show direct sysfs GPU load readings for both MediaTek GED and Qualcomm KGSL hardware.

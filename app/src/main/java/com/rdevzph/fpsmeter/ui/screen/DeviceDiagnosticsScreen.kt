@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rdevzph.fpsmeter.R
 import com.rdevzph.fpsmeter.accessibility.FpsAccessibilityService
+import com.rdevzph.fpsmeter.overlay.CpuGpuLoadMonitor
 import com.rdevzph.fpsmeter.overlay.FpsOverlayService
 import com.rdevzph.fpsmeter.overlay.SocThermalMonitor
 import com.rdevzph.fpsmeter.util.ShellHelper
@@ -120,6 +121,7 @@ data class DeviceDiagnosticData(
     val shizukuCpuLoad: String = "",
     val shizukuGpuLoad: String = "",
     val rawCpuStat: String = "",
+    val rawGedGpuLoad: String = "",
     val rawGpuWork: List<String> = emptyList(),
     val rawHalThermals: List<String> = emptyList()
 )
@@ -482,7 +484,7 @@ fun DeviceDiagnosticsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
-                            if (diagnosticData.rawCpuStat.isNotEmpty() || diagnosticData.rawGpuWork.isNotEmpty()) {
+                            if (diagnosticData.rawCpuStat.isNotEmpty() || diagnosticData.rawGedGpuLoad.isNotEmpty() || diagnosticData.rawGpuWork.isNotEmpty()) {
                                 Spacer(Modifier.height(10.dp))
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                                 Spacer(Modifier.height(10.dp))
@@ -507,8 +509,20 @@ fun DeviceDiagnosticsScreen(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
-                                    if (diagnosticData.rawGpuWork.isNotEmpty()) {
+                                    if (diagnosticData.rawGedGpuLoad.isNotEmpty()) {
                                         if (diagnosticData.rawCpuStat.isNotEmpty()) {
+                                            Spacer(Modifier.height(4.dp))
+                                        }
+                                        Text(
+                                            "Sysfs GPU Load: ${diagnosticData.rawGedGpuLoad}%",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    if (diagnosticData.rawGpuWork.isNotEmpty()) {
+                                        if (diagnosticData.rawCpuStat.isNotEmpty() || diagnosticData.rawGedGpuLoad.isNotEmpty()) {
                                             Spacer(Modifier.height(4.dp))
                                         }
                                         Text(
@@ -890,6 +904,7 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
     var shizukuCpuLoad = ""
     var shizukuGpuLoad = ""
     var rawCpuStat = ""
+    var rawGedGpuLoad = ""
     val rawGpuWork = mutableListOf<String>()
     val rawHalThermals = mutableListOf<String>()
 
@@ -897,12 +912,14 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         socModelShizuku = runPrivilegedShell("getprop ro.soc.model").trim()
         socPlatformShizuku = runPrivilegedShell("getprop ro.board.platform").trim()
 
-        // CPU / GPU raw load readings
-        val loadCmdOutput = runPrivilegedShell("grep -E '^cpu ' /proc/stat; echo '---GPU---'; dumpsys gpu")
-        if (loadCmdOutput.isNotEmpty()) {
-            val parts = loadCmdOutput.split("---GPU---")
-            rawCpuStat = parts.getOrNull(0)?.trim() ?: ""
-            val gpuSection = parts.getOrNull(1) ?: ""
+        // CPU / GPU raw load readings: Check sysfs (MediaTek GED or Qualcomm KGSL) first, fallback to dumpsys gpu
+        rawCpuStat = runPrivilegedShell("grep -E '^cpu ' /proc/stat")
+        val sysfsOutput = runPrivilegedShell("cat /sys/module/ged/parameters/gpu_loading /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage /sys/class/kgsl/kgsl-3d0/devfreq/gpu_load 2>/dev/null")
+        val parsedSysfs = CpuGpuLoadMonitor.parseSysfsGpuLoading(sysfsOutput)
+        if (parsedSysfs != null) {
+            rawGedGpuLoad = if (parsedSysfs % 1.0f == 0.0f) "${parsedSysfs.toInt()}" else "$parsedSysfs"
+        } else {
+            val gpuSection = runPrivilegedShell("dumpsys gpu")
             var inGpuWork = false
             for (line in gpuSection.lines()) {
                 val trimmed = line.trim()
@@ -913,6 +930,9 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
                     rawGpuWork.add(trimmed)
                     if (rawGpuWork.size >= 8) break
                 }
+            }
+            if (rawGpuWork.isEmpty() && gpuSection.contains("GPU work information is not available.", ignoreCase = true)) {
+                rawGpuWork.add("GPU work information is not available.")
             }
         }
 
@@ -1013,6 +1033,7 @@ private suspend fun fetchDiagnostics(context: Context): DeviceDiagnosticData = w
         shizukuCpuLoad = shizukuCpuLoad,
         shizukuGpuLoad = shizukuGpuLoad,
         rawCpuStat = rawCpuStat,
+        rawGedGpuLoad = rawGedGpuLoad,
         rawGpuWork = rawGpuWork,
         rawHalThermals = rawHalThermals.take(15)
     )
@@ -1112,12 +1133,15 @@ private fun formatMarkdownReport(d: DeviceDiagnosticData): String {
     sb.appendLine("- **Overlay Permission:** ${if (d.overlayPermission) "Granted" else "Denied"}")
     sb.appendLine("- **Accessibility Service:** ${if (d.accessibilityRunning) "Active" else "Inactive"}")
     sb.appendLine("- **Overlay Service Running:** ${if (d.overlayServiceRunning) "Running" else "Stopped"}")
-    if (d.rawCpuStat.isNotEmpty() || d.rawGpuWork.isNotEmpty()) {
+    if (d.rawCpuStat.isNotEmpty() || d.rawGedGpuLoad.isNotEmpty() || d.rawGpuWork.isNotEmpty()) {
         sb.appendLine()
         sb.appendLine("### Raw Load Readings$providerTag")
         sb.appendLine("```text")
         if (d.rawCpuStat.isNotEmpty()) {
             sb.appendLine("CPU Stat: ${d.rawCpuStat}")
+        }
+        if (d.rawGedGpuLoad.isNotEmpty()) {
+            sb.appendLine("Sysfs GPU Load: ${d.rawGedGpuLoad}%")
         }
         if (d.rawGpuWork.isNotEmpty()) {
             sb.appendLine("GPU Work:")

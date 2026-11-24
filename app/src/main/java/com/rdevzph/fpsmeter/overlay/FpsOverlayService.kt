@@ -1566,23 +1566,69 @@ class FpsOverlayService : Service() {
     }
 
     private fun sampleRamUsage(): RamSample {
-        return try {
-            val actManager = getSystemService(ACTIVITY_SERVICE) as? ActivityManager
-            val memInfo = ActivityManager.MemoryInfo()
-            actManager?.getMemoryInfo(memInfo)
-            val totalBytes = memInfo.totalMem
-            val availBytes = memInfo.availMem
-            val usedBytes = (totalBytes - availBytes).coerceAtLeast(0L)
-            val availPercent = if (totalBytes > 0L) {
-                ((availBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
-            } else 0
-            val usedPercent = if (totalBytes > 0L) {
-                ((usedBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
-            } else 0
-            RamSample(availBytes, usedBytes, totalBytes, availPercent, usedPercent)
-        } catch (e: Exception) {
-            RamSample()
+        var totalBytes = 0L
+        var availBytes = 0L
+
+        // Prefer reading /proc/meminfo directly for kernel-level accuracy and custom ROM compatibility
+        try {
+            val file = java.io.File("/proc/meminfo")
+            if (file.exists() && file.canRead()) {
+                var memTotalKb = 0L
+                var memAvailKb = 0L
+                var memFreeKb = 0L
+                var buffersKb = 0L
+                var cachedKb = 0L
+
+                file.useLines { lines ->
+                    for (line in lines) {
+                        if (line.startsWith("MemTotal:")) {
+                            memTotalKb = parseMeminfoKb(line)
+                        } else if (line.startsWith("MemAvailable:")) {
+                            memAvailKb = parseMeminfoKb(line)
+                        } else if (line.startsWith("MemFree:")) {
+                            memFreeKb = parseMeminfoKb(line)
+                        } else if (line.startsWith("Buffers:")) {
+                            buffersKb = parseMeminfoKb(line)
+                        } else if (line.startsWith("Cached:")) {
+                            cachedKb = parseMeminfoKb(line)
+                        }
+                    }
+                }
+
+                if (memTotalKb > 0L) {
+                    totalBytes = memTotalKb * 1024L
+                    availBytes = if (memAvailKb > 0L) {
+                        memAvailKb * 1024L
+                    } else {
+                        (memFreeKb + buffersKb + cachedKb) * 1024L
+                    }
+                }
+            }
+        } catch (_: Exception) {
         }
+
+        // Fallback to ActivityManager.MemoryInfo if /proc/meminfo was unreadable
+        if (totalBytes <= 0L) {
+            try {
+                val actManager = getSystemService(ACTIVITY_SERVICE) as? ActivityManager
+                val memInfo = ActivityManager.MemoryInfo()
+                actManager?.getMemoryInfo(memInfo)
+                totalBytes = memInfo.totalMem
+                availBytes = memInfo.availMem
+            } catch (_: Exception) {
+            }
+        }
+
+        if (totalBytes <= 0L) return RamSample()
+
+        // Clamp availBytes to totalBytes to protect against buggy ROM/kernel reports
+        availBytes = availBytes.coerceIn(0L, totalBytes)
+        val usedBytes = (totalBytes - availBytes).coerceAtLeast(0L)
+
+        val availPercent = ((availBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
+        val usedPercent = ((usedBytes.toDouble() / totalBytes.toDouble()) * 100.0).roundToInt().coerceIn(0, 100)
+
+        return RamSample(availBytes, usedBytes, totalBytes, availPercent, usedPercent)
     }
 
     private fun sampleSwapUsage(): SwapSample {

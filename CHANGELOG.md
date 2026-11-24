@@ -4,6 +4,16 @@ All notable changes to the FPS Meter project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [v4.0] - 2026-11-24
+
+### Added
+- Added fixes for GPU load showing `--%` on Qualcomm Adreno devices in Root and Shizuku modes by reading KGSL busy percentage through privileged shell ([#69](https://github.com/rdevz-ph/FPS-Meter-Android/issues/69)).
+- Added direct and privileged sysfs GPU load reading for MediaTek GED devices, falling back to dumpsys gpu only when sysfs is unavailable.
+- Added fixes for inaccurate RAM readings showing 100% available and 0 GB used on custom ROMs and virtual memory setups by reading kernel memory info and preventing available memory from exceeding total memory ([#69](https://github.com/rdevz-ph/FPS-Meter-Android/issues/69)).
+- Updated Device Diagnostics to detect and show direct sysfs GPU load readings for both MediaTek GED and Qualcomm KGSL hardware.
+
+---
+
 ## [v3.9] - 2026-11-24
 
 ### Added
@@ -395,6 +405,7 @@ Requested in [#47](https://github.com/rdevz-ph/FPS-Meter-Android/issues/47).
 
 ---
 
+[v4.0]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v4.0
 [v3.9]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.9
 [v3.8]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.8
 [v3.7]: https://github.com/rdevz-ph/FPS-Meter-Android/releases/tag/v3.7

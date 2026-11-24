@@ -41,6 +41,7 @@ class CpuGpuLoadMonitor(
     companion object {
         private const val TAG = "CpuGpuLoadMonitor"
         private const val POLL_INTERVAL_MS = 1500L
+        private const val SYSFS_GPU_CMD = "cat /sys/module/ged/parameters/gpu_loading /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage /sys/class/kgsl/kgsl-3d0/devfreq/gpu_load 2>/dev/null"
 
         internal fun parseCpuStat(output: String): CpuStatSample? {
             val line = output.lineSequence().firstOrNull { it.startsWith("cpu ") || it.startsWith("cpu\t") } ?: return null
@@ -122,6 +123,7 @@ class CpuGpuLoadMonitor(
 
         internal fun readSysfsGpuLoad(): Float? {
             val paths = listOf(
+                "/sys/module/ged/parameters/gpu_loading",
                 "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage",
                 "/sys/class/kgsl/kgsl-3d0/devfreq/gpu_load"
             )
@@ -139,6 +141,16 @@ class CpuGpuLoadMonitor(
             }
             return null
         }
+
+        internal fun parseSysfsGpuLoading(output: String): Float? {
+            val text = output.trim()
+            if (text.isEmpty()) return null
+            val line = text.lines().firstOrNull { it.isNotBlank() }?.trim() ?: return null
+            val value = line.replace("%", "").trim().toFloatOrNull() ?: return null
+            return if (value in 0f..100f) value else null
+        }
+
+        internal fun parseGedGpuLoading(output: String): Float? = parseSysfsGpuLoading(output)
     }
 
     private var pollJob: Job? = null
@@ -147,6 +159,7 @@ class CpuGpuLoadMonitor(
     private var lastCpuSample: CpuStatSample? = null
     private var lastGpuMap: Map<Int, Long>? = null
     private var lastGpuTimeNs: Long = 0L
+    private var sysfsGpuSupported: Boolean? = null
 
     fun setUseRoot(enabled: Boolean) {
         useRoot = enabled
@@ -186,10 +199,25 @@ class CpuGpuLoadMonitor(
                     val nowNs = SystemClock.elapsedRealtimeNanos()
                     val sysfsGpu = if (wantsGpu) readSysfsGpuLoad() else null
 
+                    // If MediaTek GED or Qualcomm KGSL is directly readable, we only need CPU stat from shell.
+                    // If direct read was blocked by SELinux, try reading sysfs via privileged shell first.
+                    // Only fall back to dumpsys gpu if neither sysfs interface is readable.
                     val command = when {
-                        wantsCpu && wantsGpu && sysfsGpu == null -> "grep '^cpu ' /proc/stat; echo '---GPU---'; dumpsys gpu"
+                        wantsCpu && wantsGpu && sysfsGpu == null -> {
+                            if (sysfsGpuSupported != false) {
+                                "grep '^cpu ' /proc/stat; echo '---SYSFS---'; $SYSFS_GPU_CMD"
+                            } else {
+                                "grep '^cpu ' /proc/stat; echo '---GPU---'; dumpsys gpu"
+                            }
+                        }
                         wantsCpu -> "grep '^cpu ' /proc/stat"
-                        wantsGpu && sysfsGpu == null -> "dumpsys gpu"
+                        wantsGpu && sysfsGpu == null -> {
+                            if (sysfsGpuSupported != false) {
+                                SYSFS_GPU_CMD
+                            } else {
+                                "dumpsys gpu"
+                            }
+                        }
                         else -> null
                     }
 
@@ -199,10 +227,10 @@ class CpuGpuLoadMonitor(
                     var computedGpuLoad: Float? = sysfsGpu
 
                     if (wantsCpu) {
-                        val cpuText = if (rawOutput.contains("---GPU---")) {
-                            rawOutput.substringBefore("---GPU---")
-                        } else {
-                            rawOutput
+                        val cpuText = when {
+                            rawOutput.contains("---SYSFS---") -> rawOutput.substringBefore("---SYSFS---")
+                            rawOutput.contains("---GPU---") -> rawOutput.substringBefore("---GPU---")
+                            else -> rawOutput
                         }
                         val currentCpuSample = parseCpuStat(cpuText)
                         if (currentCpuSample != null) {
@@ -215,21 +243,37 @@ class CpuGpuLoadMonitor(
                     }
 
                     if (wantsGpu && sysfsGpu == null) {
-                        val gpuText = if (rawOutput.contains("---GPU---")) {
-                            rawOutput.substringAfter("---GPU---")
-                        } else {
-                            rawOutput
-                        }
-                        val currentGpuMap = parseGpuWork(gpuText)
-                        if (currentGpuMap.isNotEmpty()) {
-                            val prevMap = lastGpuMap
-                            val prevTime = lastGpuTimeNs
-                            if (prevMap != null && prevTime > 0L) {
-                                val deltaTime = nowNs - prevTime
-                                computedGpuLoad = calculateGpuLoad(prevMap, currentGpuMap, deltaTime)
+                        if (sysfsGpuSupported != false) {
+                            val sysfsText = if (rawOutput.contains("---SYSFS---")) {
+                                rawOutput.substringAfter("---SYSFS---")
+                            } else {
+                                rawOutput
                             }
-                            lastGpuMap = currentGpuMap
-                            lastGpuTimeNs = nowNs
+                            val sysfsVal = parseSysfsGpuLoading(sysfsText)
+                            if (sysfsVal != null) {
+                                computedGpuLoad = sysfsVal
+                                sysfsGpuSupported = true
+                            } else {
+                                // Sysfs (GED/KGSL) is not readable on this device; fall back to dumpsys gpu next cycle
+                                sysfsGpuSupported = false
+                            }
+                        } else {
+                            val gpuText = if (rawOutput.contains("---GPU---")) {
+                                rawOutput.substringAfter("---GPU---")
+                            } else {
+                                rawOutput
+                            }
+                            val currentGpuMap = parseGpuWork(gpuText)
+                            if (currentGpuMap.isNotEmpty()) {
+                                val prevMap = lastGpuMap
+                                val prevTime = lastGpuTimeNs
+                                if (prevMap != null && prevTime > 0L) {
+                                    val deltaTime = nowNs - prevTime
+                                    computedGpuLoad = calculateGpuLoad(prevMap, currentGpuMap, deltaTime)
+                                }
+                                lastGpuMap = currentGpuMap
+                                lastGpuTimeNs = nowNs
+                            }
                         }
                     }
 
@@ -258,6 +302,7 @@ class CpuGpuLoadMonitor(
         lastCpuSample = null
         lastGpuMap = null
         lastGpuTimeNs = 0L
+        sysfsGpuSupported = null
     }
 
     private fun runShellCommand(command: String): String {

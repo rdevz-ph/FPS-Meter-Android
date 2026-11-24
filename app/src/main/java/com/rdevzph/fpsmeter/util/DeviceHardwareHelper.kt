@@ -70,7 +70,8 @@ object DeviceHardwareHelper {
             val memInfo = ActivityManager.MemoryInfo()
             actManager?.getMemoryInfo(memInfo)
             if (memInfo.totalMem > 0L) {
-                ((memInfo.totalMem - memInfo.availMem) / (1024L * 1024L)).toInt()
+                val clampedAvail = memInfo.availMem.coerceIn(0L, memInfo.totalMem)
+                ((memInfo.totalMem - clampedAvail) / (1024L * 1024L)).toInt().coerceAtLeast(0)
             } else {
                 0
             }

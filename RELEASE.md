@@ -1,9 +1,10 @@
-# FPS Meter Android v3.9
+# FPS Meter Android v4.0
 
 ### What's Changed
-- Added CPU Load (%) and GPU Load (%) toggles in Display Elements to show live CPU utilization and GPU activity on both the Pill and RTSS overlays ([#59](https://github.com/rdevz-ph/FPS-Meter-Android/issues/59)).
-- Added a Hide Floating Bubble button to the assistive popup menu so you can dismiss the floating assistive bubble and its dialog at the same time ([#67](https://github.com/rdevz-ph/FPS-Meter-Android/issues/67)).
-- Added raw CPU and GPU load readings to Device Diagnostics and include them in diagnostic reports and exported thermal dumps.
+- Added fixes for GPU load showing `--%` on Qualcomm Adreno devices in Root and Shizuku modes by reading KGSL busy percentage through privileged shell ([#69](https://github.com/rdevz-ph/FPS-Meter-Android/issues/69)).
+- Added direct and privileged sysfs GPU load reading for MediaTek GED devices, falling back to dumpsys gpu only when sysfs is unavailable.
+- Added fixes for inaccurate RAM readings showing 100% available and 0 GB used on custom ROMs and virtual memory setups by reading kernel memory info and preventing available memory from exceeding total memory ([#69](https://github.com/rdevz-ph/FPS-Meter-Android/issues/69)).
+- Updated Device Diagnostics to detect and show direct sysfs GPU load readings for both MediaTek GED and Qualcomm KGSL hardware.
 
 ### Release Highlights
 

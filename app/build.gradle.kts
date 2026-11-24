@@ -14,8 +14,8 @@ android {
         applicationId = "com.rdevzph.fpsmeter"
         minSdk = 26
         targetSdk = 36
-        versionCode = 31
-        versionName = "3.9"
+        versionCode = 32
+        versionName = "4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
