@@ -36,7 +36,9 @@ If you are reporting issues with CPU, GPU, or battery temperature readings:
 4. Attach this text file to your GitHub issue (or tap **Copy Dump** to paste it).
 
 > [!NOTE]
-> FPS Meter is designed to work without root access. There are no plans to add root support, so you will still need Shizuku to use the app's features that require it, even if your device is rooted with Magisk or KernelSU.
+> ~~FPS Meter is designed to work without root access. There are no plans to add root support, so you will still need Shizuku to use the app's features that require it, even if your device is rooted with Magisk or KernelSU.~~
+>
+> Root mode has been supported since v3.5.
 
 When creating a new bug report, please include:
 - A clear and descriptive title.
